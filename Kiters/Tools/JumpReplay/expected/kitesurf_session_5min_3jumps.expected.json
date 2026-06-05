@@ -1,0 +1,44 @@
+{
+  "detectedRateHz" : 49.999999996820875,
+  "detectionMode" : "standard",
+  "durationSec" : 299.9800000190735,
+  "file" : "kitesurf_session_5min_3jumps.json",
+  "format" : "android",
+  "jumps" : [
+    {
+      "accepted" : true,
+      "airtime" : 1.7799999713897705,
+      "confidence" : 100,
+      "height" : 2.7515428108404993,
+      "heightSource" : "baro",
+      "index" : 0,
+      "jumpDistance" : 14.239999771118164,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 70.05999994277954
+    },
+    {
+      "accepted" : true,
+      "airtime" : 2.559999942779541,
+      "confidence" : 100,
+      "height" : 6.366352352756713,
+      "heightSource" : "baro",
+      "index" : 1,
+      "jumpDistance" : 20.479999542236328,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 150.05999994277954
+    },
+    {
+      "accepted" : true,
+      "airtime" : 2.120000123977661,
+      "confidence" : 100,
+      "height" : 4.119030356556073,
+      "heightSource" : "baro",
+      "index" : 2,
+      "jumpDistance" : 16.96000099182129,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 240.05999994277954
+    }
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 15000
+}

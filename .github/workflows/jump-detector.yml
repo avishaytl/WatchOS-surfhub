@@ -1,0 +1,38 @@
+name: JumpDetector Regression
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  regression:
+    name: JumpDetector Regression Tests
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Swift build
+        uses: actions/cache@v4
+        with:
+          path: Tools/JumpReplay/.build
+          key: ${{ runner.os }}-jumpreplay-${{ hashFiles('Tools/JumpReplay/Sources/**/*.swift', 'Tools/JumpReplay/Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-jumpreplay-
+
+      - name: Run regression tests
+        run: |
+          chmod +x Tools/JumpReplay/verify.sh
+          Tools/JumpReplay/verify.sh
+
+      - name: Upload actual outputs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: actual-outputs-${{ github.run_id }}
+          path: Tools/JumpReplay/output/*.actual.json
+          retention-days: 7

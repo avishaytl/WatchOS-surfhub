@@ -1,0 +1,185 @@
+/* 
+  Localizable.strings (Hebrew)
+  iSurf-Watch
+*/
+
+// MARK: - Home View
+"home.start_session" = "התחל אימון";
+"home.settings" = "הגדרות";
+"home.recent_sessions" = "אימונים אחרונים";
+"home.no_sessions" = "אין אימונים עדיין";
+
+// MARK: - Sport Selection
+"sport.kitesurfing" = "קייטסרף";
+"sport.windsurfing" = "גלישת רוח";
+"sport.wingfoiling" = "וינגפויל";
+"sport.surfing" = "גלישה";
+"sport.select_sport" = "בחר ענף";
+
+// MARK: - Active Session
+"session.jumps" = "קפיצות";
+"session.last" = "אחרון";
+"session.bpm" = "דופק";
+"session.max" = "מקסימום";
+"session.distance" = "מרחק";
+"session.airtime" = "אוויר";
+"session.speed" = "מהירות";
+"session.pause" = "השהה";
+"session.resume" = "המשך";
+"session.end" = "סיים";
+"session.end_confirm" = "לסיים אימון?";
+"session.end_message" = "האם אתה בטוח שברצונך לסיים את האימון?";
+"session.cancel" = "ביטול";
+"session.best_jump" = "🏆 הקפיצה הטובה ביותר";
+"session.airtime_value" = "%.2f שניות באוויר";
+"session.rotation_single" = "סיבוב %d";
+"session.rotation_plural" = "%d סיבובים";
+"session.total_jumps" = "סה״כ %d קפיצות";
+"session.no_jumps" = "אין קפיצות עדיין";
+"session.get_air" = "בוא נקפוץ!";
+
+// MARK: - Session Detail
+"detail.session_complete" = "אימון הושלם!";
+"detail.duration" = "משך זמן";
+"detail.total_jumps" = "סה״כ קפיצות";
+"detail.max_height" = "גובה מקסימלי";
+"detail.total_distance" = "סה״כ מרחק";
+"detail.max_speed" = "מהירות מקסימלית";
+"detail.total_airtime" = "סה״כ זמן באוויר";
+"detail.avg_speed" = "מהירות ממוצעת";
+"detail.save" = "שמור";
+"detail.discard" = "מחק";
+
+// MARK: - Settings
+"settings.title" = "הגדרות";
+"settings.app_theme" = "ערכת צבעים";
+"settings.theme.blue" = "כחול";
+"settings.theme.cyan" = "תכלת";
+"settings.theme.yellow" = "צהוב";
+"settings.theme.green" = "ירוק";
+"settings.theme.orange" = "כתום";
+"settings.theme.red" = "אדום";
+"settings.theme.pink" = "ורוד";
+"settings.language" = "שפה";
+"settings.language.english" = "English";
+"settings.language.hebrew" = "עברית";
+"settings.units" = "יחידות מידה";
+"settings.units.metric" = "מטרי (קמ״ש, מ׳)";
+"settings.units.imperial" = "אימפריאלי (mph, ft)";
+"settings.jump_detection" = "זיהוי קפיצות";
+"settings.sensitivity" = "רגישות";
+"settings.sensitivity.low" = "נמוכה";
+"settings.sensitivity.medium" = "בינונית";
+"settings.sensitivity.high" = "גבוהה";
+"settings.sensitivity.very_high" = "גבוהה מאוד";
+"settings.display_feedback" = "תצוגה ומשוב";
+"settings.top_padding" = "ריווח עליון";
+"settings.top_padding_auto" = "אוטומטי";
+"settings.top_padding_help" = "כוונן את המרחק מהחלק העליון של מסך האימון. השתמש באוטומטי לברירת המחדל.";
+"settings.water_lock" = "נעילת מים";
+"settings.haptic_feedback" = "משוב מישוש";
+"settings.voice_announcements" = "הודעות קוליות";
+"settings.data" = "נתונים";
+"settings.manage_sessions" = "ניהול אימונים";
+"settings.about" = "אודות";
+"settings.version" = "גרסה";
+"settings.build" = "בנייה";
+"settings.tune_parameters" = "כיול מותאם";
+"settings.dev_mode" = "בדיקת זריקה";
+"settings.dev_mode_help" = "דלג על דרישת מהירות GPS — זהה קפיצות מזריקת יד. כבה לאימון אמיתי.";
+
+// MARK: - Jump Tuning (6 Parameters)
+"tuning.title" = "כיול מותאם";
+"tuning.subtitle" = "כוונן 6 פרמטרים בסיסיים.\nהברומטר מודד גובה אוטומטית.";
+
+"tuning.min_speed" = "מהירות מינימלית";
+"tuning.min_speed_help" = "מהירות GPS להפעלת זיהוי";
+"tuning.takeoff_g" = "כוח המראה";
+"tuning.takeoff_g_help" = "שיא תאוצה להפעלת המראה";
+"tuning.landing_g" = "עוצמת נחיתה";
+"tuning.landing_g_help" = "כוח פגיעה לאישור נחיתה";
+"tuning.min_airtime" = "זמן אוויר מינימלי";
+"tuning.min_airtime_help" = "קפיצה הכי קצרה שנספרת";
+"tuning.max_airtime" = "זמן אוויר מקסימלי";
+"tuning.max_airtime_help" = "התעלם אם ארוך מזה";
+"tuning.cooldown" = "זמן המתנה";
+"tuning.cooldown_help" = "הפסקה בין קפיצות";
+"tuning.kinematic_calibration" = "כיול גובה";
+"tuning.kinematic_calibration_help" = "מכפיל גובה קינמטי (ללא ברומטר)";
+"tuning.baro_info" = "גובה נמדד בברומטר (8.3 מ׳/hPa). לא נדרש כיול.";
+
+"tuning.reset" = "אפס לברירת מחדל";
+"tuning.reset_confirm" = "לאפס את כל הפרמטרים לברירת המחדל?";
+
+// MARK: - Data Management
+"data.title" = "ניהול נתונים";
+"data.sessions_count" = "אימונים: %d";
+"data.total_jumps" = "סה״כ קפיצות: %d";
+"data.delete_all" = "מחק את כל האימונים";
+"data.delete_confirm" = "למחוק את כל האימונים?";
+"data.delete_message" = "לא ניתן לבטל פעולה זו. כל נתוני האימונים שלך יימחקו לצמיתות.";
+"data.delete" = "מחק";
+
+// MARK: - Session Logs
+"settings.session_logs" = "לוגים של אימונים";
+"logs.title" = "לוגים של אימונים";
+"logs.empty" = "אין לוגים עדיין";
+"logs.empty_hint" = "התחל אימון כדי ליצור קובץ לוג דיאגנוסטי.";
+"logs.share" = "שתף CSV";
+"logs.share_messages" = "שתף בהודעות";
+"logs.send_to_phone" = "שלח לאייפון";
+"logs.fetch_cloud_response" = "הבא תגובת ענן";
+"logs.upload_cloud" = "העלה לוגים לענן";
+"logs.fetch_cloud_response_success" = "✅ %@";
+"logs.upload_cloud_success" = "✅ הועלו %d לוגים";
+"logs.cloud_failed" = "⚠️ %@";
+"logs.delete_all" = "מחק את כל הלוגים";
+"logs.delete_confirm" = "למחוק את כל קבצי הלוג?";
+
+// MARK: - Common
+"common.ok" = "אישור";
+"common.cancel" = "ביטול";
+"common.save" = "שמור";
+"common.done" = "סיום";
+
+// MARK: - Permissions
+"permissions.required" = "נדרשות הרשאות";
+"permissions.location_motion" = "אנא אפשר הרשאות מיקום בהגדרות השעון:\n\nהגדרות → פרטיות → שירותי מיקום → iSurf → בזמן שימוש באפליקציה";
+"permissions.denied.title" = "נדרשת הרשאת מיקום";
+"permissions.denied.message" = "כדי לעקוב אחר האימון, אנא אפשר הרשאת מיקום:\n\nהגדרות אייפון → פרטיות ואבטחה → שירותי מיקום → iSurf → בזמן שימוש באפליקציה או תמיד";
+"permissions.waiting" = "מבקש הרשאה...";
+
+// MARK: - Time Units
+"time.hours_short" = "ש׳";
+"time.minutes_short" = "ד׳";
+"time.seconds_short" = "ש׳";
+
+// MARK: - Distance Units
+"units.meters" = "מ׳";
+"units.feet" = "ft";
+"units.kilometers" = "ק״מ";
+"units.miles" = "mi";
+"units.kmh" = "קמ״ש";
+"units.mph" = "mph";
+
+// MARK: - GPS Tracking
+"gps.tracking" = "מעקב GPS";
+"gps.signal_none" = "אין אות";
+"gps.signal_weak" = "חלש";
+"gps.signal_fair" = "סביר";
+"gps.signal_good" = "טוב";
+"gps.signal_strong" = "חזק";
+"gps.route_distance" = "מסלול";
+"gps.current_speed" = "מהירות";
+"gps.max_speed" = "מקס מהירות";
+"gps.avg_speed" = "ממוצע מהירות";
+"gps.points" = "נקודות";
+"gps.pts" = "נק׳";
+"gps.accuracy" = "דיוק";
+
+// MARK: - Session Detail GPS
+"detail.gps_route" = "מסלול GPS";
+"detail.gps_points" = "נקודות GPS";
+"detail.route_distance" = "מרחק מסלול";
+"detail.avg_accuracy" = "דיוק ממוצע";
+"detail.gps_coverage" = "כיסוי GPS";

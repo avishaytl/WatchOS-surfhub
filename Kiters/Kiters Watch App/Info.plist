@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Kiters</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>he</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>ISURF_CLOUD_BASE_URL</key>
+	<string>$(ISURF_CLOUD_BASE_URL)</string>
+	<key>ISURF_CLOUD_AUTH_TOKEN</key>
+	<string>$(ISURF_CLOUD_AUTH_TOKEN)</string>
+	<key>ISURF_CLOUD_LOG_PATH</key>
+	<string>$(ISURF_CLOUD_LOG_PATH)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Kiters reads your heart rate during sessions to display live BPM on screen.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Kiters saves your workout sessions to Apple Health so you can track your activity over time.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Kiters tracks your location while using the app to record speed, distance, and jump locations during your session.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Kiters tracks your location in the background to keep recording your session even when the screen is off.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Kiters uses motion sensors to detect jumps and calculate jump height and rotations.</string>
+	<key>WKApplication</key>
+	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+	<key>WKWatchOnly</key>
+	<true/>
+</dict>
+</plist>

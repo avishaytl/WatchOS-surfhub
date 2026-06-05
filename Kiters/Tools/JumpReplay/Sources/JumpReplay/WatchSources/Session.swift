@@ -1,0 +1,1 @@
+../../../../../apps/watchos/Kiters/Kiters Watch App/Models/Session.swift

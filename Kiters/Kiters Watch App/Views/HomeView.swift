@@ -1,0 +1,237 @@
+//
+//  HomeView.swift
+//  iSurf-Watch
+//
+//  Home screen with start button and recent sessions
+//
+
+import SwiftUI
+
+struct HomeView: View {
+    @EnvironmentObject var sessionManager: SessionManager
+    @Binding var showingSportSelection: Bool
+    @State private var sessions: [Session] = []
+    @State private var showingSettings = false
+    @State private var showingPermissionAlert = false
+    @State private var waitingForPermission = false
+    @AppStorage("appTheme") private var appTheme: String = "blue"
+    @AppStorage("appLanguage") private var languageCode: String = "en"
+    
+    private let storageManager = StorageManager()
+    
+    private var themeColor: Color {
+        switch appTheme {
+        case "yellow": return .yellow
+        case "green":  return .green
+        case "red":    return .red
+        case "orange": return .orange
+        case "cyan":   return .cyan
+        case "pink":   return .pink
+        default:       return .blue
+        }
+    }
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                // Start Session Button
+                Button(action: {
+                    handleStartTapped()
+                }) {
+                    VStack(spacing: 8) {
+                        if waitingForPermission {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            Text(L("permissions.waiting"))
+                                .font(.caption)
+                        } else {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 40))
+                            Text(L("home.start_session"))
+                                .font(.headline)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(waitingForPermission ? Color.gray : themeColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
+                .disabled(waitingForPermission)
+                
+                // Settings button
+                NavigationLink(destination: SettingsView()) {
+                    HStack {
+                        Image(systemName: "gear")
+                            .font(.system(size: 18))
+                        Text(L("home.settings"))
+                            .font(.headline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.3))
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
+                
+                // Recent sessions
+                if !sessions.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(L("home.recent_sessions"))
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        
+                        ForEach(sessions.prefix(3)) { session in
+                            NavigationLink(destination: SessionDetailView(session: session)) {
+                                SessionRowView(session: session)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+            .padding()
+        }
+        // .watchScrollTopShadow()
+        .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+        .onAppear {
+            loadSessions()
+        }
+        .onChange(of: sessionManager.locationAuthStatus) { oldStatus, newStatus in
+            guard waitingForPermission else { return }
+            if newStatus == .authorizedWhenInUse || newStatus == .authorizedAlways {
+                // Permission granted! Start session
+                waitingForPermission = false
+                showingSportSelection = true
+            } else if newStatus == .denied || newStatus == .restricted {
+                // Permission denied
+                waitingForPermission = false
+                showingPermissionAlert = true
+            }
+        }
+        .alert(L("permissions.denied.title"), isPresented: $showingPermissionAlert) {
+            Button(L("common.ok"), role: .cancel) { }
+        } message: {
+            Text(L("permissions.denied.message"))
+        }
+    }
+    
+    private func handleStartTapped() {
+        guard !waitingForPermission else { return }
+        
+        if sessionManager.isLocationAuthorized {
+            // Already authorized - go to sport selection immediately
+            showingSportSelection = true
+        } else if sessionManager.isLocationDenied {
+            // Permission was denied - show instructions alert
+            showingPermissionAlert = true
+        } else {
+            // notDetermined: permission was already requested at launch but the
+            // user hasn't responded yet. Show a brief waiting spinner and let
+            // the onChange(of: locationAuthStatus) handler proceed once they do.
+            waitingForPermission = true
+            // In case the system missed the launch request, re-trigger it.
+            sessionManager.requestLocationPermission()
+            
+            // Safety timeout – don't spin forever
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+                if self.waitingForPermission {
+                    self.waitingForPermission = false
+                    if self.sessionManager.isLocationAuthorized {
+                        self.showingSportSelection = true
+                    } else {
+                        self.showingPermissionAlert = true
+                    }
+                }
+            }
+        }
+    }
+    
+    private func loadSessions() {
+        sessions = storageManager.loadAllSessions()
+    }
+}
+
+struct SessionRowView: View {
+    let session: Session
+    @AppStorage("appLanguage") private var languageCode: String = "en"
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // Top row: Sport name and jumps count
+            HStack {
+                Text(sportDisplayName)
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                
+                Spacer()
+                
+                HStack(spacing: 3) {
+                    Text("\(session.jumps.count)")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                    Text(L("session.jumps"))
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                        .textCase(.lowercase)
+                }
+            }
+            
+            // Bottom row: Date and duration
+            HStack {
+                Text(formatDate(session.startTime))
+                    .font(.caption)
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                Text(formatDuration(session.duration))
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(Color.clear)
+        .overlay(
+            Rectangle()
+                .strokeBorder(Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+    }
+    
+    private var sportDisplayName: String {
+        switch session.sport {
+        case .kiteboarding: return L("sport.kitesurfing")
+        // case .windsurfing: return L("sport.windsurfing")
+        // case .wingfoiling: return L("sport.wingfoiling")
+        // case .surfing: return L("sport.surfing")
+        }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, HH:mm"
+        return formatter.string(from: date)
+    }
+    
+    private func formatDuration(_ duration: TimeInterval) -> String {
+        let hours = Int(duration) / 3600
+        let minutes = (Int(duration) % 3600) / 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+}
+
+struct HomeView_Previews: PreviewProvider {
+    static var previews: some View {
+        HomeView(showingSportSelection: .constant(false))
+            .environmentObject(SessionManager())
+    }
+}

@@ -1,0 +1,22 @@
+{
+  "detectedRateHz" : 20,
+  "detectionMode" : "standard",
+  "durationSec" : 14,
+  "file" : "kitesurf_jump_log_synthetic.csv",
+  "format" : "coreMotion",
+  "jumps" : [
+    {
+      "accepted" : true,
+      "airtime" : 0.5,
+      "confidence" : 60,
+      "height" : 0.3,
+      "heightSource" : "baro",
+      "index" : 0,
+      "jumpDistance" : 4,
+      "rotations" : 3,
+      "takeoffOffsetSec" : 12.25
+    }
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 281
+}
