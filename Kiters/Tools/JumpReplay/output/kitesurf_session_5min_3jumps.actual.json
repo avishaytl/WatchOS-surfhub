@@ -7,36 +7,36 @@
   "jumps" : [
     {
       "accepted" : true,
-      "airtime" : 1.7799999713897705,
-      "confidence" : 100,
-      "height" : 2.7515428108404993,
-      "heightSource" : "baro",
+      "airtime" : 1.8,
+      "confidence" : 84.1,
+      "height" : 2.75,
+      "heightSource" : "kin",
       "index" : 0,
-      "jumpDistance" : 14.239999771118164,
+      "jumpDistance" : 14.4,
       "rotations" : 0,
-      "takeoffOffsetSec" : 70.05999994277954
+      "takeoffOffsetSec" : 412928.6523630619
     },
     {
       "accepted" : true,
-      "airtime" : 2.559999942779541,
+      "airtime" : 2.58,
       "confidence" : 100,
-      "height" : 6.366352352756713,
-      "heightSource" : "baro",
+      "height" : 6.48,
+      "heightSource" : "kin",
       "index" : 1,
-      "jumpDistance" : 20.479999542236328,
+      "jumpDistance" : 20.6,
       "rotations" : 0,
-      "takeoffOffsetSec" : 150.05999994277954
+      "takeoffOffsetSec" : 412927.88975298405
     },
     {
       "accepted" : true,
-      "airtime" : 2.120000123977661,
+      "airtime" : 2.14,
       "confidence" : 100,
-      "height" : 4.119030356556073,
-      "heightSource" : "baro",
+      "height" : 4.15,
+      "heightSource" : "kin",
       "index" : 2,
-      "jumpDistance" : 16.96000099182129,
+      "jumpDistance" : 17.1,
       "rotations" : 0,
-      "takeoffOffsetSec" : 240.05999994277954
+      "takeoffOffsetSec" : 412928.3458080292
     }
   ],
   "mockSpeedMps" : 8,

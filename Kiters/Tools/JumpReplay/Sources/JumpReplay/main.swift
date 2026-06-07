@@ -88,6 +88,9 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
 
         // Build detector
         let detector = JumpDetector()
+        // Offline replay has no run loop to drain DispatchQueue.main, so run the
+        // v7 analysis inline and deliver callbacks synchronously.
+        detector.synchronousAnalysis = true
         var capturedJumps: [(Jump, Date)] = []
         detector.onJumpDetected = { jump in
             capturedJumps.append((jump, log.samples.first?.timestamp ?? jump.startTime))

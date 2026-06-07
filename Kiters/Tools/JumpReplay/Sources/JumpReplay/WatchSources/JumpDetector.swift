@@ -1,1 +1,1 @@
-../../../../../apps/watchos/Kiters/Kiters Watch App/Services/JumpDetector.swift
+../../../../../Kiters Watch App/Services/JumpDetector.swift

@@ -1,1 +1,1 @@
-../../../../../apps/watchos/Kiters/Kiters Watch App/Models/Session.swift
+../../../../../Kiters Watch App/Models/Session.swift

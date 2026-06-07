@@ -1,1 +1,1 @@
-../../../../../apps/watchos/Kiters/Kiters Watch App/Services/SessionLogger.swift
+../../../../../Kiters Watch App/Services/SessionLogger.swift

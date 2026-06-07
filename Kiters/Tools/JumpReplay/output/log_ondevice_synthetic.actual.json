@@ -5,28 +5,7 @@
   "file" : "log_ondevice_synthetic.csv",
   "format" : "onDevice",
   "jumps" : [
-    {
-      "accepted" : true,
-      "airtime" : 0.5,
-      "confidence" : 95,
-      "height" : 1.3163488505254919,
-      "heightSource" : "baro",
-      "index" : 0,
-      "jumpDistance" : 4,
-      "rotations" : 0,
-      "takeoffOffsetSec" : 29.960000038146973
-    },
-    {
-      "accepted" : true,
-      "airtime" : 0.5,
-      "confidence" : 95,
-      "height" : 1.4877071261620474,
-      "heightSource" : "baro",
-      "index" : 1,
-      "jumpDistance" : 4,
-      "rotations" : 0,
-      "takeoffOffsetSec" : 89.96000003814697
-    }
+
   ],
   "mockSpeedMps" : 8,
   "sampleCount" : 7501

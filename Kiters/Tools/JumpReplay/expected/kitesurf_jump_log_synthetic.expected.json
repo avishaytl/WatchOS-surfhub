@@ -6,15 +6,15 @@
   "format" : "coreMotion",
   "jumps" : [
     {
-      "accepted" : true,
-      "airtime" : 0.5,
-      "confidence" : 60,
-      "height" : 0.3,
-      "heightSource" : "baro",
+      "accepted" : false,
+      "airtime" : 1.5,
+      "confidence" : 42.9,
+      "height" : 3.09,
+      "heightSource" : "kin",
       "index" : 0,
-      "jumpDistance" : 4,
-      "rotations" : 3,
-      "takeoffOffsetSec" : 12.25
+      "jumpDistance" : 12,
+      "rotations" : 8,
+      "takeoffOffsetSec" : 1780821671.2978048
     }
   ],
   "mockSpeedMps" : 8,
