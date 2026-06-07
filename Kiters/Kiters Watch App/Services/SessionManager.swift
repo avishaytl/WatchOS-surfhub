@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import CoreLocation
+import WatchKit
 
 // MARK: - GPS Signal Quality
 enum GPSSignalQuality: String {
@@ -302,6 +303,29 @@ class SessionManager: ObservableObject {
         print("⏱️ UI timer started")
         
         print("✅ Session started successfully!")
+    }
+    
+    /// Activates watchOS Water Lock when the "autoLock" setting is enabled.
+    ///
+    /// IMPORTANT: `enableWaterLock()` only works while the app is in the
+    /// **foreground active** scene. Calling it from `startSession()` (during the
+    /// button tap, before the ActiveSessionView has appeared) is the common cause
+    /// of "Water Lock doesn't work on device". This is therefore invoked from
+    /// `ActiveSessionView.onAppear`, where the session screen is guaranteed
+    /// frontmost. The user double-presses the Digital Crown to exit Water Lock.
+    func enableWaterLockIfNeeded() {
+        let autoLock = UserDefaults.standard.object(forKey: "autoLock") as? Bool ?? true
+        guard autoLock else {
+            print("💧 Water Lock skipped (autoLock disabled)")
+            return
+        }
+        guard isRecording else { return }
+        // Small delay so the scene is fully active before locking.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            guard self.isRecording else { return }
+            WKInterfaceDevice.current().enableWaterLock()
+            print("💧 Water Lock enabled")
+        }
     }
     
     func pauseSession() {

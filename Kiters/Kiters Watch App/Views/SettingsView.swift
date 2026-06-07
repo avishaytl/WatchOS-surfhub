@@ -170,8 +170,8 @@ struct SettingsView: View {
                         .foregroundColor(.gray)
                         .textCase(.uppercase)
 
-                    // Detection mode cards
-                    ForEach(DetectionMode.allCases, id: \.self) { mode in
+                    // Detection mode cards (Standard only)
+                    ForEach([DetectionMode.standard], id: \.self) { mode in
                         Button(action: { detectionModeRaw = mode.rawValue }) {
                             HStack(spacing: 10) {
                                 Image(systemName: mode.icon)
@@ -229,32 +229,6 @@ struct SettingsView: View {
                         }
                     }
                     .padding(.top, 4)
-
-                    // Custom mode – link to tuning page
-                    if detectionMode == .custom {
-                        NavigationLink(destination: JumpTuningView()) {
-                            HStack {
-                                Image(systemName: "slider.horizontal.3")
-                                    .foregroundColor(.purple)
-                                    .frame(width: 20)
-                                Text(L("settings.tune_parameters"))
-                                    .font(.caption)
-                                Spacer()
-                                Image(systemName: languageCode == "he" ? "chevron.left" : "chevron.right")
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                            }
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 10)
-                            .background(Color.purple.opacity(0.15))
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.purple.opacity(0.4), lineWidth: 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
                 }
                 
                 // Dev / Toss Test toggle
@@ -481,6 +455,12 @@ struct SettingsView: View {
         // .watchScrollTopShadow()
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // Custom mode was removed from Settings — migrate any stored value to Standard.
+            if detectionModeRaw == DetectionMode.custom.rawValue {
+                detectionModeRaw = DetectionMode.standard.rawValue
+            }
+        }
     }
     
     private func modeColor(_ mode: DetectionMode) -> Color {

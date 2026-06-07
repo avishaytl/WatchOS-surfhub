@@ -24,6 +24,12 @@ class WorkoutManager: NSObject, ObservableObject {
     private var workoutSession: HKWorkoutSession?
     private var workoutBuilder: HKLiveWorkoutBuilder?
     private var endCompletion: ((HKWorkout?) -> Void)?
+
+    /// Dedicated live heart-rate stream. The HKLiveWorkoutBuilder statistics
+    /// callback can be slow or silent on-device, so we also run an anchored
+    /// query that pushes every new HR sample straight to the UI.
+    private var heartRateQuery: HKAnchoredObjectQuery?
+    private let heartRateUnit = HKUnit(from: "count/min")
     
     // MARK: - HealthKit Permission
     
@@ -67,6 +73,31 @@ class WorkoutManager: NSObject, ObservableObject {
             print("⚠️ WorkoutManager: HealthKit not available")
             return
         }
+
+        // Ensure HealthKit authorization is settled BEFORE starting the session
+        // and the heart-rate stream. Starting the workout before read access is
+        // granted is a common cause of live BPM staying at "--" on device.
+        let typesToShare: Set<HKSampleType> = [HKObjectType.workoutType()]
+        let typesToRead: Set<HKObjectType> = [
+            HKObjectType.quantityType(forIdentifier: .heartRate)!,
+            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+            HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!
+        ]
+        healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { [weak self] _, error in
+            if let error = error {
+                print("❌ HealthKit auth error (startWorkout): \(error.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                self?.beginWorkout(sport: sport)
+            }
+        }
+    }
+
+    private func beginWorkout(sport: Sport) {
+        guard workoutSession == nil else {
+            print("⚠️ WorkoutManager: workout already running")
+            return
+        }
         print("💪 WorkoutManager: starting HKWorkoutSession for \(sport.displayName)")
         
         let config = HKWorkoutConfiguration()
@@ -93,8 +124,58 @@ class WorkoutManager: NSObject, ObservableObject {
                     print("✅ HealthKit workout started")
                 }
             }
+
+            // Start a dedicated live heart-rate stream as a reliable fallback.
+            startHeartRateStream()
         } catch {
             print("❌ Failed to create workout session: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Live Heart-Rate Stream
+
+    /// Streams heart-rate samples directly via HKAnchoredObjectQuery so live BPM
+    /// shows even if the workout builder's statistics callback is delayed/silent.
+    private func startHeartRateStream() {
+        guard let hrType = HKObjectType.quantityType(forIdentifier: .heartRate) else { return }
+
+        // Only consider samples from now on (ignore historical data).
+        let predicate = HKQuery.predicateForSamples(withStart: Date(), end: nil, options: .strictStartDate)
+
+        let handler: (HKAnchoredObjectQuery, [HKSample]?, [HKDeletedObject]?, HKQueryAnchor?, Error?) -> Void = { [weak self] _, samples, _, _, error in
+            if let error = error {
+                print("❌ Heart-rate query error: \(error.localizedDescription)")
+                return
+            }
+            self?.process(heartRateSamples: samples)
+        }
+
+        let query = HKAnchoredObjectQuery(type: hrType,
+                                          predicate: predicate,
+                                          anchor: nil,
+                                          limit: HKObjectQueryNoLimit,
+                                          resultsHandler: handler)
+        query.updateHandler = handler
+
+        heartRateQuery = query
+        healthStore.execute(query)
+        print("❤️ Heart-rate stream started")
+    }
+
+    private func process(heartRateSamples samples: [HKSample]?) {
+        guard let samples = samples as? [HKQuantitySample], let latest = samples.last else { return }
+        let bpm = latest.quantity.doubleValue(for: heartRateUnit)
+        DispatchQueue.main.async { [weak self] in
+            self?.heartRate = bpm
+        }
+        print("❤️ Heart rate (stream): \(Int(bpm)) BPM")
+    }
+
+    private func stopHeartRateStream() {
+        if let query = heartRateQuery {
+            healthStore.stop(query)
+            heartRateQuery = nil
+            print("❤️ Heart-rate stream stopped")
         }
     }
     
@@ -109,6 +190,7 @@ class WorkoutManager: NSObject, ObservableObject {
     }
     
     func endWorkout(completion: @escaping (Any?) -> Void) {
+        stopHeartRateStream()
         guard let session = workoutSession, let builder = workoutBuilder else {
             completion(nil)
             return

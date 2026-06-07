@@ -34,6 +34,10 @@ struct ActiveSessionView: View {
         .tabViewStyle(.page)
         .navigationBarHidden(true)
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+        .onAppear {
+            // Water Lock must be enabled while the session screen is foreground-active.
+            sessionManager.enableWaterLockIfNeeded()
+        }
         .alert(L("session.end_confirm"), isPresented: $showingEndConfirmation) {
             Button(L("session.cancel"), role: .cancel) { }
             Button(L("session.end"), role: .destructive) {
