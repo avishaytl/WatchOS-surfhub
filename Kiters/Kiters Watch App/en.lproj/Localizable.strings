@@ -20,6 +20,8 @@
 "session.jumps" = "JUMPS";
 "session.last" = "LAST";
 "session.bpm" = "BPM";
+"session.hr_no_data" = "No heart-rate data yet. Make sure Health permission is enabled and the watch is worn snugly.";
+"session.hr_unavailable" = "Heart rate is unavailable on this device.";
 "session.max" = "MAX";
 "session.distance" = "DIST";
 "session.airtime" = "AIR";
@@ -30,6 +32,10 @@
 "session.end_confirm" = "End Session?";
 "session.end_message" = "Are you sure you want to end this session?";
 "session.cancel" = "Cancel";
+"session.water_lock_active" = "Water Lock active";
+"session.water_lock_unlock_hint" = "Hold Digital Crown to unlock";
+"session.water_lock_unsupported" = "Water Lock not supported on this watch";
+"session.water_lock_eject_hint" = "Water Lock is still active. Press and hold the Digital Crown to unlock and eject water.";
 "session.best_jump" = "🏆 Best Jump";
 "session.airtime_value" = "%.2f sec airtime";
 "session.rotation_single" = "%d rotation";

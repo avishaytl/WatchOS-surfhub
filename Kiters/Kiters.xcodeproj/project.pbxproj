@@ -52,6 +52,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Services/KitesurfJumpEngine_old.swift,
 			);
 			target = FD21BC4E2F4DCE390045254A /* Kiters Watch App */;
 		};

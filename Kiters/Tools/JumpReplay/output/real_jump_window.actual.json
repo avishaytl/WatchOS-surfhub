@@ -1,0 +1,12 @@
+{
+  "detectedRateHz" : 0.5114311685282451,
+  "detectionMode" : "standard",
+  "durationSec" : 2932.945999979973,
+  "file" : "real_jump_window.csv",
+  "format" : "onDevice",
+  "jumps" : [
+
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 1501
+}

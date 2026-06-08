@@ -61,7 +61,6 @@
 // ================================================================
 
 import Foundation
-import os
 
 // ================================================================
 // MARK: - Constants
@@ -239,7 +238,7 @@ final class KitesurfJumpEngineV7 {
         var settleSamplesNeeded     = 6      // of last 8 → soft landing
         var minAirTimeSec           = 0.30
         var maxAirTimeSec           = 14.0   // kite glide watchdog
-        var minJumpHeightMeters     = 0.50   // gate (kinematic-capable, so low)
+        var minJumpHeightMeters     = 1.0    // ignore pop / wave-chop hops; real jumps ≥1 m
 
         // ── Gyro ─────────────────────────────────────────────────
         var gyroQualityThreshold    = 8.0    // rad/s — chaotic above (toss/tumble)
@@ -251,6 +250,16 @@ final class KitesurfJumpEngineV7 {
         var kinematicCalibration    = 1.0
 
         var enableIMUBiasCorrection = true
+
+        // ── KITE-AWARE HEIGHT (asymmetric arc) ───────────────────
+        // A kite holds the rider up → descent LONGER than ascent, so total
+        // airtime OVER-estimates height via symmetric g·t²/8. Height comes from
+        // the RISE time (take-off → apex): h = ½·g·t_rise². The consistency gate
+        // rejects a baro reading that exceeds the airtime envelope (drift/spike).
+        var airtimeCeilingTolerance = 1.25  // baroH may exceed sym-kin height ≤ this×
+        var maxPlausibleHeightM     = 500.0 // effectively uncapped
+        var symmetricAscentFraction = 0.5   // ascent fraction when no apex found
+
         static let `default` = Config()
     }
 
@@ -364,16 +373,42 @@ final class KitesurfJumpEngineV7 {
         let dP    = haveBaro ? max(0, baselineP - jumpMinP) : 0
         let baroH = dP > cfg.baroNoiseFloorHPa ? dP * K.p2m : 0
 
-        // ── KINEMATIC HEIGHT (time-of-flight, the reliable source) ──
-        // Symmetric ballistic arc: apex height = g·t²/8 for total air time t.
-        let kinH = cfg.kinematicCalibration * K.g * airTimeSec * airTimeSec / 8.0
+        // ── KINEMATIC HEIGHTS (KITE-AWARE, asymmetric arc) ──────────
+        // Symmetric ceiling = the MOST a free-fall arc of this airtime could
+        // reach (apex at midpoint). Real kite jumps sit below it (kite extends
+        // the descent) → it is a physical UPPER BOUND used by the gate below.
+        let symCeilingH = K.g * airTimeSec * airTimeSec / 8.0
+        // Rise-time height: h = ½·g·t_rise², apex from the baro minimum (the
+        // true top); falls back to the symmetric ascent fraction otherwise.
+        var tRise = airTimeSec * cfg.symmetricAscentFraction
+        if haveBaro && dP > cfg.baroNoiseFloorHPa {
+            var minIdx = t0, mp = Double.greatestFiniteMagnitude
+            for i in t0...tl where baroSmooth[i] < mp { mp = baroSmooth[i]; minIdx = i }
+            let tr = Double(minIdx - t0) * dt
+            if tr > 0.1 && tr < airTimeSec - 0.05 { tRise = tr }
+        }
+        let riseH = cfg.kinematicCalibration * 0.5 * K.g * tRise * tRise
 
-        // ── ADAPTIVE HYBRID FUSION ────────────────────────────────
-        // Trust baro only as ΔP clears the noise floor.
-        let baroTrust = DSP.clamp((dP - cfg.baroTrustLoHPa) / (cfg.baroTrustHiHPa - cfg.baroTrustLoHPa), 0, 1)
-        let fusedH = baroTrust * baroH + (1 - baroTrust) * kinH
-        let source: JumpResult.HeightSource =
-            baroTrust >= 0.85 ? .barometric : (baroTrust <= 0.15 ? .kinematic : .blended)
+        // ── PHYSICAL CONSISTENCY GATE (the kite-log fix) ───────────
+        // baroH is believable only if it does not exceed the airtime envelope.
+        // A 22 m baro reading on a 0.4 s airtime (ceiling ≈ 0.2 m) is drift/
+        // spike noise → reject baro and use the rise-time estimate.
+        let airtimeCeiling = symCeilingH * cfg.airtimeCeilingTolerance
+        let baroConsistent = baroH > 0 && baroH <= airtimeCeiling
+
+        // ── HEIGHT SELECTION ───────────────────────────────────────
+        let heightM: Double
+        let source: JumpResult.HeightSource
+        if baroConsistent {
+            let baroTrust = DSP.clamp((dP - cfg.baroTrustLoHPa) / (cfg.baroTrustHiHPa - cfg.baroTrustLoHPa), 0, 1)
+            let baroClamped = min(baroH, airtimeCeiling)
+            heightM = baroTrust * baroClamped + (1 - baroTrust) * riseH
+            source = baroTrust >= 0.85 ? .barometric : (baroTrust <= 0.15 ? .kinematic : .blended)
+        } else {
+            heightM = riseH
+            source = .kinematic
+        }
+        let fusedH = min(heightM, cfg.maxPlausibleHeightM)
 
         // ── HEIGHT GATE ───────────────────────────────────────────
         guard fusedH >= cfg.minJumpHeightMeters else { return nil }
@@ -394,12 +429,14 @@ final class KitesurfJumpEngineV7 {
 
         // ── CONFIDENCE (physics-linked) ───────────────────────────
         var conf = 0.55
-        if baroTrust > 0.5 && abs(baroH - kinH) / max(baroH, kinH, 0.1) < 0.35 { conf += 0.20 } // baro & kin agree
+        // baro & rise-time kinematic agree → strong evidence of a real jump.
+        if baroConsistent && abs(baroH - riseH) / max(baroH, riseH, 0.1) < 0.4 { conf += 0.20 }
         if peakTakeoffG >= releaseThr * 1.3 { conf += 0.15 } else if peakTakeoffG >= releaseThr { conf += 0.08 }
         if maxSessionSpeedMS >= 2.0 { conf += 0.10 }            // ride-away (not a stationary toss)
         if airTimeSec >= 1.0 { conf += 0.05 }
         if landingKind == .timeout { conf -= 0.20 }             // never saw a clean landing
         if peakGyro > cfg.gyroQualityThreshold * 2.5 { conf -= 0.15 } // chaotic tumble → maybe not a jump
+        if haveBaro && baroH > 0 && !baroConsistent { conf -= 0.15 } // baro contradicts airtime → drift/spike
         conf -= (1 - avgGyroQ) * 0.10
         conf = DSP.clamp(conf, 0, 1)
 
@@ -409,7 +446,7 @@ final class KitesurfJumpEngineV7 {
         return JumpResult(
             jumpHeightMeters:      r2(DSP.clamp(fusedH, 0, 25)),
             baroHeightMeters:      r2(baroH),
-            kinematicHeightMeters: r2(kinH),
+            kinematicHeightMeters: r2(riseH),
             airTimeSeconds:        r2(airTimeSec),
             apexTimeSeconds:       apex.map(r2),
             rotations:             rotations,
@@ -575,9 +612,8 @@ final class KitesurfSession {
     private let postLandingSec      = 1.0     // post-landing tail for apex/settle
     private let rollingSec          = 6.0     // circular buffer span
     private let baselineWarmupSec   = 8.0     // collect before baseline is usable
-    // The take-off / landing gates below are derived in `init` from the SAME
-    // KitesurfJumpEngineV7.Config the offline analyser uses, so the streaming
-    // trigger and the analyser never disagree.
+    // These are derived in init from the same KitesurfJumpEngineV7.Config used
+    // by the offline analyser, so the streaming trigger and analyser agree.
     private let takeoffReleaseFloorG: Double  // matches V7 release floor (adaptive on top)
     private let releaseSigmaK: Double
     private let minAirSec: Double
@@ -600,17 +636,7 @@ final class KitesurfSession {
     private let detector: KitesurfJumpEngineV7
     private let analysisQueue = DispatchQueue(label: "kite.jump.analysis", qos: .userInitiated)
     private var isAnalyzing = false
-
-    /// When true, jump analysis runs INLINE on the ingest thread and callbacks
-    /// fire synchronously — used by the offline JumpReplay harness, which has no
-    /// run loop to drain `DispatchQueue.main`. The live watch app leaves this
-    /// false → analysis is offloaded to `analysisQueue` and delivered on main.
     private let synchronousAnalysis: Bool
-
-    /// Serializes all mutable-state access. `onSample` runs on the sensor
-    /// thread while the post-analysis reset runs on `analysisQueue`; without
-    /// this lock those two paths race on `jumpBuffer`/`state`/baseline flags.
-    private var stateLock = os_unfair_lock()
 
     // ── Adaptive ride statistics (for release threshold) ─────────
     private var rideWindow = [Double]()           // recent |a| (g)
@@ -642,23 +668,19 @@ final class KitesurfSession {
          refractorySec: Double = 1.0,
          synchronousAnalysis: Bool = false) {
         self.detector = KitesurfJumpEngineV7(config: detectorConfig)
-        // Derive the streaming-trigger gates from the SAME config the offline
-        // analyser uses, so the FSM and V7 never disagree on take-off/landing.
-        self.takeoffReleaseFloorG  = detectorConfig.releaseFloorG
-        self.releaseSigmaK         = detectorConfig.releaseSigmaK
-        self.minAirSec             = detectorConfig.minAirTimeSec
-        self.maxAirborneSec        = detectorConfig.maxAirTimeSec
+        self.takeoffReleaseFloorG = detectorConfig.releaseFloorG
+        self.releaseSigmaK = detectorConfig.releaseSigmaK
+        self.minAirSec = detectorConfig.minAirTimeSec
+        self.maxAirborneSec = detectorConfig.maxAirTimeSec
         self.detectorLandingSpikeG = detectorConfig.landingSpikeG
         self.detectorNoiseFloorHPa = detectorConfig.baroNoiseFloorHPa
-        self.refractorySec         = max(0, refractorySec)
-        self.synchronousAnalysis   = synchronousAnalysis
+        self.refractorySec = max(0, refractorySec)
+        self.synchronousAnalysis = synchronousAnalysis
         self.rollingBuffer = CircularBuffer<SensorSample>(capacity: Int((6.0 * K.sampleRate).rounded()))
     }
 
     // ── Lifecycle ────────────────────────────────────────────────
     func start() {
-        os_unfair_lock_lock(&stateLock)
-        defer { os_unfair_lock_unlock(&stateLock) }
         rollingBuffer.clear()
         jumpBuffer.removeAll(keepingCapacity: true)
         rideWindow.removeAll(keepingCapacity: true)
@@ -671,18 +693,12 @@ final class KitesurfSession {
         transition(to: .riding)
     }
 
-    func stop() {
-        os_unfair_lock_lock(&stateLock)
-        defer { os_unfair_lock_unlock(&stateLock) }
-        transition(to: .idle)
-    }
+    func stop() { transition(to: .idle) }
 
     // ================================================================
     // MARK: Sample Ingestion
     // ================================================================
     func onSample(_ s: SensorSample) {
-        os_unfair_lock_lock(&stateLock)
-        defer { os_unfair_lock_unlock(&stateLock) }
         lockRate(s.t)
 
         // (1) GPS speed — robust max (median of top-3), independent of state.
@@ -791,7 +807,6 @@ final class KitesurfSession {
     }
 
     // Mirror of the detector's gates so the trigger and analyser agree.
-    // Assigned in `init` from the V7 config (see above).
     private let detectorLandingSpikeG: Double
     private let detectorNoiseFloorHPa: Double
 
@@ -804,47 +819,38 @@ final class KitesurfSession {
         let hint = takeoffIndexInBuffer
         let peakSpeed = maxSessionSpeedMS
 
-        // ── Synchronous path (offline replay / tests) ──
-        // Called from `onSample`, which already holds `stateLock`; reset runs
-        // inline (no re-lock) and callbacks fire synchronously.
         if synchronousAnalysis {
             let result = detector.process(buffer, takeoffHint: hint >= 0 ? hint : nil,
                                           maxSessionSpeedMS: peakSpeed)
-            let deliver = resetAfterAnalysis(result)
-            onStateChange?(.riding)
-            if let r = deliver { onJumpDetected?(r) }
+            if let r = result, r.confidence >= 0.40 { onJumpDetected?(r) }
+            jumpBuffer.removeAll(keepingCapacity: true)
+            takeoffIndexInBuffer = -1
+            jumpMinPressure = .greatestFiniteMagnitude
+            baselineFrozen = false
+            settleRun = 0
+            isAnalyzing = false
+            refractoryUntil = (lastT ?? 0) + refractorySec
+            transition(to: .riding)
             return
         }
 
-        // ── Asynchronous path (live app) ──
-        // Heavy analysis off the sensor thread; the reset re-acquires `stateLock`
-        // (onSample has released it by then) and callbacks hop to main.
         analysisQueue.async { [weak self] in
             guard let self else { return }
             let result = self.detector.process(buffer, takeoffHint: hint >= 0 ? hint : nil,
                                                maxSessionSpeedMS: peakSpeed)
-            os_unfair_lock_lock(&self.stateLock)
-            let deliver = self.resetAfterAnalysis(result)
-            os_unfair_lock_unlock(&self.stateLock)
             DispatchQueue.main.async {
-                self.onStateChange?(.riding)
-                if let r = deliver { self.onJumpDetected?(r) }
+                if let r = result, r.confidence >= 0.40 { self.onJumpDetected?(r) }
+                // Reset for next jump; unfreeze baseline so it re-tracks drift.
+                self.jumpBuffer.removeAll(keepingCapacity: true)
+                self.takeoffIndexInBuffer = -1
+                self.jumpMinPressure = .greatestFiniteMagnitude
+                self.baselineFrozen = false
+                self.settleRun = 0
+                self.isAnalyzing = false
+                self.refractoryUntil = (self.lastT ?? 0) + self.refractorySec
+                self.transition(to: .riding)
             }
         }
-    }
-
-    /// Reset per-jump state for the next detection and return the result to
-    /// deliver (nil if rejected). Caller MUST hold `stateLock`.
-    private func resetAfterAnalysis(_ result: JumpResult?) -> JumpResult? {
-        jumpBuffer.removeAll(keepingCapacity: true)
-        takeoffIndexInBuffer = -1
-        jumpMinPressure = .greatestFiniteMagnitude
-        baselineFrozen = false      // unfreeze baseline so it re-tracks drift
-        settleRun = 0
-        isAnalyzing = false
-        refractoryUntil = (lastT ?? 0) + refractorySec
-        state = .riding
-        return (result?.confidence ?? 0) >= 0.40 ? result : nil
     }
 
     // ================================================================

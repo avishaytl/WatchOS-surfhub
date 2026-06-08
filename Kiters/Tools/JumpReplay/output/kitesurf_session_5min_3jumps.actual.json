@@ -14,29 +14,29 @@
       "index" : 0,
       "jumpDistance" : 14.4,
       "rotations" : 0,
-      "takeoffOffsetSec" : 412928.6523630619
+      "takeoffOffsetSec" : 445982.74842596054
     },
     {
       "accepted" : true,
       "airtime" : 2.58,
-      "confidence" : 100,
+      "confidence" : 84.1,
       "height" : 6.48,
       "heightSource" : "kin",
       "index" : 1,
       "jumpDistance" : 20.6,
       "rotations" : 0,
-      "takeoffOffsetSec" : 412927.88975298405
+      "takeoffOffsetSec" : 445981.99373698235
     },
     {
       "accepted" : true,
       "airtime" : 2.14,
-      "confidence" : 100,
+      "confidence" : 84.1,
       "height" : 4.15,
       "heightSource" : "kin",
       "index" : 2,
       "jumpDistance" : 17.1,
       "rotations" : 0,
-      "takeoffOffsetSec" : 412928.3458080292
+      "takeoffOffsetSec" : 445982.46032500267
     }
   ],
   "mockSpeedMps" : 8,

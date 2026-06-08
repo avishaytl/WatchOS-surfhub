@@ -20,6 +20,8 @@
 "session.jumps" = "קפיצות";
 "session.last" = "אחרון";
 "session.bpm" = "דופק";
+"session.hr_no_data" = "עדין אין נתוני דופק. ודאו שהרשאת Health מופעלת ושהשעון ענוד היטב.";
+"session.hr_unavailable" = "מדידת דופק אינה זמינה במכשיר זה.";
 "session.max" = "מקסימום";
 "session.distance" = "מרחק";
 "session.airtime" = "אוויר";
@@ -30,6 +32,10 @@
 "session.end_confirm" = "לסיים אימון?";
 "session.end_message" = "האם אתה בטוח שברצונך לסיים את האימון?";
 "session.cancel" = "ביטול";
+"session.water_lock_active" = "נעילת מים פעילה";
+"session.water_lock_unlock_hint" = "לחץ והחזק את הכתר הדיגיטלי לשחרור";
+"session.water_lock_unsupported" = "נעילת מים אינה נתמכת בשעון זה";
+"session.water_lock_eject_hint" = "נעילת המים עדיין פעילה. לחץ והחזק את הכתר הדיגיטלי כדי לשחרר ולסלק מים.";
 "session.best_jump" = "🏆 הקפיצה הטובה ביותר";
 "session.airtime_value" = "%.2f שניות באוויר";
 "session.rotation_single" = "סיבוב %d";
