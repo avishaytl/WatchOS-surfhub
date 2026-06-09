@@ -33,6 +33,8 @@
 	<string>$(ISURF_CLOUD_AUTH_TOKEN)</string>
 	<key>ISURF_CLOUD_LOG_PATH</key>
 	<string>$(ISURF_CLOUD_LOG_PATH)</string>
+	<key>ISURF_SUPABASE_ANON_KEY</key>
+	<string>$(ISURF_SUPABASE_ANON_KEY)</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Kiters reads your heart rate during sessions to display live BPM on screen.</string>
 	<key>NSHealthUpdateUsageDescription</key>

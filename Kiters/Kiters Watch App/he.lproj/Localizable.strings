@@ -189,3 +189,17 @@
 "detail.route_distance" = "מרחק מסלול";
 "detail.avg_accuracy" = "דיוק ממוצע";
 "detail.gps_coverage" = "כיסוי GPS";
+
+// MARK: - Account / Sign In
+"account.section_title" = "חשבון";
+"account.sign_in" = "התחבר";
+"account.email_placeholder" = "כתובת אימייל";
+"account.send_code" = "שלח קוד";
+"account.code_sent" = "קוד נשלח אל";
+"account.code_placeholder" = "קוד בן 6 ספרות";
+"account.verify" = "אמת";
+"account.resend" = "שלח שוב";
+"account.signed_in_as" = "מחובר בתור";
+"account.sign_out" = "התנתק";
+"account.error_invalid_code" = "קוד שגוי — בדוק את האימייל ונסה שוב";
+"account.try_again" = "נסה שוב";

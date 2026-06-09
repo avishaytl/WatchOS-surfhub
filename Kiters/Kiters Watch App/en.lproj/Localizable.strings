@@ -189,3 +189,17 @@
 "detail.route_distance" = "Route Distance";
 "detail.avg_accuracy" = "Avg Accuracy";
 "detail.gps_coverage" = "GPS Coverage";
+
+// MARK: - Account / Sign In
+"account.section_title" = "Account";
+"account.sign_in" = "Sign In";
+"account.email_placeholder" = "Email address";
+"account.send_code" = "Send Code";
+"account.code_sent" = "Code sent to";
+"account.code_placeholder" = "6-digit code";
+"account.verify" = "Verify";
+"account.resend" = "Resend code";
+"account.signed_in_as" = "Signed in as";
+"account.sign_out" = "Sign Out";
+"account.error_invalid_code" = "Invalid code — check your email and try again";
+"account.try_again" = "Try Again";

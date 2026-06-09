@@ -12,3 +12,7 @@ CURRENT_PROJECT_VERSION = 8
 ISURF_CLOUD_BASE_URL = https:/$()/vvowvcdylztsqpzifdqc.supabase.co
 ISURF_CLOUD_AUTH_TOKEN = ywxC26KVA7WD-_HftsCiCBb6W5bxkFzGT-Xe1Z4FvC4
 ISURF_CLOUD_LOG_PATH = /functions/v1/calib-log
+
+// Supabase Auth — anon (public) key.
+// Replace with the value from Supabase Dashboard → Settings → API → "anon public".
+ISURF_SUPABASE_ANON_KEY = YOUR_SUPABASE_ANON_KEY_HERE

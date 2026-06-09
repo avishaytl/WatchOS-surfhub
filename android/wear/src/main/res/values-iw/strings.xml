@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kiters</string>
+
+    <!-- Home -->
+    <string name="home_start_session">התחל אימון</string>
+    <string name="home_settings">הגדרות</string>
+    <string name="home_recent_sessions">אימונים אחרונים</string>
+    <string name="home_no_sessions">אין אימונים עדיין</string>
+
+    <!-- Sport Selection -->
+    <string name="sport_kitesurfing">קייטסרף</string>
+    <string name="sport_select_sport">בחר ענף</string>
+
+    <!-- Active Session -->
+    <string name="session_jumps">קפיצות</string>
+    <string name="session_last">אחרון</string>
+    <string name="session_bpm">דופק</string>
+    <string name="session_max">מקסימום</string>
+    <string name="session_distance">מרחק</string>
+    <string name="session_airtime">אוויר</string>
+    <string name="session_speed">מהירות</string>
+    <string name="session_pause">השהה</string>
+    <string name="session_resume">המשך</string>
+    <string name="session_end">סיים</string>
+    <string name="session_end_confirm">לסיים אימון?</string>
+    <string name="session_end_message">האם אתה בטוח שברצונך לסיים את האימון?</string>
+    <string name="session_cancel">ביטול</string>
+    <string name="session_screen_lock_active">נעילת מסך פעילה</string>
+    <string name="session_best_jump">🏆 הקפיצה הטובה ביותר</string>
+    <string name="session_airtime_value">%.2f שניות באוויר</string>
+    <string name="session_rotation_single">סיבוב %d</string>
+    <string name="session_rotation_plural">%d סיבובים</string>
+    <string name="session_total_jumps">סה״כ %d קפיצות</string>
+    <string name="session_no_jumps">אין קפיצות עדיין</string>
+    <string name="session_get_air">בוא נקפוץ!</string>
+
+    <!-- Session Detail -->
+    <string name="detail_session_complete">אימון הושלם!</string>
+    <string name="detail_duration">משך זמן</string>
+    <string name="detail_total_jumps">סה״כ קפיצות</string>
+    <string name="detail_total_distance">סה״כ מרחק</string>
+    <string name="detail_max_speed">מהירות מקסימלית</string>
+    <string name="detail_avg_speed">מהירות ממוצעת</string>
+
+    <!-- Settings -->
+    <string name="settings_title">הגדרות</string>
+    <string name="settings_app_theme">ערכת צבעים</string>
+    <string name="settings_theme_blue">כחול</string>
+    <string name="settings_theme_cyan">תכלת</string>
+    <string name="settings_theme_yellow">צהוב</string>
+    <string name="settings_theme_green">ירוק</string>
+    <string name="settings_theme_orange">כתום</string>
+    <string name="settings_theme_red">אדום</string>
+    <string name="settings_theme_pink">ורוד</string>
+    <string name="settings_language">שפה</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_hebrew">עברית</string>
+    <string name="settings_units">יחידות מידה</string>
+    <string name="settings_units_metric">מטרי (קמ״ש, מ׳)</string>
+    <string name="settings_units_imperial">אימפריאלי (mph, ft)</string>
+    <string name="settings_jump_detection">זיהוי קפיצות</string>
+    <string name="settings_display_feedback">תצוגה ומשוב</string>
+    <string name="settings_top_padding">ריווח עליון</string>
+    <string name="settings_top_padding_auto">אוטומטי</string>
+    <string name="settings_top_padding_help">כוונן את המרחק מהחלק העליון של מסך האימון. השתמש באוטומטי לברירת המחדל.</string>
+    <string name="settings_screen_lock">נעילת מסך</string>
+    <string name="settings_haptic_feedback">משוב מישוש</string>
+    <string name="settings_voice_announcements">הודעות קוליות</string>
+    <string name="settings_data">נתונים</string>
+    <string name="settings_manage_sessions">ניהול אימונים</string>
+    <string name="settings_about">אודות</string>
+    <string name="settings_version">גרסה</string>
+    <string name="settings_build">בנייה</string>
+    <string name="settings_dev_mode">בדיקת זריקה</string>
+    <string name="settings_dev_mode_help">דלג על דרישת מהירות GPS — זהה קפיצות מזריקת יד. כבה לאימון אמיתי.</string>
+    <string name="settings_active_thresholds">ערכי סף פעילים</string>
+    <string name="settings_threshold_takeoff">המראה</string>
+    <string name="settings_threshold_speed">מהירות</string>
+    <string name="settings_threshold_min_air">אוויר מינ׳</string>
+
+    <!-- Data Management -->
+    <string name="data_title">ניהול נתונים</string>
+    <string name="data_sessions_count">אימונים: %d</string>
+    <string name="data_total_jumps">סה״כ קפיצות: %d</string>
+    <string name="data_delete_all">מחק את כל האימונים</string>
+    <string name="data_delete_confirm">למחוק את כל האימונים?</string>
+    <string name="data_delete_message">לא ניתן לבטל פעולה זו. כל נתוני האימונים שלך יימחקו לצמיתות.</string>
+    <string name="data_delete">מחק</string>
+
+    <!-- Session Logs -->
+    <string name="settings_session_logs">לוגים של אימונים</string>
+    <string name="logs_title">לוגים של אימונים</string>
+    <string name="logs_empty">אין לוגים עדיין</string>
+    <string name="logs_empty_hint">התחל אימון כדי ליצור קובץ לוג דיאגנוסטי.</string>
+    <string name="logs_share">שתף CSV</string>
+    <string name="logs_delete_all">מחק את כל הלוגים</string>
+    <string name="logs_delete_confirm">למחוק את כל קבצי הלוג?</string>
+    <string name="logs_rows">~%d שורות</string>
+
+    <!-- Common -->
+    <string name="common_ok">אישור</string>
+    <string name="common_cancel">ביטול</string>
+    <string name="common_save">שמור</string>
+    <string name="common_done">סיום</string>
+
+    <!-- Permissions -->
+    <string name="permissions_denied_title">נדרשת הרשאת מיקום</string>
+    <string name="permissions_denied_message">כדי לעקוב אחר האימון, אנא אפשר הרשאת מיקום עבור Kiters בהגדרות המערכת.</string>
+    <string name="permissions_waiting">מבקש הרשאה…</string>
+
+    <!-- Distance Units -->
+    <string name="units_meters">מ׳</string>
+    <string name="units_kilometers">ק״מ</string>
+    <string name="units_kmh">קמ״ש</string>
+
+    <!-- GPS Tracking -->
+    <string name="gps_tracking">מעקב GPS</string>
+    <string name="gps_signal_none">אין אות</string>
+    <string name="gps_signal_weak">חלש</string>
+    <string name="gps_signal_fair">סביר</string>
+    <string name="gps_signal_good">טוב</string>
+    <string name="gps_signal_strong">חזק</string>
+    <string name="gps_route_distance">מסלול</string>
+    <string name="gps_current_speed">מהירות</string>
+    <string name="gps_max_speed">מקס מהירות</string>
+    <string name="gps_avg_speed">ממוצע מהירות</string>
+    <string name="gps_points">נקודות</string>
+    <string name="gps_pts">נק׳</string>
+    <string name="gps_accuracy">דיוק</string>
+
+    <!-- Session Detail GPS -->
+    <string name="detail_gps_route">מסלול GPS</string>
+    <string name="detail_gps_points">נקודות GPS</string>
+    <string name="detail_route_distance">מרחק מסלול</string>
+    <string name="detail_avg_accuracy">דיוק ממוצע</string>
+    <string name="detail_gps_coverage">כיסוי GPS</string>
+
+    <!-- Recording service -->
+    <string name="recording_notification_title">Kiters — מקליט</string>
+    <string name="recording_notification_text">עוקב אחר האימון שלך</string>
+    <string name="recording_channel_name">הקלטת אימון</string>
+
+    <!-- Account / Sign In -->
+    <string name="account_section_title">חשבון</string>
+    <string name="account_sign_in">התחבר</string>
+    <string name="account_email_placeholder">כתובת אימייל</string>
+    <string name="account_send_code">שלח קוד</string>
+    <string name="account_code_sent_to">קוד נשלח אל</string>
+    <string name="account_code_placeholder">קוד בן 6 ספרות</string>
+    <string name="account_verify">אמת</string>
+    <string name="account_resend">שלח שוב</string>
+    <string name="account_signed_in_as">מחובר בתור</string>
+    <string name="account_sign_out">התנתק</string>
+    <string name="account_invalid_code">קוד שגוי — בדוק את האימייל ונסה שוב</string>
+    <string name="account_try_again">נסה שוב</string>
+</resources>

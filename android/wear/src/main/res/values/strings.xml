@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kiters</string>
+
+    <!-- Home -->
+    <string name="home_start_session">Start Session</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_recent_sessions">Recent Sessions</string>
+    <string name="home_no_sessions">No sessions yet</string>
+
+    <!-- Sport Selection -->
+    <string name="sport_kitesurfing">Kitesurfing</string>
+    <string name="sport_select_sport">Select Sport</string>
+
+    <!-- Active Session -->
+    <string name="session_jumps">JUMPS</string>
+    <string name="session_last">LAST</string>
+    <string name="session_bpm">BPM</string>
+    <string name="session_max">MAX</string>
+    <string name="session_distance">DIST</string>
+    <string name="session_airtime">AIR</string>
+    <string name="session_speed">SPEED</string>
+    <string name="session_pause">Pause</string>
+    <string name="session_resume">Resume</string>
+    <string name="session_end">End</string>
+    <string name="session_end_confirm">End Session?</string>
+    <string name="session_end_message">Are you sure you want to end this session?</string>
+    <string name="session_cancel">Cancel</string>
+    <string name="session_screen_lock_active">Screen lock active</string>
+    <string name="session_best_jump">🏆 Best Jump</string>
+    <string name="session_airtime_value">%.2f sec airtime</string>
+    <string name="session_rotation_single">%d rotation</string>
+    <string name="session_rotation_plural">%d rotations</string>
+    <string name="session_total_jumps">%d total jumps</string>
+    <string name="session_no_jumps">No jumps yet</string>
+    <string name="session_get_air">Get some air!</string>
+
+    <!-- Session Detail -->
+    <string name="detail_session_complete">Session Complete!</string>
+    <string name="detail_duration">Duration</string>
+    <string name="detail_total_jumps">Total Jumps</string>
+    <string name="detail_total_distance">Total Distance</string>
+    <string name="detail_max_speed">Max Speed</string>
+    <string name="detail_avg_speed">Avg Speed</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_app_theme">App Theme</string>
+    <string name="settings_theme_blue">Blue</string>
+    <string name="settings_theme_cyan">Cyan</string>
+    <string name="settings_theme_yellow">Yellow</string>
+    <string name="settings_theme_green">Green</string>
+    <string name="settings_theme_orange">Orange</string>
+    <string name="settings_theme_red">Red</string>
+    <string name="settings_theme_pink">Pink</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_hebrew">עברית</string>
+    <string name="settings_units">Units</string>
+    <string name="settings_units_metric">Metric (km/h, m)</string>
+    <string name="settings_units_imperial">Imperial (mph, ft)</string>
+    <string name="settings_jump_detection">Jump Detection</string>
+    <string name="settings_display_feedback">Display &amp; Feedback</string>
+    <string name="settings_top_padding">Top Padding</string>
+    <string name="settings_top_padding_auto">Auto</string>
+    <string name="settings_top_padding_help">Adjust vertical offset of the session metrics screen. Use Auto for device default.</string>
+    <string name="settings_screen_lock">Screen Lock</string>
+    <string name="settings_haptic_feedback">Haptic Feedback</string>
+    <string name="settings_voice_announcements">Voice Announcements</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_manage_sessions">Manage Sessions</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_build">Build</string>
+    <string name="settings_dev_mode">Toss Test</string>
+    <string name="settings_dev_mode_help">Skip GPS speed gate — detect jumps from hand toss. Turn off for real sessions.</string>
+    <string name="settings_active_thresholds">Active thresholds</string>
+    <string name="settings_threshold_takeoff">Takeoff</string>
+    <string name="settings_threshold_speed">Speed</string>
+    <string name="settings_threshold_min_air">Min air</string>
+
+    <!-- Data Management -->
+    <string name="data_title">Data Management</string>
+    <string name="data_sessions_count">Sessions: %d</string>
+    <string name="data_total_jumps">Total Jumps: %d</string>
+    <string name="data_delete_all">Delete All Sessions</string>
+    <string name="data_delete_confirm">Delete All Sessions?</string>
+    <string name="data_delete_message">This action cannot be undone. All your session data will be permanently deleted.</string>
+    <string name="data_delete">Delete</string>
+
+    <!-- Session Logs -->
+    <string name="settings_session_logs">Session Logs</string>
+    <string name="logs_title">Session Logs</string>
+    <string name="logs_empty">No logs yet</string>
+    <string name="logs_empty_hint">Start a session to create a diagnostic log file.</string>
+    <string name="logs_share">Share CSV</string>
+    <string name="logs_delete_all">Delete All Logs</string>
+    <string name="logs_delete_confirm">Delete all log files?</string>
+    <string name="logs_rows">~%d rows</string>
+
+    <!-- Common -->
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_done">Done</string>
+
+    <!-- Permissions -->
+    <string name="permissions_denied_title">Location Permission Required</string>
+    <string name="permissions_denied_message">To track your session, please enable Location permission for Kiters in system Settings.</string>
+    <string name="permissions_waiting">Requesting permission…</string>
+
+    <!-- Distance Units -->
+    <string name="units_meters">m</string>
+    <string name="units_kilometers">km</string>
+    <string name="units_kmh">km/h</string>
+
+    <!-- GPS Tracking -->
+    <string name="gps_tracking">GPS Tracking</string>
+    <string name="gps_signal_none">No Signal</string>
+    <string name="gps_signal_weak">Weak</string>
+    <string name="gps_signal_fair">Fair</string>
+    <string name="gps_signal_good">Good</string>
+    <string name="gps_signal_strong">Strong</string>
+    <string name="gps_route_distance">Route</string>
+    <string name="gps_current_speed">Speed</string>
+    <string name="gps_max_speed">Max Spd</string>
+    <string name="gps_avg_speed">Avg Spd</string>
+    <string name="gps_points">Points</string>
+    <string name="gps_pts">pts</string>
+    <string name="gps_accuracy">Accuracy</string>
+
+    <!-- Session Detail GPS -->
+    <string name="detail_gps_route">GPS Route</string>
+    <string name="detail_gps_points">GPS Points</string>
+    <string name="detail_route_distance">Route Distance</string>
+    <string name="detail_avg_accuracy">Avg Accuracy</string>
+    <string name="detail_gps_coverage">GPS Coverage</string>
+
+    <!-- Recording service -->
+    <string name="recording_notification_title">Kiters — recording</string>
+    <string name="recording_notification_text">Tracking your session</string>
+    <string name="recording_channel_name">Session recording</string>
+
+    <!-- Account / Sign In -->
+    <string name="account_section_title">Account</string>
+    <string name="account_sign_in">Sign In</string>
+    <string name="account_email_placeholder">Email address</string>
+    <string name="account_send_code">Send Code</string>
+    <string name="account_code_sent_to">Code sent to</string>
+    <string name="account_code_placeholder">6-digit code</string>
+    <string name="account_verify">Verify</string>
+    <string name="account_resend">Resend code</string>
+    <string name="account_signed_in_as">Signed in as</string>
+    <string name="account_sign_out">Sign Out</string>
+    <string name="account_invalid_code">Invalid code — check your email and try again</string>
+    <string name="account_try_again">Try Again</string>
+</resources>

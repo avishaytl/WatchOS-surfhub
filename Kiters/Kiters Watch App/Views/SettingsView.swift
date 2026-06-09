@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var authService: AuthService
     @AppStorage("units") private var units: String = "metric"
     @AppStorage("appTheme") private var appTheme: String = "blue"
     @AppStorage("appLanguage") private var languageCode: String = "en"
@@ -41,7 +42,45 @@ struct SettingsView: View {
                     .font(.title3)
                     .fontWeight(.bold)
                     .padding(.bottom, 8)
-                
+
+                // Account Section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L("account.section_title"))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .textCase(.uppercase)
+
+                    ZStack {
+                        Color.clear
+                        NavigationLink(destination: AccountView()) {
+                            HStack {
+                                Image(systemName: authService.isSignedIn
+                                      ? "person.circle.fill" : "person.circle")
+                                    .foregroundColor(authService.isSignedIn ? .green : .blue)
+                                    .frame(width: 20)
+                                Text(authService.isSignedIn
+                                     ? authService.currentEmail : L("account.sign_in"))
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                Spacer()
+                                Image(systemName: languageCode == "he" ? "chevron.left" : "chevron.right")
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                            }
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 12)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .overlay(
+                        Rectangle()
+                            .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                    )
+                }
+
+                Divider()
+
                 // Theme Section
                 VStack(alignment: .leading, spacing: 8) {
                     Text(L("settings.app_theme"))
