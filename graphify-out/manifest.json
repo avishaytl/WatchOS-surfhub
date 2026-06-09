@@ -1,0 +1,492 @@
+{
+  "Kiters/Kiters Watch App/Assets.xcassets/AccentColor.colorset/Contents.json": {
+    "mtime": 1780913602.9791481,
+    "ast_hash": "55019f7265dde0a78318b0807f98e847",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1780913602.9793625,
+    "ast_hash": "6a5e327a5a08692ae7feab8a644fefde",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Assets.xcassets/Contents.json": {
+    "mtime": 1780913602.979433,
+    "ast_hash": "9deb2ada1cc834bbebf8bbad9c8978a1",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/KitersApp.swift": {
+    "mtime": 1780913602.9795904,
+    "ast_hash": "1b893db1b1cf44ad0a71ae4f3c9b7c27",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Models/Session.swift": {
+    "mtime": 1780913602.979816,
+    "ast_hash": "5b7826416d2f123393b12cc604f9c086",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/CloudSyncService.swift": {
+    "mtime": 1780913602.9800446,
+    "ast_hash": "38d156c228ba1516c55a67b5ae72e357",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/JumpDetector.swift": {
+    "mtime": 1780913602.9802175,
+    "ast_hash": "c22caec5e1c9bd2301cf383135ce6b05",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/KitesurfJumpEngine.swift": {
+    "mtime": 1780913602.9803808,
+    "ast_hash": "015c04ccf250b1b141b9c93460a4f6a6",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/KitesurfJumpEngine_old.swift": {
+    "mtime": 1780913602.9805346,
+    "ast_hash": "0a02e25285d837dde54724c0ddb06284",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/LocationManager.swift": {
+    "mtime": 1780913602.980636,
+    "ast_hash": "9b92b06d3db64d0517e2981b76f70bcb",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/MotionManager.swift": {
+    "mtime": 1780913602.9807205,
+    "ast_hash": "6876f51e0a2caea8e56c44f032a83146",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/SessionLogger.swift": {
+    "mtime": 1780913602.980818,
+    "ast_hash": "9430a053b4b8d764219ae43739684890",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/SessionManager.swift": {
+    "mtime": 1780913602.9809244,
+    "ast_hash": "b744b5f1c5ad3297c09058a83ed2852f",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/WatchConnectivityManager.swift": {
+    "mtime": 1780913602.9810224,
+    "ast_hash": "3cbc5669585e78311202af114a57cf34",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Services/WorkoutManager.swift": {
+    "mtime": 1780913602.9811168,
+    "ast_hash": "f7d33d590ac076fa42be1fd103b88e59",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Storage/StorageManager.swift": {
+    "mtime": 1780913602.9812472,
+    "ast_hash": "fb87ab8bb8c1994b986a9fa050bf0385",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Utils/LocalizationHelper.swift": {
+    "mtime": 1780913602.9813845,
+    "ast_hash": "a486c4508b614eeaac81ee5fe108a205",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Utils/Logger.swift": {
+    "mtime": 1780913602.9814727,
+    "ast_hash": "2002a69966cbbb93dc0f16abc868625c",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/ActiveSessionView.swift": {
+    "mtime": 1780913602.9816554,
+    "ast_hash": "173b8509d944f4502cdccefab2d9d568",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/ContentView.swift": {
+    "mtime": 1780913602.9817615,
+    "ast_hash": "7d477aad04406968661a96593265eea1",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/HomeView.swift": {
+    "mtime": 1780913602.981908,
+    "ast_hash": "c590e1bca27761e70e30d632a92f451c",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/JumpTuningView.swift": {
+    "mtime": 1780913602.982014,
+    "ast_hash": "c2d72a126cfd1e2d7d2b273f99a75700",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/SessionDetailView.swift": {
+    "mtime": 1780913602.9821136,
+    "ast_hash": "cac782036ad91eb0056cb4976985fe24",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/SessionLogsView.swift": {
+    "mtime": 1780913602.9822128,
+    "ast_hash": "5615aee26bcaa76be08877fba7c2cdb5",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/SettingsView.swift": {
+    "mtime": 1780913602.9823253,
+    "ast_hash": "3d018d0d8982b9b4855a83bd2f4f6df8",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/SportSelectionView.swift": {
+    "mtime": 1780913602.982545,
+    "ast_hash": "823d6813e318ef573daee7d4b1094ca9",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Views/WatchChromeStyles.swift": {
+    "mtime": 1780913602.9826267,
+    "ast_hash": "19cf68c52383d48270c463a580d33f4c",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters iOS App/Assets.xcassets/AccentColor.colorset/Contents.json": {
+    "mtime": 1780913602.983163,
+    "ast_hash": "55019f7265dde0a78318b0807f98e847",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters iOS App/Assets.xcassets/AppIcon.appiconset/Contents.json": {
+    "mtime": 1780913602.983394,
+    "ast_hash": "67425efba4ad62a4368a0fc76becea74",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters iOS App/Assets.xcassets/Contents.json": {
+    "mtime": 1780913602.9834673,
+    "ast_hash": "9deb2ada1cc834bbebf8bbad9c8978a1",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters iOS App/ContentView.swift": {
+    "mtime": 1780913602.9835403,
+    "ast_hash": "3c6f5c4e2d5a58e03002cbbb6740e6b9",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters iOS App/KitersApp.swift": {
+    "mtime": 1780913602.9837062,
+    "ast_hash": "4d15b8f04ee2c522f4db8399a5cdef93",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Package.swift": {
+    "mtime": 1780913602.9841895,
+    "ast_hash": "24f83fdbe648116c91d15bcbe8976d1f",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/FormatDetector.swift": {
+    "mtime": 1780913602.9844003,
+    "ast_hash": "3b8f9a037afe808a604e406e8dd5cb52",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/Loader.swift": {
+    "mtime": 1780913602.984495,
+    "ast_hash": "6da6e835782a137009b1138c9b543aff",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/MockGPS.swift": {
+    "mtime": 1780913602.9845722,
+    "ast_hash": "8839ba131f6e09bae13bce3abef26a16",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/Reporter.swift": {
+    "mtime": 1780913602.984655,
+    "ast_hash": "290558366e2d9a70f4ea03a30015735e",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/WatchSources/CloudSyncService.swift": {
+    "mtime": 1780913602.9800446,
+    "ast_hash": "38d156c228ba1516c55a67b5ae72e357",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/WatchSources/JumpDetector.swift": {
+    "mtime": 1780913602.9802175,
+    "ast_hash": "c22caec5e1c9bd2301cf383135ce6b05",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/WatchSources/KitesurfJumpEngine.swift": {
+    "mtime": 1780913602.9803808,
+    "ast_hash": "015c04ccf250b1b141b9c93460a4f6a6",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/WatchSources/Session.swift": {
+    "mtime": 1780913602.979816,
+    "ast_hash": "5b7826416d2f123393b12cc604f9c086",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/WatchSources/SessionLogger.swift": {
+    "mtime": 1780913602.980818,
+    "ast_hash": "9430a053b4b8d764219ae43739684890",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/Sources/JumpReplay/main.swift": {
+    "mtime": 1780913602.9850652,
+    "ast_hash": "b6a06b31e54e50ce13b41cd8f095dd1f",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/expected/kitesurf_extreme_failure_case_log.expected.json": {
+    "mtime": 1780913602.9851933,
+    "ast_hash": "85ec58105348517d5d93aaa0a3a8392e",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/expected/kitesurf_jump_log_synthetic.expected.json": {
+    "mtime": 1780913602.9852738,
+    "ast_hash": "3b78686364913e15e155d119ca60291f",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/expected/kitesurf_realistic_log.expected.json": {
+    "mtime": 1780913602.9853466,
+    "ast_hash": "b37e95e0b7ef8dc15754f96a853a2037",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/expected/kitesurf_session_5min_3jumps.expected.json": {
+    "mtime": 1780913602.9854176,
+    "ast_hash": "4e02258c82e39ba9965bc190e53a1331",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/expected/kitesurf_ultra_realistic_log.expected.json": {
+    "mtime": 1780913602.9854896,
+    "ast_hash": "10e803e23924fab1958df1d44981520a",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/expected/log_ondevice_synthetic.expected.json": {
+    "mtime": 1780913602.9855702,
+    "ast_hash": "790b8ce01a231b20dc81b59e14de2f89",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/kitesurf_extreme_failure_case_log.actual.json": {
+    "mtime": 1780913603.0169468,
+    "ast_hash": "72521c4392dd31876881e11c307c7481",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/kitesurf_jump_log_synthetic.actual.json": {
+    "mtime": 1780913603.0170376,
+    "ast_hash": "a4c7a22073c444e58ab2aaba1d2ac684",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/kitesurf_realistic_log.actual.json": {
+    "mtime": 1780913603.017111,
+    "ast_hash": "b37e95e0b7ef8dc15754f96a853a2037",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/kitesurf_session_5min_3jumps.actual.json": {
+    "mtime": 1780913603.0171778,
+    "ast_hash": "d1dfa26dc277ac7c6cc1cb79b6f2e503",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/kitesurf_ultra_realistic_log.actual.json": {
+    "mtime": 1780913603.0172498,
+    "ast_hash": "10e803e23924fab1958df1d44981520a",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/last_decoded.actual.json": {
+    "mtime": 1780913603.0173323,
+    "ast_hash": "33ddd417cadfc4fc01a3a5d8918a0264",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/log_ondevice_synthetic.actual.json": {
+    "mtime": 1780913603.017405,
+    "ast_hash": "790b8ce01a231b20dc81b59e14de2f89",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/output/real_jump_window.actual.json": {
+    "mtime": 1780913603.0174787,
+    "ast_hash": "2d56a26801c9bda8ac9c18f1defb1b55",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/JumpReplay/verify.sh": {
+    "mtime": 1780913603.0175557,
+    "ast_hash": "e7c21f968857a760ce38329f3cf5df96",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/generate_ondevice_synthetic.py": {
+    "mtime": 1780913603.0176506,
+    "ast_hash": "186b1cdf337acc59e4782c8a6cbc193b",
+    "semantic_hash": ""
+  },
+  "Kiters/Tools/generate_session_5min_3jumps.py": {
+    "mtime": 1780913603.0177474,
+    "ast_hash": "3915875b3e5ae9942c084640bd3a9e56",
+    "semantic_hash": ""
+  },
+  "Kiters/bump-version.sh": {
+    "mtime": 1780913603.0178308,
+    "ast_hash": "6ada0ba896463e1d79b248e4a48fddd9",
+    "semantic_hash": ""
+  },
+  "Kiters/logs/kitesurf_extreme_failure_case_log.json": {
+    "mtime": 1780913603.020622,
+    "ast_hash": "cd704776c22ff3b4ceb87a0a45713583",
+    "semantic_hash": ""
+  },
+  "Kiters/logs/kitesurf_session_5min_3jumps.json": {
+    "mtime": 1780913603.0275838,
+    "ast_hash": "9de31c7e9860fc524bbbb45153dcb5c5",
+    "semantic_hash": ""
+  },
+  "Kiters/logs/kitesurf_session_5min_3jumps.original.json": {
+    "mtime": 1780913603.02953,
+    "ast_hash": "b1c33037b419782c133e5506f1d27d2b",
+    "semantic_hash": ""
+  },
+  "Kiters/logs/kitesurf_ultra_realistic_log.json": {
+    "mtime": 1780913603.0304518,
+    "ast_hash": "5bb6f45ec7cd15b0d893ef53dea5ae8f",
+    "semantic_hash": ""
+  },
+  "last.kitelog.json": {
+    "mtime": 1780913603.0619242,
+    "ast_hash": "5355fb1f6554dd31ac46f7224c83e9ea",
+    "semantic_hash": ""
+  },
+  ".agents/skills/jump-detection-swift/SKILL.md": {
+    "mtime": 1780913602.9784064,
+    "ast_hash": "4b7d963f7547b9aecc9bbbbf51064f2a",
+    "semantic_hash": ""
+  },
+  ".github/workflows/jump-detector.yml": {
+    "mtime": 1780913602.9786,
+    "ast_hash": "27c6b7b6ee7510f2a21f9e231ecc7c00",
+    "semantic_hash": ""
+  },
+  "Kiters/APP_STORE_DEPLOYMENT.md": {
+    "mtime": 1780913602.978829,
+    "ast_hash": "68fa069b2ea00b2cf181f7dab4ad86f2",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/00_overview.md": {
+    "mtime": 1780913603.017961,
+    "ast_hash": "222aadd22274260cdca756d65f3839bf",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/01_architecture.md": {
+    "mtime": 1780913603.018051,
+    "ast_hash": "4b03a163ce3f472fe588274b4184d5d7",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/02_repo_structure.md": {
+    "mtime": 1780913603.018136,
+    "ast_hash": "2669fa08e269b42d91bb8c211f1be2c0",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/03_watchos_app.md": {
+    "mtime": 1780913603.0182397,
+    "ast_hash": "23c3cbcfbd9665fb705597977274cd24",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/04_wearos_app.md": {
+    "mtime": 1780913603.0183694,
+    "ast_hash": "6ce82e33dd3965646269251dec84bdfe",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/05_jump_detection.md": {
+    "mtime": 1780913603.0184772,
+    "ast_hash": "f4725bf1236c4b781ed3692beb5ab28e",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/06_data_model.md": {
+    "mtime": 1780913603.018583,
+    "ast_hash": "e82028539620fec425a9862317a22cca",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/07_mobile_app.md": {
+    "mtime": 1780913603.0186815,
+    "ast_hash": "b39f265bac8fc8f2498d55039a493fd4",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/08_backend_api.md": {
+    "mtime": 1780913603.0187972,
+    "ast_hash": "34035905d3e5e3459ee7b38e7aae2d23",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/09_docker_devops.md": {
+    "mtime": 1780913603.0189033,
+    "ast_hash": "75bd8a99d7157663a6fb895d83fd0298",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/10_testing.md": {
+    "mtime": 1780913603.0189993,
+    "ast_hash": "adf51df480a4885568ed0f4e78ffb155",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/11_security_privacy.md": {
+    "mtime": 1780913603.0191066,
+    "ast_hash": "bf7d32b65c0efca7a55e11f99c512677",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/12_roadmap.md": {
+    "mtime": 1780913603.019199,
+    "ast_hash": "b7f720b37598e5ba51abd27b2d0d7432",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/CHECKLIST.md": {
+    "mtime": 1780913603.0192738,
+    "ast_hash": "caf347be61326ceddfb1aff363bd328b",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/HOW_TO_RUN.md": {
+    "mtime": 1780913603.0193617,
+    "ast_hash": "79299ff330559fd5b65b7ef5d8a5cd5f",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/IMPLEMENTATION_COMPLETE.md": {
+    "mtime": 1780913603.0194607,
+    "ast_hash": "ec73044ddc1955bcf5bfaff0615097ca",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/OVERVIEW.md": {
+    "mtime": 1780913603.019547,
+    "ast_hash": "96e4ca3e9ab1800ae6c13a7ff86b3019",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/PRODUCT_ANALYSIS.md": {
+    "mtime": 1780913603.0196528,
+    "ast_hash": "5bb86021b6eff56cfab41a4cf6e82f2c",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/README.md": {
+    "mtime": 1780913603.0197442,
+    "ast_hash": "5841844c98435ed566edebc2566eba2b",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/SIMULATOR_VS_DEVICE.md": {
+    "mtime": 1780913603.0198374,
+    "ast_hash": "9892c9283d5e86af1a55f4c3043fa25f",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/START_HERE.md": {
+    "mtime": 1780913603.0199263,
+    "ast_hash": "fe1e7f3ec86d5ea6b88694ee74092ceb",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/jump-detection-swift.md": {
+    "mtime": 1780913603.0200217,
+    "ast_hash": "29f898d3ad688b36d23ed0663888cb21",
+    "semantic_hash": ""
+  },
+  "Kiters/docs/system.md": {
+    "mtime": 1780913603.020105,
+    "ast_hash": "25ea085f9707dbba4466098bd09f6ad5",
+    "semantic_hash": ""
+  },
+  "Kiters/session_menagaer.md": {
+    "mtime": 1780913603.0317588,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "Kitesurf_watchOS_Copilot_Refactor_Plan.md": {
+    "mtime": 1780913603.0319197,
+    "ast_hash": "8189b66f46b1a85891c9061b005a6f36",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1780913603.0320706,
+    "ast_hash": "0bbd89ca566c1b3a1dc66e3fe4701553",
+    "semantic_hash": ""
+  },
+  "docs/log-analysis-20260607.md": {
+    "mtime": 1780913603.032226,
+    "ast_hash": "dafd1978bcbedf98c037588fc6f69edb",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters Watch App/Assets.xcassets/AppIcon.appiconset/AppIcon.png": {
+    "mtime": 1780913602.9792845,
+    "ast_hash": "0fc3500176f998840777ee0c3b83422a",
+    "semantic_hash": ""
+  },
+  "Kiters/Kiters iOS App/Assets.xcassets/AppIcon.appiconset/AppIcon.png": {
+    "mtime": 1780913602.9833055,
+    "ast_hash": "0fc3500176f998840777ee0c3b83422a",
+    "semantic_hash": ""
+  }
+}
