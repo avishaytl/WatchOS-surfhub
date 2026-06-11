@@ -153,5 +153,8 @@
     <string name="account_signed_in_as">מחובר בתור</string>
     <string name="account_sign_out">התנתק</string>
     <string name="account_invalid_code">קוד שגוי — בדוק את האימייל ונסה שוב</string>
+    <string name="account_invalid_credentials">אימייל או סיסמה שגויים</string>
+    <string name="account_password_placeholder">סיסמה</string>
+    <string name="account_no_account_hint">אין חשבון? הירשם באפליקציית SurfHub לטלפון.</string>
     <string name="account_try_again">נסה שוב</string>
 </resources>

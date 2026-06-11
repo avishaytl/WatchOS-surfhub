@@ -147,6 +147,7 @@
 "common.cancel" = "Cancel";
 "common.save" = "Save";
 "common.done" = "Done";
+"common.error_title" = "Error";
 
 // MARK: - Permissions
 "permissions.required" = "Permissions Required";
@@ -202,4 +203,13 @@
 "account.signed_in_as" = "Signed in as";
 "account.sign_out" = "Sign Out";
 "account.error_invalid_code" = "Invalid code — check your email and try again";
+"account.error_invalid_credentials" = "Wrong email or password";
+"account.error_email_not_confirmed" = "Email not confirmed. Check your inbox and confirm your account first.";
+"account.error_configuration" = "App configuration error. Please reinstall or contact support.";
+"account.password_placeholder" = "Password";
+"account.no_account_hint" = "No account? Sign up in the SurfHub phone app.";
 "account.try_again" = "Try Again";
+"account.or" = "or";
+"account.sign_in_google" = "Continue with Google";
+"account.error_google_failed" = "Google sign-in failed. Please try again.";
+"account.error_google_cancelled" = "Google sign-in was cancelled.";

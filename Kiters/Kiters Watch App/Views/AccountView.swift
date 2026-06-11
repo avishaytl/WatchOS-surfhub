@@ -1,39 +1,43 @@
-//
-//  AccountView.swift
-//  Kiters Watch App
-//
-//  Email OTP sign-in / account management screen.
-//
-
 import SwiftUI
 
 struct AccountView: View {
     @EnvironmentObject var authService: AuthService
     @AppStorage("appLanguage") private var languageCode: String = "en"
 
-    @State private var emailInput = ""
-    @State private var codeInput = ""
+    @State private var emailInput    = "sanbata.tv@gmail.com"
+    @State private var passwordInput = "123456"
+    @State private var alertMessage: String?
 
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
                 switch authService.state {
-                case .signedOut:
+                case .signedOut, .error:
                     signedOutView
-                case .pendingOTP(let email):
-                    pendingOTPView(email: email)
                 case .signedIn(let email):
                     signedInView(email: email)
                 case .loading:
                     loadingView
-                case .error(let message):
-                    errorView(message: message)
                 }
             }
             .padding()
         }
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: authService.state) { _, newState in
+            if case .error(let msg) = newState {
+                alertMessage = msg
+                authService.resetError()
+            }
+        }
+        .alert(L("common.error_title"), isPresented: .init(
+            get: { alertMessage != nil },
+            set: { if !$0 { alertMessage = nil } }
+        )) {
+            Button(L("common.ok"), role: .cancel) { alertMessage = nil }
+        } message: {
+            Text(alertMessage ?? "")
+        }
     }
 
     // MARK: - Sub-views
@@ -53,75 +57,76 @@ struct AccountView: View {
                 .padding(8)
                 .background(Color.white.opacity(0.1))
                 .cornerRadius(8)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
 
-            Button(action: {
-                let trimmed = emailInput.trimmingCharacters(in: .whitespaces)
-                guard !trimmed.isEmpty else { return }
-                Task { await authService.sendOTP(email: trimmed) }
-            }) {
-                Text(L("account.send_code"))
-                    .font(.caption)
-                    .frame(maxWidth: .infinity)
-                    .padding(10)
-                    .background(emailInput.trimmingCharacters(in: .whitespaces).isEmpty
-                                ? Color.gray.opacity(0.3) : Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func pendingOTPView(email: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "envelope.badge.fill")
-                .font(.system(size: 30))
-                .foregroundColor(.green)
-
-            VStack(spacing: 2) {
-                Text(L("account.code_sent"))
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text(email)
-                    .font(.system(size: 10))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-            }
-
-            TextField(L("account.code_placeholder"), text: $codeInput)
+            SecureField(L("account.password_placeholder"), text: $passwordInput)
                 .textFieldStyle(.plain)
                 .multilineTextAlignment(.center)
-                .font(.system(size: 20, weight: .bold, design: .monospaced))
                 .padding(8)
                 .background(Color.white.opacity(0.1))
                 .cornerRadius(8)
 
             Button(action: {
-                let trimmed = codeInput.trimmingCharacters(in: .whitespaces)
-                guard trimmed.count >= 6 else { return }
-                Task { await authService.verifyOTP(email: email, token: trimmed) }
+                let email = emailInput.trimmingCharacters(in: .whitespaces)
+                guard !email.isEmpty, !passwordInput.isEmpty else { return }
+                Task { await authService.signIn(email: email, password: passwordInput) }
             }) {
-                Text(L("account.verify"))
+                Text(L("account.sign_in"))
                     .font(.caption)
                     .frame(maxWidth: .infinity)
                     .padding(10)
-                    .background(codeInput.trimmingCharacters(in: .whitespaces).count >= 6
-                                ? Color.green : Color.gray.opacity(0.3))
+                    .background(canSignIn ? Color.blue : Color.gray.opacity(0.3))
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
             .buttonStyle(.plain)
 
+            // OR divider
+            HStack(spacing: 6) {
+                Rectangle()
+                    .frame(height: 0.5)
+                    .foregroundColor(.gray.opacity(0.5))
+                Text(L("account.or"))
+                    .font(.system(size: 9))
+                    .foregroundColor(.gray)
+                Rectangle()
+                    .frame(height: 0.5)
+                    .foregroundColor(.gray.opacity(0.5))
+            }
+
+            // Google sign-in
             Button(action: {
-                Task { await authService.sendOTP(email: email) }
+                Task { await authService.signInWithGoogle() }
             }) {
-                Text(L("account.resend"))
-                    .font(.system(size: 11))
-                    .foregroundColor(.blue)
+                HStack(spacing: 5) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 11))
+                    Text(L("account.sign_in_google"))
+                        .font(.system(size: 11))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(9)
+                .background(Color.white.opacity(0.12))
+                .foregroundColor(.white)
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
+                )
             }
             .buttonStyle(.plain)
+
+            Text(L("account.no_account_hint"))
+                .font(.system(size: 10))
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding(.top, 4)
         }
+    }
+
+    private var canSignIn: Bool {
+        !emailInput.trimmingCharacters(in: .whitespaces).isEmpty && !passwordInput.isEmpty
     }
 
     private func signedInView(email: String) -> some View {
@@ -167,33 +172,5 @@ struct AccountView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-    }
-
-    private func errorView(message: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 28))
-                .foregroundColor(.orange)
-
-            Text(message)
-                .font(.system(size: 11))
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-
-            Button(action: {
-                authService.resetError()
-                emailInput = ""
-                codeInput = ""
-            }) {
-                Text(L("account.try_again"))
-                    .font(.caption)
-                    .frame(maxWidth: .infinity)
-                    .padding(10)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-            .buttonStyle(.plain)
-        }
     }
 }

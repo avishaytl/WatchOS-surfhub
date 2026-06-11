@@ -147,6 +147,7 @@
 "common.cancel" = "ביטול";
 "common.save" = "שמור";
 "common.done" = "סיום";
+"common.error_title" = "שגיאה";
 
 // MARK: - Permissions
 "permissions.required" = "נדרשות הרשאות";
@@ -202,4 +203,13 @@
 "account.signed_in_as" = "מחובר בתור";
 "account.sign_out" = "התנתק";
 "account.error_invalid_code" = "קוד שגוי — בדוק את האימייל ונסה שוב";
+"account.error_invalid_credentials" = "אימייל או סיסמה שגויים";
+"account.error_email_not_confirmed" = "האימייל לא אומת. בדוק את תיבת הדואר ואשר את החשבון תחילה.";
+"account.error_configuration" = "שגיאת הגדרות. התקן מחדש או פנה לתמיכה.";
+"account.password_placeholder" = "סיסמה";
+"account.no_account_hint" = "אין חשבון? הירשם באפליקציית SurfHub לטלפון.";
 "account.try_again" = "נסה שוב";
+"account.or" = "או";
+"account.sign_in_google" = "המשך עם Google";
+"account.error_google_failed" = "ההתחברות עם Google נכשלה. אנא נסה שוב.";
+"account.error_google_cancelled" = "ההתחברות עם Google בוטלה.";

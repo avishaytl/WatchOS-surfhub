@@ -78,6 +78,14 @@ class SettingsStore(context: Context) : KeyValueStore {
         get() = prefs.getString("authEmail", "") ?: ""
         set(v) { prefs.edit().putString("authEmail", v).apply() }
 
+    var authUserId: String
+        get() = prefs.getString("authUserId", "") ?: ""
+        set(v) { prefs.edit().putString("authUserId", v).apply() }
+
+    var authExpiresAt: Long
+        get() = prefs.getLong("authExpiresAt", 0L)
+        set(v) { prefs.edit().putLong("authExpiresAt", v).apply() }
+
     /** -1 = auto. Stored as Double to match the watchOS metricsTopPadding. */
     var metricsTopPadding: Double
         get() = if (prefs.contains("metricsTopPadding"))

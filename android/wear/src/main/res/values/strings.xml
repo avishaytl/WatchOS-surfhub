@@ -153,5 +153,8 @@
     <string name="account_signed_in_as">Signed in as</string>
     <string name="account_sign_out">Sign Out</string>
     <string name="account_invalid_code">Invalid code — check your email and try again</string>
+    <string name="account_invalid_credentials">Wrong email or password</string>
+    <string name="account_password_placeholder">Password</string>
+    <string name="account_no_account_hint">No account? Sign up in the SurfHub phone app.</string>
     <string name="account_try_again">Try Again</string>
 </resources>

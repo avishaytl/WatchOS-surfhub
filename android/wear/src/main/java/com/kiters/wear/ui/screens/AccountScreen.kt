@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.Text
 import com.kiters.wear.R
+import com.kiters.wear.auth.AuthError
 import com.kiters.wear.auth.AuthRepository
 import com.kiters.wear.auth.AuthSession
 import com.kiters.wear.session.SessionManager
@@ -37,7 +39,6 @@ import kotlinx.coroutines.launch
 
 private sealed class AccountUiState {
     object SignedOut : AccountUiState()
-    data class PendingOTP(val email: String) : AccountUiState()
     object Loading : AccountUiState()
     data class Error(val message: String) : AccountUiState()
     data class SignedIn(val email: String) : AccountUiState()
@@ -57,7 +58,7 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
 
     var uiState by remember { mutableStateOf<AccountUiState>(initial) }
     var emailInput by remember { mutableStateOf("") }
-    var codeInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
 
     ListScaffold { listState ->
         ScalingLazyColumn(modifier = Modifier.fillMaxWidth(), state = listState) {
@@ -95,50 +96,22 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
                         )
                     }
                     item {
-                        AccountChipRow(
-                            context.getString(R.string.account_send_code),
-                            if (emailInput.isNotBlank()) ChipDefaults.primaryChipColors(backgroundColor = accent)
-                            else ChipDefaults.secondaryChipColors(),
-                        ) {
-                            if (emailInput.isNotBlank()) {
-                                scope.launch {
-                                    uiState = AccountUiState.Loading
-                                    authRepo.sendOTP(emailInput.trim())
-                                        .onSuccess { uiState = AccountUiState.PendingOTP(emailInput.trim()) }
-                                        .onFailure { uiState = AccountUiState.Error(it.message ?: "Error") }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                is AccountUiState.PendingOTP -> {
-                    item {
-                        Text(
-                            "${context.getString(R.string.account_code_sent_to)} ${state.email}",
-                            color = Color.Gray, fontSize = 11.sp, textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                        )
-                    }
-                    item {
-                        BasicTextField(
-                            value = codeInput,
-                            onValueChange = { if (it.length <= 6) codeInput = it },
+                        BasicSecureTextField(
+                            value = passwordInput,
+                            onValueChange = { passwordInput = it },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 8.dp)
                                 .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
                                 .padding(8.dp),
                             textStyle = TextStyle(
-                                color = Color.White, fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+                                color = Color.White, fontSize = 13.sp,
+                                textAlign = TextAlign.Center,
                             ),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            decorationBox = { inner ->
-                                if (codeInput.isEmpty()) {
+                            decorator = { inner ->
+                                if (passwordInput.isEmpty()) {
                                     Text(
-                                        context.getString(R.string.account_code_placeholder),
+                                        context.getString(R.string.account_password_placeholder),
                                         color = Color.Gray, fontSize = 13.sp,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.fillMaxWidth(),
@@ -149,42 +122,40 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
                         )
                     }
                     item {
+                        val canSignIn = emailInput.isNotBlank() && passwordInput.isNotEmpty()
                         AccountChipRow(
-                            context.getString(R.string.account_verify),
-                            if (codeInput.length >= 6) ChipDefaults.primaryChipColors(backgroundColor = Color(0xFF4CAF50))
+                            context.getString(R.string.account_sign_in),
+                            if (canSignIn) ChipDefaults.primaryChipColors(backgroundColor = accent)
                             else ChipDefaults.secondaryChipColors(),
                         ) {
-                            if (codeInput.length >= 6) {
+                            if (canSignIn) {
                                 scope.launch {
                                     uiState = AccountUiState.Loading
-                                    authRepo.verifyOTP(state.email, codeInput)
+                                    authRepo.signInWithEmail(emailInput.trim(), passwordInput)
                                         .onSuccess { session: AuthSession ->
                                             settings.authAccessToken = session.accessToken
                                             settings.authRefreshToken = session.refreshToken
                                             settings.authEmail = session.email
+                                            settings.authUserId = session.userId
+                                            settings.authExpiresAt = session.expiresAt
                                             uiState = AccountUiState.SignedIn(session.email)
                                         }
-                                        .onFailure {
-                                            uiState = AccountUiState.Error(
-                                                it.message ?: context.getString(R.string.account_invalid_code)
-                                            )
+                                        .onFailure { err ->
+                                            val msg = if (err is AuthError.InvalidCredentials)
+                                                context.getString(R.string.account_invalid_credentials)
+                                            else err.message ?: context.getString(R.string.account_invalid_credentials)
+                                            uiState = AccountUiState.Error(msg)
                                         }
                                 }
                             }
                         }
                     }
                     item {
-                        AccountChipRow(
-                            context.getString(R.string.account_resend),
-                            ChipDefaults.secondaryChipColors(),
-                        ) {
-                            scope.launch {
-                                uiState = AccountUiState.Loading
-                                authRepo.sendOTP(state.email)
-                                    .onSuccess { uiState = AccountUiState.PendingOTP(state.email) }
-                                    .onFailure { uiState = AccountUiState.Error(it.message ?: "Error") }
-                            }
-                        }
+                        Text(
+                            context.getString(R.string.account_no_account_hint),
+                            color = Color.Gray, fontSize = 10.sp, textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                        )
                     }
                 }
 
@@ -206,9 +177,12 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
                                 settings.authAccessToken = ""
                                 settings.authRefreshToken = ""
                                 settings.authEmail = ""
+                                settings.authUserId = ""
+                                settings.authExpiresAt = 0L
                                 if (token.isNotBlank()) authRepo.signOut(token)
                                 uiState = AccountUiState.SignedOut
                                 emailInput = ""
+                                passwordInput = ""
                             }
                         }
                     }
@@ -237,8 +211,7 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
                             ChipDefaults.primaryChipColors(backgroundColor = accent),
                         ) {
                             uiState = AccountUiState.SignedOut
-                            emailInput = ""
-                            codeInput = ""
+                            passwordInput = ""
                         }
                     }
                 }

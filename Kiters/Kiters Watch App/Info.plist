@@ -59,5 +59,16 @@
 	</array>
 	<key>WKWatchOnly</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.504073436614-9qec94thlrslcbvqfnot83ovrg2uoctu</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -21,20 +21,29 @@ import com.kiters.wear.ui.screens.SportSelectionScreen
 fun KitersApp(vm: SessionManager) {
     MaterialTheme {
         val isRecording by vm.isRecording.collectAsStateWithLifecycle()
-        if (isRecording) {
-            ActiveSessionScreen(vm)
-        } else {
-            val nav = rememberSwipeDismissableNavController()
-            SwipeDismissableNavHost(navController = nav, startDestination = "home") {
-                composable("home") { HomeScreen(vm, nav) }
-                composable("sport") { SportSelectionScreen(vm, nav) }
-                composable("settings") { SettingsScreen(vm, nav) }
-                composable("account") { AccountScreen(vm, nav) }
-                composable("data") { DataManagementScreen(vm) }
-                composable("logs") { SessionLogsScreen() }
-                composable("detail/{id}") { entry ->
-                    val id = entry.arguments?.getString("id").orEmpty()
-                    SessionDetailScreen(id, vm)
+        val revision by vm.settingsStore.revision.collectAsStateWithLifecycle()
+        // Re-evaluate on every settings change so sign-in/out instantly updates routing.
+        val isSignedIn = revision.let { vm.settingsStore.authEmail.isNotBlank() }
+
+        when {
+            isRecording -> ActiveSessionScreen(vm)
+            !isSignedIn -> {
+                val nav = rememberSwipeDismissableNavController()
+                AccountScreen(vm, nav)
+            }
+            else -> {
+                val nav = rememberSwipeDismissableNavController()
+                SwipeDismissableNavHost(navController = nav, startDestination = "home") {
+                    composable("home") { HomeScreen(vm, nav) }
+                    composable("sport") { SportSelectionScreen(vm, nav) }
+                    composable("settings") { SettingsScreen(vm, nav) }
+                    composable("account") { AccountScreen(vm, nav) }
+                    composable("data") { DataManagementScreen(vm) }
+                    composable("logs") { SessionLogsScreen() }
+                    composable("detail/{id}") { entry ->
+                        val id = entry.arguments?.getString("id").orEmpty()
+                        SessionDetailScreen(id, vm)
+                    }
                 }
             }
         }
