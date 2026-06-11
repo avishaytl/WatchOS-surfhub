@@ -119,6 +119,19 @@ class SessionManager: ObservableObject {
     private var speedSmoothingBuffer: [Double] = []
     private let speedSmoothingWindow = 5
 
+    // MARK: - Watch Ingest upload state (all accessed on main thread only)
+    private var serverSessId: Int?
+    private var lastPingTime: Date?
+    private var lastTrackTime: Date?
+    // Tracks the last time we attempted a `start` POST so we don't fire a new
+    // request on every GPS update while the first is still in flight (watchOS GPS
+    // can fire 1 Hz, network round-trip is ~200 ms–1 s).
+    private var lastStartAttempt: Date?
+    private var trackPoints: [[Int]] = []
+    private var sessionBestJumpM: Double = 0
+    private var sessionBestAirS: Double = 0
+    private var sessionBestSpeedKmh: Double = 0
+
     /// Read from UserDefaults so the user's Settings selection takes effect
     /// at the next session start (no need to restart the app).
     private var detectionMode: DetectionMode {
@@ -290,6 +303,9 @@ class SessionManager: ObservableObject {
         let mode = detectionMode
         jumpDetector.reset(mode: mode)
         print("🦘 Jump detector reset — mode: \(mode.displayName)")
+
+        // Reset cloud upload state for the new session
+        resetUploadState()
         
         // Start session logger (CSV file for diagnostics)
         sessionLogger.start(
@@ -388,10 +404,12 @@ class SessionManager: ObservableObject {
             session.endTime = Date()
             session.status = .completed
             
-            // Save session
+            // Save session locally
             self.storageManager.saveSession(session)
-            
             print("✅ Session saved: \(session.jumps.count) jumps, \(String(format: "%.2f", session.distance/1000))km")
+
+            // Upload final session to server
+            self.uploadSessionEnd(session: session)
             
             // Reset state on main thread
             DispatchQueue.main.async {
@@ -473,6 +491,9 @@ class SessionManager: ObservableObject {
             self.isGPSActive = true
             self.lastGPSAccuracy = point.horizontalAccuracy
             self.gpsSignalQuality = GPSSignalQuality.from(accuracy: point.horizontalAccuracy)
+
+            // Wire upload: start / ping / track / speed-record
+            self.handleUploadOnGPS(point, session: session)
         }
     }
     
@@ -511,13 +532,181 @@ class SessionManager: ObservableObject {
             
             self.currentSession = session
             self.jumpCount = session.jumps.count
-            
+
             print("🎉 JUMP DETECTED! Height: \(String(format: "%.2f", jump.height))m, Airtime: \(String(format: "%.2f", jump.airtime))s")
+
+            // Wire upload: record new session-best jump/air
+            self.handleUploadOnJump(detectedJump)
         }
     }
     
+    // MARK: - Watch Ingest Upload
+
+    private func resetUploadState() {
+        serverSessId        = nil
+        lastPingTime        = nil
+        lastTrackTime       = nil
+        lastStartAttempt    = nil
+        trackPoints         = []
+        sessionBestJumpM    = 0
+        sessionBestAirS     = 0
+        sessionBestSpeedKmh = 0
+    }
+
+    /// Called on the main thread from handleGPSPoint.
+    private func handleUploadOnGPS(_ point: GPSPoint, session: Session) {
+        // 1. Start: fire once per session, then retry at most every 5 s on failure.
+        //    Guard prevents flooding the server when GPS fires 1 Hz and the first
+        //    request hasn't returned yet (the original bug: N concurrent start calls).
+        if serverSessId == nil {
+            let now = Date()
+            let retryDelay: TimeInterval = 5
+            if let last = lastStartAttempt, now.timeIntervalSince(last) < retryDelay { return }
+            lastStartAttempt = now
+            lastPingTime  = now
+            lastTrackTime = now
+            trackPoints.append([Int(point.latitude * 1e4), Int(point.longitude * 1e4)])
+            let lat = point.latitude, lng = point.longitude, startedAt = session.startTime
+            Task {
+                do {
+                    let resp = try await WatchSessionUploader.shared.start(
+                        lat: lat, lng: lng, startedAt: startedAt
+                    )
+                    await MainActor.run { self.serverSessId = resp.sessId }
+                    print("☁️ Session live on server — sessId=\(resp.sessId) spot=\(resp.spot)")
+                } catch {
+                    print("☁️ Session start failed (will retry): \(error.localizedDescription)")
+                }
+            }
+            return
+        }
+        guard let sessId = serverSessId else { return }
+
+        // 2. Decimate track: one point every ~5 s
+        if let last = lastTrackTime, Date().timeIntervalSince(last) >= 5 {
+            trackPoints.append([Int(point.latitude * 1e4), Int(point.longitude * 1e4)])
+            lastTrackTime = Date()
+        }
+
+        // 3. Ping every ~10 s
+        if let last = lastPingTime, Date().timeIntervalSince(last) >= 10 {
+            let jmax = sessionBestJumpM
+            let jcnt = session.jumps.count
+            lastPingTime = Date()
+            Task {
+                do {
+                    try await WatchSessionUploader.shared.ping(
+                        sessId: sessId, lat: point.latitude, lng: point.longitude,
+                        jmax: jmax > 0 ? jmax : nil,
+                        jcnt: jcnt > 0 ? jcnt : nil
+                    )
+                } catch {
+                    print("☁️ Ping failed: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        // 4. Record new speed best (1 km/h threshold to avoid noise)
+        let kmh = point.speed * 3.6
+        if kmh > sessionBestSpeedKmh + 1 {
+            sessionBestSpeedKmh = kmh
+            Task {
+                do {
+                    let r = try await WatchSessionUploader.shared.record(sessId: sessId, speedKmh: kmh)
+                    if !r.broken.isEmpty { print("☁️ New all-time speed PB: \(String(format:"%.1f",kmh)) km/h") }
+                } catch {
+                    print("☁️ Record (speed) failed: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    /// Called on the main thread from handleJumpDetected.
+    private func handleUploadOnJump(_ jump: Jump) {
+        guard let sessId = serverSessId else { return }
+        let jumpBetter = jump.height  > sessionBestJumpM
+        let airBetter  = jump.airtime > sessionBestAirS
+        guard jumpBetter || airBetter else { return }
+        if jumpBetter { sessionBestJumpM = jump.height  }
+        if airBetter  { sessionBestAirS  = jump.airtime }
+        Task {
+            do {
+                let r = try await WatchSessionUploader.shared.record(
+                    sessId: sessId,
+                    jumpM: jumpBetter ? jump.height  : nil,
+                    airS:  airBetter  ? jump.airtime : nil
+                )
+                if !r.broken.isEmpty { print("☁️ New all-time PB: \(r.broken.joined(separator: ", "))") }
+            } catch {
+                print("☁️ Record (jump) failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Called after the session is saved locally. Fires the `end` ingest call.
+    private func uploadSessionEnd(session: Session) {
+        guard let sessId = serverSessId else {
+            print("☁️ Skip end upload — session never started on server (no GPS?)")
+            return
+        }
+        let durMin  = max(1, Int(session.duration / 60))
+        let jmax    = session.jumps.map(\.height).max() ?? 0
+        let jcnt    = session.jumps.count
+        let airS    = session.jumps.map(\.airtime).max() ?? 0
+        let spdKmh  = Int(session.maxSpeed * 3.6)
+        let distKm  = session.distance / 1000
+        let avgKmh  = session.avgSpeed * 3.6
+
+        // Compact jData — one entry per jump
+        let startTime = session.startTime
+        let jData: [[String: Int]] = session.jumps.map { j in
+            let nearest = session.gpsPoints.min {
+                abs($0.timestamp.timeIntervalSince(j.startTime)) < abs($1.timestamp.timeIntervalSince(j.startTime))
+            }
+            return [
+                "t": Int(j.startTime.timeIntervalSince(startTime)),
+                "h": Int(j.height * 100),        // cm
+                "a": Int(j.airtime * 10),         // tenths-sec
+                "s": Int((nearest?.speed ?? 0) * 3.6), // km/h
+                "d": Int(j.jumpDistance * 10),    // dm
+                "y": Int((nearest?.latitude  ?? 0) * 1e4),
+                "x": Int((nearest?.longitude ?? 0) * 1e4),
+            ]
+        }
+
+        // Fall back to building track from gpsPoints if nothing was collected live
+        let track: [[Int]]
+        if !trackPoints.isEmpty {
+            track = trackPoints
+        } else {
+            var pts: [[Int]] = []; var lastT: Date? = nil
+            for pt in session.gpsPoints {
+                if lastT == nil || pt.timestamp.timeIntervalSince(lastT!) >= 5 {
+                    pts.append([Int(pt.latitude * 1e4), Int(pt.longitude * 1e4)])
+                    lastT = pt.timestamp
+                }
+            }
+            track = pts.isEmpty ? [[0, 0]] : pts
+        }
+
+        Task {
+            do {
+                let r = try await WatchSessionUploader.shared.end(
+                    sessId: sessId, durMin: durMin,
+                    jmax: jmax, jcnt: jcnt, airS: airS,
+                    spdKmh: spdKmh, distKm: distKm, avgKmh: avgKmh,
+                    track: track, jData: jData
+                )
+                print("☁️ Session uploaded — sessId=\(sessId) finalPBs=\(r.broken)")
+            } catch {
+                print("☁️ Session end upload failed: \(error.localizedDescription)")
+            }
+            await MainActor.run { self.serverSessId = nil }
+        }
+    }
+
     // MARK: - Metrics
-    
+
     private func startTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self, let session = self.currentSession else { return }

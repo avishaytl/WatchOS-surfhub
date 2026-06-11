@@ -10,20 +10,29 @@
 
 import Foundation
 import HealthKit
+import WatchKit
 import Combine
 
 class WorkoutManager: NSObject, ObservableObject {
-    
+
     // MARK: - Published Metrics
     @Published var isActive = false
     @Published var heartRate: Double = 0
     @Published var activeCalories: Double = 0
-    
+
     // MARK: - Private
     private let healthStore = HKHealthStore()
     private var workoutSession: HKWorkoutSession?
     private var workoutBuilder: HKLiveWorkoutBuilder?
     private var endCompletion: ((HKWorkout?) -> Void)?
+
+    // WKExtendedRuntimeSession keeps the process alive for network I/O when the
+    // screen turns off, even before HKWorkoutSession transitions to .running.
+    // Without it, URLSession.shared tasks created right after session start can
+    // be frozen by watchOS before the first POST completes — the primary cause of
+    // cloud uploads working in Xcode (debugger keeps process alive) but failing
+    // silently on TestFlight.
+    private var extendedSession: WKExtendedRuntimeSession?
 
     /// Dedicated live heart-rate stream. The HKLiveWorkoutBuilder statistics
     /// callback can be slow or silent on-device, so we also run an anchored
@@ -99,11 +108,20 @@ class WorkoutManager: NSObject, ObservableObject {
             return
         }
         print("💪 WorkoutManager: starting HKWorkoutSession for \(sport.displayName)")
-        
+
+        // Start the extended runtime session BEFORE the HK workout so that
+        // network tasks (cloud start POST) can complete even if the screen goes
+        // off before HKWorkoutSession transitions to .running.
+        let ext = WKExtendedRuntimeSession()
+        ext.delegate = self
+        ext.start()
+        extendedSession = ext
+        print("⏱️ Extended runtime session started")
+
         let config = HKWorkoutConfiguration()
         config.activityType = sport.healthKitActivityType
         config.locationType = .outdoor
-        
+
         do {
             let session = try HKWorkoutSession(healthStore: healthStore, configuration: config)
             let builder = session.associatedWorkoutBuilder()
@@ -111,22 +129,24 @@ class WorkoutManager: NSObject, ObservableObject {
                                                           workoutConfiguration: config)
             session.delegate = self
             builder.delegate = self
-            
+
+            // Explicitly enable heart-rate collection — water-sports activity types
+            // don't have it turned on automatically by HKLiveWorkoutDataSource.
+            if let hrType = HKQuantityType.quantityType(forIdentifier: .heartRate) {
+                builder.dataSource?.enableCollection(for: hrType, predicate: nil)
+            }
+
             workoutSession = session
             workoutBuilder = builder
-            
+
             session.startActivity(with: Date())
             builder.beginCollection(withStart: Date()) { success, error in
                 if let error = error {
                     print("❌ Workout builder start error: \(error.localizedDescription)")
                 } else {
-                    DispatchQueue.main.async { self.isActive = true }
                     print("✅ HealthKit workout started")
                 }
             }
-
-            // Start a dedicated live heart-rate stream as a reliable fallback.
-            startHeartRateStream()
         } catch {
             print("❌ Failed to create workout session: \(error.localizedDescription)")
         }
@@ -192,15 +212,19 @@ class WorkoutManager: NSObject, ObservableObject {
     func endWorkout(completion: @escaping (Any?) -> Void) {
         stopHeartRateStream()
         guard let session = workoutSession, let builder = workoutBuilder else {
+            extendedSession?.invalidate()
+            extendedSession = nil
             completion(nil)
             return
         }
-        
+
         session.end()
         builder.endCollection(withEnd: Date()) { [weak self] success, error in
             guard let self = self else { completion(nil); return }
             if let error = error {
                 print("❌ Workout end error: \(error.localizedDescription)")
+                self.extendedSession?.invalidate()
+                self.extendedSession = nil
                 completion(nil)
                 return
             }
@@ -209,6 +233,13 @@ class WorkoutManager: NSObject, ObservableObject {
                     self.isActive = false
                     self.workoutSession = nil
                     self.workoutBuilder = nil
+                    // Keep extendedSession alive a bit longer so the end-of-session
+                    // POST can complete before we release background time.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                        self.extendedSession?.invalidate()
+                        self.extendedSession = nil
+                        print("⏱️ Extended runtime session ended")
+                    }
                 }
                 if let error = error {
                     print("❌ Finish workout error: \(error.localizedDescription)")
@@ -231,6 +262,11 @@ extension WorkoutManager: HKWorkoutSessionDelegate {
         print("💪 Workout state: \(fromState.rawValue) → \(toState.rawValue)")
         DispatchQueue.main.async {
             self.isActive = (toState == .running)
+            // Start the HR stream the moment the session is confirmed running.
+            // This is more reliable than starting it speculatively in beginWorkout().
+            if toState == .running {
+                self.startHeartRateStream()
+            }
         }
     }
     
@@ -269,6 +305,25 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
     }
     
     func workoutBuilderDidCollectEvent(_ workoutBuilder: HKLiveWorkoutBuilder) { }
+}
+
+// MARK: - WKExtendedRuntimeSessionDelegate
+extension WorkoutManager: WKExtendedRuntimeSessionDelegate {
+    func extendedRuntimeSessionDidStart(_ extendedRuntimeSession: WKExtendedRuntimeSession) {
+        print("⏱️ Extended runtime session is running")
+    }
+
+    func extendedRuntimeSessionWillExpire(_ extendedRuntimeSession: WKExtendedRuntimeSession) {
+        print("⏱️ Extended runtime session will expire")
+    }
+
+    func extendedRuntimeSession(_ extendedRuntimeSession: WKExtendedRuntimeSession,
+                                didInvalidateWith reason: WKExtendedRuntimeSessionInvalidationReason,
+                                error: Error?) {
+        print("⏱️ Extended runtime session invalidated — reason: \(reason.rawValue)")
+        if let error { print("⏱️ Error: \(error.localizedDescription)") }
+        DispatchQueue.main.async { self.extendedSession = nil }
+    }
 }
 
 // MARK: - Sport Extension

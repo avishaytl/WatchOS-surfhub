@@ -5,9 +5,13 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kiters.wear.session.SessionManager
 import com.kiters.wear.storage.SettingsStore
@@ -25,8 +29,6 @@ class MainActivity : ComponentActivity() {
         }
 
     override fun attachBaseContext(newBase: Context) {
-        // Apply the user-selected language (en / he), mirroring the watchOS
-        // per-app localization. RTL follows automatically for Hebrew.
         val lang = SettingsStore(newBase).appLanguage
         val locale = Locale(lang)
         Locale.setDefault(locale)
@@ -42,6 +44,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             val vm: SessionManager = viewModel()
             sessionManager = vm
+
+            // Keep the screen on while a session is active.
+            // FLAG_KEEP_SCREEN_ON is the correct Wear OS mechanism: it prevents the
+            // display from turning off so the rider can glance at metrics without
+            // touching the watch. The flag is cleared the moment the session ends.
+            val isRecording by vm.isRecording.collectAsStateWithLifecycle()
+            LaunchedEffect(isRecording) {
+                if (isRecording) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+            }
+
             KitersApp(vm)
         }
     }
@@ -49,6 +65,12 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         sessionManager?.refreshLocationAuth()
+        // Re-apply the flag in case the activity was recreated mid-session.
+        sessionManager?.let { vm ->
+            if (vm.isRecording.value) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
     }
 
     private fun requestPermissionsIfNeeded() {

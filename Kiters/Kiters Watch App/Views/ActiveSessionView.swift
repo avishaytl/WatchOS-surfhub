@@ -12,41 +12,93 @@ struct ActiveSessionView: View {
     @State private var selectedTab = 1  // Start at middle tab (metrics)
     @State private var showingEndConfirmation = false
     @AppStorage("appLanguage") private var languageCode: String = "en"
-    
+    @Environment(\.isLuminanceReduced) var isLuminanceReduced
+
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Tab 0 (Left): Controls - Stop/Pause
-            ControlsView(showingEndConfirmation: $showingEndConfirmation)
-                .tag(0)
-            
-            // Tab 1 (Middle): Main metrics - DEFAULT
-            MetricsView()
-                .tag(1)
-            
-            // Tab 2: Jump stats
-            JumpStatsView()
-                .tag(2)
-            
-            // Tab 3 (Right): GPS Route tracker
-            GPSRouteView()
-                .tag(3)
-        }
-        .tabViewStyle(.page)
-        .navigationBarHidden(true)
-        .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
-        .onAppear {
-            // Water Lock must be enabled while the session screen is foreground-active.
-            sessionManager.enableWaterLockIfNeeded()
-        }
-        .alert(L("session.end_confirm"), isPresented: $showingEndConfirmation) {
-            Button(L("session.cancel"), role: .cancel) { }
-            Button(L("session.end"), role: .destructive) {
-                sessionManager.endSession()
+        if isLuminanceReduced {
+            // Ambient mode (screen dimmed / AOD): show a minimal always-on view.
+            // The TimelineView drives periodic re-renders so the timer stays current
+            // even when @Published updates are throttled by the OS in ambient mode.
+            TimelineView(.periodic(from: Date(), by: 1)) { _ in
+                AmbientSessionView()
             }
-        } message: {
-            Text(L("session.end_message"))
+        } else {
+            TabView(selection: $selectedTab) {
+                // Tab 0 (Left): Controls - Stop/Pause
+                ControlsView(showingEndConfirmation: $showingEndConfirmation)
+                    .tag(0)
+
+                // Tab 1 (Middle): Main metrics - DEFAULT
+                MetricsView()
+                    .tag(1)
+
+                // Tab 2: Jump stats
+                JumpStatsView()
+                    .tag(2)
+
+                // Tab 3 (Right): GPS Route tracker
+                GPSRouteView()
+                    .tag(3)
+            }
+            .tabViewStyle(.page)
+            .navigationBarHidden(true)
+            .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+            .onAppear {
+                // Water Lock must be enabled while the session screen is foreground-active.
+                sessionManager.enableWaterLockIfNeeded()
+            }
+            .alert(L("session.end_confirm"), isPresented: $showingEndConfirmation) {
+                Button(L("session.cancel"), role: .cancel) { }
+                Button(L("session.end"), role: .destructive) {
+                    sessionManager.endSession()
+                }
+            } message: {
+                Text(L("session.end_message"))
+            }
         }
     }
+}
+
+// Minimal always-on display shown when the watch screen dims to ambient mode.
+// Rules for ambient content (Apple HIG):
+//   - Pure black background (avoids OLED bleed and saves power)
+//   - White / grey text only — no colour fills, no gradients
+//   - No animations
+//   - Show only the 3 most important numbers
+struct AmbientSessionView: View {
+    @EnvironmentObject var sessionManager: SessionManager
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text(formatDuration(sessionManager.duration))
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+                .monospacedDigit()
+
+            Text(formatHeight(sessionManager.currentSession?.jumps.last?.height ?? 0) + "m")
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+
+            HStack(spacing: 16) {
+                Text(formatSpeed(sessionManager.maxSpeed))
+                    .font(.system(size: 14, design: .rounded))
+                    .foregroundColor(.gray)
+                Text(formatDistance(sessionManager.distance))
+                    .font(.system(size: 14, design: .rounded))
+                    .foregroundColor(.gray)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
+    }
+
+    private func formatDuration(_ d: TimeInterval) -> String {
+        let h = Int(d) / 3600; let m = (Int(d) % 3600) / 60; let s = Int(d) % 60
+        return h > 0 ? String(format: "%d:%02d:%02d", h, m, s) : String(format: "%02d:%02d", m, s)
+    }
+    private func formatHeight(_ v: Double) -> String { String(format: "%.1f", v) }
+    private func formatSpeed(_ v: Double) -> String { String(format: "%.0f km/h", v * 3.6) }
+    private func formatDistance(_ v: Double) -> String { String(format: "%.2f km", v / 1000) }
 }
 
 struct MetricsView: View {
@@ -54,6 +106,7 @@ struct MetricsView: View {
     @AppStorage("appTheme") private var appTheme: String = "blue"
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("metricsTopPadding") private var metricsTopPaddingStored: Double = -1  // -1 = auto
+    @Environment(\.isLuminanceReduced) var isLuminanceReduced
     @State private var gpsPulse = false
     
     private var themeColor: Color {
@@ -153,10 +206,7 @@ struct MetricsView: View {
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.white)
                         .monospacedDigit()
-                    Image(systemName: "drop.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(.blue)
-                    
+
                     // GPS tracker indicator - inline with timer
                     GPSTrackerIndicator(
                         signalQuality: sessionManager.gpsSignalQuality,
@@ -302,6 +352,7 @@ struct GPSTrackerIndicator: View {
     let pointCount: Int
     let isActive: Bool
     @Binding var gpsPulse: Bool
+    @Environment(\.isLuminanceReduced) var isLuminanceReduced
     
     private var signalColor: Color {
         switch signalQuality {
@@ -315,13 +366,17 @@ struct GPSTrackerIndicator: View {
     
     var body: some View {
         HStack(spacing: 3) {
-            // Pulsing GPS icon
+            // Pulsing GPS icon — animation is disabled in ambient mode (reduces power)
             Image(systemName: signalQuality.icon)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(signalColor)
                 .opacity(gpsPulse ? 1.0 : 0.4)
-                .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: gpsPulse)
-                .onAppear { gpsPulse = true }
+                .animation(
+                    isLuminanceReduced ? .none
+                        : .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
+                    value: gpsPulse
+                )
+                .onAppear { if !isLuminanceReduced { gpsPulse = true } }
             
             // Point counter (compact)
             if isActive && pointCount > 0 {

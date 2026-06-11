@@ -17,6 +17,7 @@ data class AuthSession(
 
 sealed class AuthError : Exception() {
     object InvalidCredentials : AuthError()
+    data class ServerMessage(val msg: String, val statusCode: Int) : AuthError()
     data class NetworkError(override val message: String) : AuthError()
 }
 
@@ -38,8 +39,9 @@ class AuthRepository {
                 }
                 val code = conn.responseCode
                 if (code == 400 || code == 401) {
+                    val errBody = conn.errorStream?.bufferedReader()?.readText() ?: ""
                     conn.disconnect()
-                    throw AuthError.InvalidCredentials
+                    throw mapError(errBody, code)
                 }
                 if (code !in 200..299) {
                     conn.disconnect()
@@ -87,6 +89,21 @@ class AuthRepository {
             conn.responseCode
             conn.disconnect()
         }
+    }
+
+    private fun mapError(body: String, status: Int): AuthError {
+        val json = try { JSONObject(body) } catch (e: Exception) { JSONObject() }
+        val serverMsg = json.optString("msg").takeIf { it.isNotBlank() }
+            ?: json.optString("message").takeIf { it.isNotBlank() }
+            ?: json.optString("error_description").takeIf { it.isNotBlank() }
+        val hint = json.optString("hint").takeIf { it.isNotBlank() }
+        val errorCode = json.optString("error_code")
+        if (errorCode == "email_not_confirmed") return AuthError.ServerMessage("[$status] Email not confirmed", status)
+        if (serverMsg != null) {
+            val full = if (hint != null) "$serverMsg — $hint" else serverMsg
+            return AuthError.ServerMessage("[$status] $full", status)
+        }
+        return AuthError.InvalidCredentials
     }
 
     private fun parseSession(body: String, fallbackEmail: String): AuthSession {

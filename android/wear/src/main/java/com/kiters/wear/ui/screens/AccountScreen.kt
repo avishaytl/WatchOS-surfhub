@@ -57,8 +57,8 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
         else AccountUiState.SignedOut
 
     var uiState by remember { mutableStateOf<AccountUiState>(initial) }
-    var emailInput by remember { mutableStateOf("") }
-    var passwordInput by remember { mutableStateOf("") }
+    var emailInput by remember { mutableStateOf("sanbata.tv@gmail.com") }
+    var passwordInput by remember { mutableStateOf("123456") }
 
     ListScaffold { listState ->
         ScalingLazyColumn(modifier = Modifier.fillMaxWidth(), state = listState) {
@@ -141,9 +141,11 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
                                             uiState = AccountUiState.SignedIn(session.email)
                                         }
                                         .onFailure { err ->
-                                            val msg = if (err is AuthError.InvalidCredentials)
-                                                context.getString(R.string.account_invalid_credentials)
-                                            else err.message ?: context.getString(R.string.account_invalid_credentials)
+                                            val msg = when (err) {
+                                                is AuthError.ServerMessage -> err.msg
+                                                is AuthError.InvalidCredentials -> context.getString(R.string.account_invalid_credentials)
+                                                else -> err.message ?: context.getString(R.string.account_invalid_credentials)
+                                            }
                                             uiState = AccountUiState.Error(msg)
                                         }
                                 }

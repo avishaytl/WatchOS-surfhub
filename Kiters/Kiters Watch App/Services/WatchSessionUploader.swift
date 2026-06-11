@@ -38,6 +38,18 @@ final class WatchSessionUploader {
     private let ingestURL = URL(string: "https://vvowvcdylztsqpzifdqc.supabase.co/functions/v1/watch-ingest")!
     private let anonKey   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2b3d2Y2R5bHp0c3FwemlmZHFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MTc1NDcsImV4cCI6MjA5MDk5MzU0N30.jPBYr6f9fTABLHAD1rY_b1HP8xI0cDEQPJczxjCKsSY"
 
+    // waitsForConnectivity=true is critical on watchOS: the network path goes
+    // through Bluetooth to the paired iPhone, which can take a moment to be ready.
+    // Without this, requests that fire right as a session starts can fail immediately
+    // with a "no connection" error instead of waiting for BT to come up.
+    private let session: URLSession = {
+        let c = URLSessionConfiguration.default
+        c.waitsForConnectivity = true
+        c.timeoutIntervalForRequest  = 15
+        c.timeoutIntervalForResource = 30
+        return URLSession(configuration: c)
+    }()
+
     // MARK: - start
 
     /// Opens a live session. Call once after the first GPS fix.
@@ -125,7 +137,7 @@ final class WatchSessionUploader {
         req.setValue("Bearer \(pairing.accessToken)", forHTTPHeaderField: "Authorization")
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        let (data, resp) = try await URLSession.shared.data(for: req)
+        let (data, resp) = try await session.data(for: req)
         let status = (resp as? HTTPURLResponse)?.statusCode ?? 0
 
         if status == 401 {
