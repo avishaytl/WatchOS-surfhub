@@ -120,17 +120,7 @@ class SessionManager: ObservableObject {
     private let speedSmoothingWindow = 5
 
     // MARK: - Watch Ingest upload state (all accessed on main thread only)
-    private var serverSessId: Int?
-    private var lastPingTime: Date?
-    private var lastTrackTime: Date?
-    // Tracks the last time we attempted a `start` POST so we don't fire a new
-    // request on every GPS update while the first is still in flight (watchOS GPS
-    // can fire 1 Hz, network round-trip is ~200 ms–1 s).
-    private var lastStartAttempt: Date?
-    private var trackPoints: [[Int]] = []
-    private var sessionBestJumpM: Double = 0
-    private var sessionBestAirS: Double = 0
-    private var sessionBestSpeedKmh: Double = 0
+    private let uploadState = LiveSessionUploadState()
 
     /// Read from UserDefaults so the user's Settings selection takes effect
     /// at the next session start (no need to restart the app).
@@ -305,7 +295,7 @@ class SessionManager: ObservableObject {
         print("🦘 Jump detector reset — mode: \(mode.displayName)")
 
         // Reset cloud upload state for the new session
-        resetUploadState()
+        uploadState.reset(sessionId: newSession.id)
         
         // Start session logger (CSV file for diagnostics)
         sessionLogger.start(
@@ -542,62 +532,54 @@ class SessionManager: ObservableObject {
     
     // MARK: - Watch Ingest Upload
 
-    private func resetUploadState() {
-        serverSessId        = nil
-        lastPingTime        = nil
-        lastTrackTime       = nil
-        lastStartAttempt    = nil
-        trackPoints         = []
-        sessionBestJumpM    = 0
-        sessionBestAirS     = 0
-        sessionBestSpeedKmh = 0
-    }
-
     /// Called on the main thread from handleGPSPoint.
     private func handleUploadOnGPS(_ point: GPSPoint, session: Session) {
         // 1. Start: fire once per session, then retry at most every 5 s on failure.
         //    Guard prevents flooding the server when GPS fires 1 Hz and the first
         //    request hasn't returned yet (the original bug: N concurrent start calls).
-        if serverSessId == nil {
+        if uploadState.currentServerSessId == nil {
             let now = Date()
-            let retryDelay: TimeInterval = 5
-            if let last = lastStartAttempt, now.timeIntervalSince(last) < retryDelay { return }
-            lastStartAttempt = now
-            lastPingTime  = now
-            lastTrackTime = now
-            trackPoints.append([Int(point.latitude * 1e4), Int(point.longitude * 1e4)])
+            guard uploadState.beginStartAttempt(
+                sessionId: session.id,
+                now: now,
+                lat: point.latitude,
+                lng: point.longitude
+            ) else { return }
             let lat = point.latitude, lng = point.longitude, startedAt = session.startTime
+            let localSessionId = session.id
             Task {
                 do {
                     let resp = try await WatchSessionUploader.shared.start(
                         lat: lat, lng: lng, startedAt: startedAt
                     )
-                    await MainActor.run { self.serverSessId = resp.sessId }
+                    let accepted = await MainActor.run { () -> Bool in
+                        self.uploadState.acceptStart(sessionId: localSessionId, sessId: resp.sessId)
+                    }
+                    guard accepted else { return }
                     print("☁️ Session live on server — sessId=\(resp.sessId) spot=\(resp.spot)")
+                    await self.flushPendingRecordsIfNeeded(sessId: resp.sessId, localSessionId: localSessionId)
                 } catch {
+                    await MainActor.run {
+                        self.uploadState.failStart(sessionId: localSessionId)
+                    }
                     print("☁️ Session start failed (will retry): \(error.localizedDescription)")
                 }
             }
             return
         }
-        guard let sessId = serverSessId else { return }
+        guard let sessId = uploadState.currentServerSessId else { return }
 
         // 2. Decimate track: one point every ~5 s
-        if let last = lastTrackTime, Date().timeIntervalSince(last) >= 5 {
-            trackPoints.append([Int(point.latitude * 1e4), Int(point.longitude * 1e4)])
-            lastTrackTime = Date()
-        }
+        _ = uploadState.appendTrackIfDue(now: Date(), lat: point.latitude, lng: point.longitude)
 
         // 3. Ping every ~10 s
-        if let last = lastPingTime, Date().timeIntervalSince(last) >= 10 {
-            let jmax = sessionBestJumpM
+        if uploadState.shouldPing(now: Date()) {
             let jcnt = session.jumps.count
-            lastPingTime = Date()
             Task {
                 do {
                     try await WatchSessionUploader.shared.ping(
                         sessId: sessId, lat: point.latitude, lng: point.longitude,
-                        jmax: jmax > 0 ? jmax : nil,
+                        jmax: uploadState.pingBestJumpM,
                         jcnt: jcnt > 0 ? jcnt : nil
                     )
                 } catch {
@@ -608,47 +590,85 @@ class SessionManager: ObservableObject {
 
         // 4. Record new speed best (1 km/h threshold to avoid noise)
         let kmh = point.speed * 3.6
-        if kmh > sessionBestSpeedKmh + 1 {
-            sessionBestSpeedKmh = kmh
-            Task {
-                do {
-                    let r = try await WatchSessionUploader.shared.record(sessId: sessId, speedKmh: kmh)
-                    if !r.broken.isEmpty { print("☁️ New all-time speed PB: \(String(format:"%.1f",kmh)) km/h") }
-                } catch {
-                    print("☁️ Record (speed) failed: \(error.localizedDescription)")
+        if let kmh = uploadState.speedRecordIfImproved(kmh: kmh) {
+            postRecord(sessId: sessId, localSessionId: session.id, speedKmh: kmh, reason: "speed")
+        }
+
+        // 5. Record distance best at coarse intervals so long-session PBs notify live.
+        let distKm = self.runningDistance / 1000
+        if let distKm = uploadState.distanceRecordIfImproved(distKm: distKm) {
+            postRecord(sessId: sessId, localSessionId: session.id, distKm: distKm, reason: "distance")
+        }
+    }
+
+    private func flushPendingRecordsIfNeeded(sessId: Int, localSessionId: String) async {
+        let pending = await MainActor.run {
+            self.uploadState.claimPendingRecord(sessionId: localSessionId)
+        }
+        guard let pending else { return }
+
+        do {
+            let r = try await WatchSessionUploader.shared.record(
+                sessId: sessId,
+                jumpM: pending.jumpM,
+                airS: pending.airS,
+                speedKmh: pending.speedKmh,
+                distKm: pending.distKm
+            )
+            if !r.broken.isEmpty { print("☁️ New all-time PB: \(r.broken.joined(separator: ", "))") }
+        } catch {
+            await MainActor.run {
+                self.uploadState.enqueue(pending)
+            }
+            print("☁️ Pending record flush failed: \(error.localizedDescription)")
+        }
+    }
+
+    private func postRecord(sessId: Int, localSessionId: String,
+                            jumpM: Double? = nil, airS: Double? = nil,
+                            speedKmh: Double? = nil, distKm: Double? = nil,
+                            reason: String) {
+        Task {
+            do {
+                let r = try await WatchSessionUploader.shared.record(
+                    sessId: sessId,
+                    jumpM: jumpM,
+                    airS: airS,
+                    speedKmh: speedKmh,
+                    distKm: distKm
+                )
+                if !r.broken.isEmpty {
+                    print("☁️ New all-time PB (\(reason)): \(r.broken.joined(separator: ", "))")
                 }
+            } catch {
+                await MainActor.run {
+                    if self.uploadState.activeSessionId == localSessionId {
+                        self.uploadState.enqueue(PendingLiveRecord(
+                            jumpM: jumpM,
+                            airS: airS,
+                            speedKmh: speedKmh,
+                            distKm: distKm
+                        ))
+                    }
+                }
+                print("☁️ Record (\(reason)) failed: \(error.localizedDescription)")
             }
         }
     }
 
     /// Called on the main thread from handleJumpDetected.
     private func handleUploadOnJump(_ jump: Jump) {
-        guard let sessId = serverSessId else { return }
-        let jumpBetter = jump.height  > sessionBestJumpM
-        let airBetter  = jump.airtime > sessionBestAirS
-        guard jumpBetter || airBetter else { return }
-        if jumpBetter { sessionBestJumpM = jump.height  }
-        if airBetter  { sessionBestAirS  = jump.airtime }
-        Task {
-            do {
-                let r = try await WatchSessionUploader.shared.record(
-                    sessId: sessId,
-                    jumpM: jumpBetter ? jump.height  : nil,
-                    airS:  airBetter  ? jump.airtime : nil
-                )
-                if !r.broken.isEmpty { print("☁️ New all-time PB: \(r.broken.joined(separator: ", "))") }
-            } catch {
-                print("☁️ Record (jump) failed: \(error.localizedDescription)")
-            }
+        guard let record = uploadState.jumpRecordIfImproved(heightM: jump.height, airS: jump.airtime) else { return }
+        guard let sessId = uploadState.currentServerSessId, let localSessionId = uploadState.activeSessionId else {
+            uploadState.enqueue(record)
+            return
         }
+        postRecord(sessId: sessId, localSessionId: localSessionId,
+                   jumpM: record.jumpM, airS: record.airS, reason: "jump")
     }
 
     /// Called after the session is saved locally. Fires the `end` ingest call.
     private func uploadSessionEnd(session: Session) {
-        guard let sessId = serverSessId else {
-            print("☁️ Skip end upload — session never started on server (no GPS?)")
-            return
-        }
         let durMin  = max(1, Int(session.duration / 60))
         let jmax    = session.jumps.map(\.height).max() ?? 0
         let jcnt    = session.jumps.count
@@ -676,8 +696,8 @@ class SessionManager: ObservableObject {
 
         // Fall back to building track from gpsPoints if nothing was collected live
         let track: [[Int]]
-        if !trackPoints.isEmpty {
-            track = trackPoints
+        if !uploadState.trackPoints.isEmpty {
+            track = uploadState.trackPoints
         } else {
             var pts: [[Int]] = []; var lastT: Date? = nil
             for pt in session.gpsPoints {
@@ -690,6 +710,16 @@ class SessionManager: ObservableObject {
         }
 
         Task {
+            guard let sessId = await self.waitForServerSessionId(localSessionId: session.id) else {
+                print("☁️ Skip end upload — session never started on server (no GPS/auth?)")
+                await MainActor.run {
+                    if self.uploadState.activeSessionId == session.id {
+                        self.uploadState.reset(sessionId: nil)
+                    }
+                }
+                return
+            }
+            await self.flushPendingRecordsIfNeeded(sessId: sessId, localSessionId: session.id)
             do {
                 let r = try await WatchSessionUploader.shared.end(
                     sessId: sessId, durMin: durMin,
@@ -701,7 +731,28 @@ class SessionManager: ObservableObject {
             } catch {
                 print("☁️ Session end upload failed: \(error.localizedDescription)")
             }
-            await MainActor.run { self.serverSessId = nil }
+            await MainActor.run {
+                if self.uploadState.activeSessionId == session.id {
+                    self.uploadState.reset(sessionId: nil)
+                }
+            }
+        }
+    }
+
+    private func waitForServerSessionId(localSessionId: String) async -> Int? {
+        // Match the uploader's resource timeout so End can close a Start that
+        // was still waiting on watch connectivity when the rider tapped stop.
+        for _ in 0..<60 {
+            let snapshot = await MainActor.run {
+                self.uploadState.startSnapshot(sessionId: localSessionId)
+            }
+            guard snapshot.isCurrent else { return nil }
+            if let sessId = snapshot.sessId { return sessId }
+            if !snapshot.startInFlight { return nil }
+            try? await Task.sleep(nanoseconds: 500_000_000)
+        }
+        return await MainActor.run {
+            self.uploadState.activeSessionId == localSessionId ? self.uploadState.currentServerSessId : nil
         }
     }
 

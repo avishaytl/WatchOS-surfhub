@@ -107,13 +107,7 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
     private var sampleLogCounter = 0
 
     // Upload state
-    private var serverSessId: Int? = null
-    private var lastPingTimeMs: Long? = null
-    private var lastTrackTimeMs: Long? = null
-    private val trackPoints = mutableListOf<List<Int>>()
-    private var sessionBestJumpM = 0.0
-    private var sessionBestAirS = 0.0
-    private var sessionBestSpeedKmh = 0.0
+    private val uploadState = LiveSessionUploadState()
 
     private val detectionMode get() = settings.detectionMode
 
@@ -168,7 +162,7 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
 
         jumpDetector.sessionId = session.id
         jumpDetector.reset(detectionMode)
-        resetUploadState()
+        uploadState.reset(session.id)
 
         startRecordingService()
         locationManager.startTracking()
@@ -299,52 +293,39 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
 
     // MARK: - Watch Ingest Upload
 
-    private fun resetUploadState() {
-        serverSessId        = null
-        lastPingTimeMs      = null
-        lastTrackTimeMs     = null
-        trackPoints.clear()
-        sessionBestJumpM    = 0.0
-        sessionBestAirS     = 0.0
-        sessionBestSpeedKmh = 0.0
-    }
-
     private fun handleUploadOnGps(point: GpsPoint, session: Session) {
         val nowMs = System.currentTimeMillis()
 
-        if (serverSessId == null) {
-            lastPingTimeMs  = nowMs
-            lastTrackTimeMs = nowMs
-            trackPoints.add(listOf((point.latitude * 1e4).toInt(), (point.longitude * 1e4).toInt()))
+        if (uploadState.serverSessId == null) {
+            if (!uploadState.beginStartAttempt(session.id, nowMs, point.latitude, point.longitude)) return
+            val localSessionId = session.id
             viewModelScope.launch {
-                uploader.start(point.latitude, point.longitude,
-                    java.util.Date(session.startTimeMs)).onSuccess { resp ->
-                    serverSessId = resp.sessId
-                    android.util.Log.i("Upload", "Session live — sessId=${resp.sessId} spot=${resp.spot}")
-                }.onFailure { e ->
-                    android.util.Log.w("Upload", "Session start failed: ${e.message}")
+                val result = uploader.start(point.latitude, point.longitude, java.util.Date(session.startTimeMs))
+                val resp = result.getOrNull()
+                if (resp != null) {
+                    if (uploadState.acceptStart(localSessionId, resp.sessId)) {
+                        android.util.Log.i("Upload", "Session live — sessId=${resp.sessId} spot=${resp.spot}")
+                        flushPendingRecordsIfNeeded(resp.sessId, localSessionId)
+                    }
+                } else {
+                    uploadState.failStart(localSessionId)
+                    val e = result.exceptionOrNull()
+                    android.util.Log.w("Upload", "Session start failed: ${e?.message}")
                 }
             }
             return
         }
-        val sessId = serverSessId ?: return
+        val sessId = uploadState.serverSessId ?: return
 
         // Decimate track: one point every ~5 s
-        val lastTrack = lastTrackTimeMs
-        if (lastTrack == null || nowMs - lastTrack >= 5_000L) {
-            trackPoints.add(listOf((point.latitude * 1e4).toInt(), (point.longitude * 1e4).toInt()))
-            lastTrackTimeMs = nowMs
-        }
+        uploadState.appendTrackIfDue(nowMs, point.latitude, point.longitude)
 
         // Ping every ~10 s
-        val lastPing = lastPingTimeMs
-        if (lastPing == null || nowMs - lastPing >= 10_000L) {
-            val jmax = sessionBestJumpM
+        if (uploadState.shouldPing(nowMs)) {
             val jcnt = session.jumps.size
-            lastPingTimeMs = nowMs
             viewModelScope.launch {
                 uploader.ping(sessId, point.latitude, point.longitude,
-                    if (jmax > 0) jmax else null,
+                    uploadState.pingBestJumpM,
                     if (jcnt > 0) jcnt else null).onFailure { e ->
                     android.util.Log.w("Upload", "Ping failed: ${e.message}")
                 }
@@ -353,45 +334,70 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
 
         // Record new speed best (1 km/h threshold)
         val kmh = point.speed * 3.6
-        if (kmh > sessionBestSpeedKmh + 1) {
-            sessionBestSpeedKmh = kmh
-            viewModelScope.launch {
-                uploader.record(sessId, speedKmh = kmh).onSuccess { r ->
+        uploadState.speedRecordIfImproved(kmh)?.let {
+            postRecord(sessId, session.id, speedKmh = it, reason = "speed")
+        }
+
+        val distKm = runningDistance / 1000.0
+        uploadState.distanceRecordIfImproved(distKm)?.let {
+            postRecord(sessId, session.id, distKm = it, reason = "distance")
+        }
+    }
+
+    private suspend fun flushPendingRecordsIfNeeded(sessId: Int, localSessionId: String) {
+        val record = uploadState.claimPendingRecord(localSessionId) ?: return
+        val result = uploader.record(
+            sessId,
+            jumpM = record.jumpM,
+            airS = record.airS,
+            speedKmh = record.speedKmh,
+            distKm = record.distKm,
+        )
+        result.onSuccess { r ->
+            if (r.broken.isNotEmpty())
+                android.util.Log.i("Upload", "New all-time PB: ${r.broken.joinToString()}")
+        }.onFailure { e ->
+            if (uploadState.activeSessionId == localSessionId)
+                uploadState.enqueue(record)
+            android.util.Log.w("Upload", "Pending record flush failed: ${e.message}")
+        }
+    }
+
+    private fun postRecord(
+        sessId: Int,
+        localSessionId: String,
+        jumpM: Double? = null,
+        airS: Double? = null,
+        speedKmh: Double? = null,
+        distKm: Double? = null,
+        reason: String,
+    ) {
+        viewModelScope.launch {
+            uploader.record(sessId, jumpM = jumpM, airS = airS, speedKmh = speedKmh, distKm = distKm)
+                .onSuccess { r ->
                     if (r.broken.isNotEmpty())
-                        android.util.Log.i("Upload", "New all-time speed PB: ${"%.1f".format(kmh)} km/h")
-                }.onFailure { e ->
-                    android.util.Log.w("Upload", "Record (speed) failed: ${e.message}")
+                        android.util.Log.i("Upload", "New all-time PB ($reason): ${r.broken.joinToString()}")
                 }
-            }
+                .onFailure { e ->
+                    if (uploadState.activeSessionId == localSessionId)
+                        uploadState.enqueue(PendingLiveRecord(jumpM, airS, speedKmh, distKm))
+                    android.util.Log.w("Upload", "Record ($reason) failed: ${e.message}")
+                }
         }
     }
 
     private fun handleUploadOnJump(jump: Jump) {
-        val sessId = serverSessId ?: return
-        val jumpBetter = jump.height  > sessionBestJumpM
-        val airBetter  = jump.airtime > sessionBestAirS
-        if (!jumpBetter && !airBetter) return
-        if (jumpBetter) sessionBestJumpM = jump.height
-        if (airBetter)  sessionBestAirS  = jump.airtime
-        viewModelScope.launch {
-            uploader.record(sessId,
-                jumpM = if (jumpBetter) jump.height  else null,
-                airS  = if (airBetter)  jump.airtime else null,
-            ).onSuccess { r ->
-                if (r.broken.isNotEmpty())
-                    android.util.Log.i("Upload", "New all-time PB: ${r.broken.joinToString()}")
-            }.onFailure { e ->
-                android.util.Log.w("Upload", "Record (jump) failed: ${e.message}")
-            }
+        val record = uploadState.jumpRecordIfImproved(jump.height, jump.airtime) ?: return
+        val sessId = uploadState.serverSessId
+        val localSessionId = uploadState.activeSessionId
+        if (sessId == null || localSessionId == null) {
+            uploadState.enqueue(record)
+            return
         }
+        postRecord(sessId, localSessionId, jumpM = record.jumpM, airS = record.airS, reason = "jump")
     }
 
     private fun uploadSessionEnd(session: Session) {
-        val sessId = serverSessId
-        if (sessId == null) {
-            android.util.Log.w("Upload", "Skip end upload — session never started on server (no GPS?)")
-            return
-        }
         val durMin  = maxOf(1, (session.duration / 60).toInt())
         val jmax    = session.jumps.maxOfOrNull { it.height }  ?: 0.0
         val jcnt    = session.jumps.size
@@ -416,8 +422,8 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
 
         // Fall back to building track from gps points if live collection was empty
         val track: List<List<Int>>
-        if (trackPoints.isNotEmpty()) {
-            track = trackPoints.toList()
+        if (uploadState.trackPoints.isNotEmpty()) {
+            track = uploadState.trackPoints.toList()
         } else {
             val pts = mutableListOf<List<Int>>()
             var lastT = Long.MIN_VALUE
@@ -431,14 +437,32 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
         }
 
         viewModelScope.launch {
+            val sessId = waitForServerSessionId(session.id)
+            if (sessId == null) {
+                android.util.Log.w("Upload", "Skip end upload — session never started on server (no GPS/auth?)")
+                if (uploadState.activeSessionId == session.id) uploadState.reset(null)
+                return@launch
+            }
+            flushPendingRecordsIfNeeded(sessId, session.id)
             uploader.end(sessId, durMin, jmax, jcnt, airS, spdKmh, distKm,
                 avgKmh = avgKmh, track = track, jData = jData).onSuccess { r ->
                 android.util.Log.i("Upload", "Session uploaded — sessId=$sessId finalPBs=${r.broken}")
             }.onFailure { e ->
                 android.util.Log.w("Upload", "Session end upload failed: ${e.message}")
             }
-            serverSessId = null
+            if (uploadState.activeSessionId == session.id) uploadState.reset(null)
         }
+    }
+
+    private suspend fun waitForServerSessionId(localSessionId: String): Int? {
+        repeat(40) {
+            val snapshot = uploadState.startSnapshot(localSessionId)
+            if (!snapshot.isCurrent) return null
+            snapshot.sessId?.let { return it }
+            if (!snapshot.startInFlight) return null
+            delay(500)
+        }
+        return if (uploadState.activeSessionId == localSessionId) uploadState.serverSessId else null
     }
 
     // MARK: - Timer
