@@ -23,7 +23,9 @@ fun KitersApp(vm: SessionManager) {
         val isRecording by vm.isRecording.collectAsStateWithLifecycle()
         val revision by vm.settingsStore.revision.collectAsStateWithLifecycle()
         // Re-evaluate on every settings change so sign-in/out instantly updates routing.
-        val isSignedIn = revision.let { vm.settingsStore.authEmail.isNotBlank() }
+        val isSignedIn = revision.let {
+            vm.settingsStore.authAccessToken.isNotBlank() && vm.settingsStore.authUserId.isNotBlank()
+        }
 
         when {
             isRecording -> ActiveSessionScreen(vm)

@@ -7,6 +7,10 @@ struct WatchPairing {
     let expiresAt: TimeInterval
     let userId: String
     let email: String
+
+    var accountLabel: String {
+        email.isEmpty ? userId : email
+    }
 }
 
 actor WatchPairingStore {
@@ -50,9 +54,9 @@ actor WatchPairingStore {
             let access      = keychainRead("kw.access"), !access.isEmpty,
             let refresh     = keychainRead("kw.refresh"),
             let expiresStr  = keychainRead("kw.expires"), let expires = Double(expiresStr),
-            let uid         = keychainRead("kw.uid"),
-            let email       = keychainRead("kw.email")
+            let uid         = keychainRead("kw.uid")
         else { throw WatchAuthError.notSignedIn }
+        let email = keychainRead("kw.email") ?? ""
         return WatchPairing(accessToken: access, refreshToken: refresh,
                             expiresAt: expires, userId: uid, email: email)
     }

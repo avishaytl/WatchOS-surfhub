@@ -143,7 +143,7 @@
 
     <!-- Account / Sign In -->
     <string name="account_section_title">Account</string>
-    <string name="account_sign_in">Sign In</string>
+    <string name="account_sign_in">Connect Watch</string>
     <string name="account_email_placeholder">Email address</string>
     <string name="account_send_code">Send Code</string>
     <string name="account_code_sent_to">Code sent to</string>
@@ -157,4 +157,11 @@
     <string name="account_password_placeholder">Password</string>
     <string name="account_no_account_hint">No account? Sign up in the SurfHub phone app.</string>
     <string name="account_try_again">Try Again</string>
+    <string name="account_pair_preparing">Preparing code…</string>
+    <string name="account_pair_scan_title">Scan with your phone</string>
+    <string name="account_pair_scan_hint">Open SurfHub on your phone, choose Connect Watch, then scan this QR code.</string>
+    <string name="account_pair_waiting">Waiting for approval…</string>
+    <string name="account_pair_expired">Code expired</string>
+    <string name="account_pair_new_code">Show New Code</string>
+    <string name="account_pair_start_failed">Could not start pairing. Check your connection.</string>
 </resources>

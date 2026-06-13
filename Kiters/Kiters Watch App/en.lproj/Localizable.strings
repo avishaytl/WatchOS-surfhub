@@ -193,7 +193,7 @@
 
 // MARK: - Account / Sign In
 "account.section_title" = "Account";
-"account.sign_in" = "Sign In";
+"account.sign_in" = "Connect Watch";
 "account.email_placeholder" = "Email address";
 "account.send_code" = "Send Code";
 "account.code_sent" = "Code sent to";
@@ -213,3 +213,10 @@
 "account.sign_in_google" = "Continue with Google";
 "account.error_google_failed" = "Google sign-in failed. Please try again.";
 "account.error_google_cancelled" = "Google sign-in was cancelled.";
+"account.pair_preparing" = "Preparing code...";
+"account.pair_scan_title" = "Scan with your phone";
+"account.pair_scan_hint" = "Open SurfHub on your iPhone, choose Connect Watch, then scan this QR code.";
+"account.pair_waiting" = "Waiting for approval...";
+"account.pair_expired" = "Code expired";
+"account.pair_new_code" = "Show New Code";
+"account.pair_start_failed" = "Could not start pairing. Check your connection.";

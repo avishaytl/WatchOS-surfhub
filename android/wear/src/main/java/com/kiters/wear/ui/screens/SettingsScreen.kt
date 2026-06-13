@@ -50,9 +50,9 @@ fun SettingsScreen(vm: SessionManager, nav: NavController) {
         // Account
         item { SectionTitle(context.getString(R.string.account_section_title)) }
         item {
-            val email = settings.authEmail
+            val accountLabel = settings.authEmail.ifBlank { settings.authUserId }
             ChipRow(
-                if (email.isNotBlank()) email else context.getString(R.string.account_sign_in),
+                if (accountLabel.isNotBlank()) accountLabel else context.getString(R.string.account_sign_in),
                 ChipDefaults.secondaryChipColors(),
             ) { nav.navigate("account") }
         }

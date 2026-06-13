@@ -4,8 +4,6 @@ struct AccountView: View {
     @EnvironmentObject var authService: AuthService
     @AppStorage("appLanguage") private var languageCode: String = "en"
 
-    @State private var emailInput    = "sanbata.tv@gmail.com"
-    @State private var passwordInput = "123456"
     @State private var alertMessage: String?
 
     var body: some View {
@@ -44,89 +42,12 @@ struct AccountView: View {
 
     private var signedOutView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "person.circle")
-                .font(.system(size: 34))
-                .foregroundColor(.blue)
-
-            Text(L("account.section_title"))
-                .font(.headline)
-
-            TextField(L("account.email_placeholder"), text: $emailInput)
-                .textFieldStyle(.plain)
-                .multilineTextAlignment(.center)
-                .padding(8)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(8)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-
-            SecureField(L("account.password_placeholder"), text: $passwordInput)
-                .textFieldStyle(.plain)
-                .multilineTextAlignment(.center)
-                .padding(8)
-                .background(Color.white.opacity(0.1))
-                .cornerRadius(8)
-
-            Button(action: {
-                let email = emailInput.trimmingCharacters(in: .whitespaces)
-                guard !email.isEmpty, !passwordInput.isEmpty else { return }
-                Task { await authService.signIn(email: email, password: passwordInput) }
-            }) {
-                Text(L("account.sign_in"))
-                    .font(.caption)
-                    .frame(maxWidth: .infinity)
-                    .padding(10)
-                    .background(canSignIn ? Color.blue : Color.gray.opacity(0.3))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-            .buttonStyle(.plain)
-
-            // OR divider
-            HStack(spacing: 6) {
-                Rectangle()
-                    .frame(height: 0.5)
-                    .foregroundColor(.gray.opacity(0.5))
-                Text(L("account.or"))
-                    .font(.system(size: 9))
-                    .foregroundColor(.gray)
-                Rectangle()
-                    .frame(height: 0.5)
-                    .foregroundColor(.gray.opacity(0.5))
-            }
-
-            // Google sign-in
-            Button(action: {
-                Task { await authService.signInWithGoogle() }
-            }) {
-                HStack(spacing: 5) {
-                    Image(systemName: "globe")
-                        .font(.system(size: 11))
-                    Text(L("account.sign_in_google"))
-                        .font(.system(size: 11))
+            WatchPairQRView { uid in
+                Task {
+                    await authService.completePairing(uid: uid)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(9)
-                .background(Color.white.opacity(0.12))
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
-                )
             }
-            .buttonStyle(.plain)
-
-            Text(L("account.no_account_hint"))
-                .font(.system(size: 10))
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.top, 4)
         }
-    }
-
-    private var canSignIn: Bool {
-        !emailInput.trimmingCharacters(in: .whitespaces).isEmpty && !passwordInput.isEmpty
     }
 
     private func signedInView(email: String) -> some View {

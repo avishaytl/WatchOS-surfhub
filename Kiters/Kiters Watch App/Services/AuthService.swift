@@ -24,7 +24,7 @@ final class AuthService: ObservableObject {
         Task {
             if await WatchPairingStore.shared.isPaired,
                let pairing = try? await WatchPairingStore.shared.validPairing() {
-                await set(.signedIn(email: pairing.email))
+                await set(.signedIn(email: pairing.accountLabel))
             }
         }
     }
@@ -34,7 +34,7 @@ final class AuthService: ObservableObject {
         do {
             _ = try await WatchAuth.signInWithEmail(email, password)
             if let pairing = try? await WatchPairingStore.shared.validPairing() {
-                await set(.signedIn(email: pairing.email))
+                await set(.signedIn(email: pairing.accountLabel))
             }
         } catch WatchAuthError.invalidCredentials {
             await set(.error(message: L("account.error_invalid_credentials")))
@@ -49,12 +49,20 @@ final class AuthService: ObservableObject {
             let idToken = try await GoogleSignInService.shared.signIn()
             _ = try await WatchAuth.signInWithGoogle(idToken: idToken)
             if let pairing = try? await WatchPairingStore.shared.validPairing() {
-                await set(.signedIn(email: pairing.email))
+                await set(.signedIn(email: pairing.accountLabel))
             }
         } catch GoogleSignInError.cancelled {
             await set(.signedOut)
         } catch {
             await set(.error(message: error.localizedDescription))
+        }
+    }
+
+    func completePairing(uid: String) async {
+        if let pairing = try? await WatchPairingStore.shared.validPairing() {
+            await set(.signedIn(email: pairing.accountLabel))
+        } else {
+            await set(.signedIn(email: uid))
         }
     }
 

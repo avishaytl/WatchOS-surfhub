@@ -193,7 +193,7 @@
 
 // MARK: - Account / Sign In
 "account.section_title" = "חשבון";
-"account.sign_in" = "התחבר";
+"account.sign_in" = "חבר שעון";
 "account.email_placeholder" = "כתובת אימייל";
 "account.send_code" = "שלח קוד";
 "account.code_sent" = "קוד נשלח אל";
@@ -213,3 +213,10 @@
 "account.sign_in_google" = "המשך עם Google";
 "account.error_google_failed" = "ההתחברות עם Google נכשלה. אנא נסה שוב.";
 "account.error_google_cancelled" = "ההתחברות עם Google בוטלה.";
+"account.pair_preparing" = "מכין קוד...";
+"account.pair_scan_title" = "סרוק עם הטלפון";
+"account.pair_scan_hint" = "פתח את SurfHub באייפון, בחר חיבור שעון, ואז סרוק את קוד ה-QR.";
+"account.pair_waiting" = "ממתין לאישור...";
+"account.pair_expired" = "הקוד פג תוקף";
+"account.pair_new_code" = "הצג קוד חדש";
+"account.pair_start_failed" = "לא ניתן להתחיל צימוד. בדוק את החיבור.";

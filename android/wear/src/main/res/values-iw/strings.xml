@@ -143,7 +143,7 @@
 
     <!-- Account / Sign In -->
     <string name="account_section_title">חשבון</string>
-    <string name="account_sign_in">התחבר</string>
+    <string name="account_sign_in">חבר שעון</string>
     <string name="account_email_placeholder">כתובת אימייל</string>
     <string name="account_send_code">שלח קוד</string>
     <string name="account_code_sent_to">קוד נשלח אל</string>
@@ -157,4 +157,11 @@
     <string name="account_password_placeholder">סיסמה</string>
     <string name="account_no_account_hint">אין חשבון? הירשם באפליקציית SurfHub לטלפון.</string>
     <string name="account_try_again">נסה שוב</string>
+    <string name="account_pair_preparing">מכין קוד…</string>
+    <string name="account_pair_scan_title">סרוק עם הטלפון</string>
+    <string name="account_pair_scan_hint">פתח את SurfHub בטלפון, בחר חיבור שעון, ואז סרוק את קוד ה-QR.</string>
+    <string name="account_pair_waiting">ממתין לאישור…</string>
+    <string name="account_pair_expired">הקוד פג תוקף</string>
+    <string name="account_pair_new_code">הצג קוד חדש</string>
+    <string name="account_pair_start_failed">לא ניתן להתחיל צימוד. בדוק את החיבור.</string>
 </resources>
