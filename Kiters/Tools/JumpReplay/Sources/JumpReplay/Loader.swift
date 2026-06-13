@@ -8,6 +8,7 @@ enum SensorFormat: String {
 
 struct LoadedLog {
     var samples: [IMUSample]
+    var speeds: [Double?]
     var format: SensorFormat
     var detectedRate: Double  // Hz
     var sourceURL: URL
@@ -23,24 +24,37 @@ enum Loader {
         }
         let format = forceFormat ?? hint ?? FormatDetector.detect(raw)
         let samples = raw.map { $0.toIMUSample(format: format) }
+        let speeds = raw.map { $0.speed }
         let rate = estimateRate(samples)
-        return LoadedLog(samples: samples, format: format, detectedRate: rate, sourceURL: url)
+        return LoadedLog(samples: samples, speeds: speeds, format: format, detectedRate: rate, sourceURL: url)
     }
 
     private static func loadRaw(_ url: URL) throws -> ([RawRow], SensorFormat?) {
         let ext = url.pathExtension.lowercased()
         let data = try Data(contentsOf: url)
         if ext == "json" {
-            return (try parseJSON(data), nil)
+            return try parseJSONLog(data)
         } else if ext == "csv" {
             return try parseCSV(data)
         }
         throw LoaderError.unsupportedExtension(ext)
     }
 
-    private static func parseJSON(_ data: Data) throws -> [RawRow] {
+    private struct SessionLogEnvelope: Decodable {
+        let contentType: String?
+        let content: String?
+    }
+
+    private static func parseJSONLog(_ data: Data) throws -> ([RawRow], SensorFormat?) {
+        if let envelope = try? JSONDecoder().decode(SessionLogEnvelope.self, from: data),
+           envelope.contentType?.lowercased().contains("csv") == true,
+           let content = envelope.content,
+           let csvData = content.data(using: .utf8) {
+            return try parseCSV(csvData)
+        }
+
         let decoder = JSONDecoder()
-        return try decoder.decode([RawRow].self, from: data)
+        return (try decoder.decode([RawRow].self, from: data), nil)
     }
 
     private static func parseCSV(_ data: Data) throws -> ([RawRow], SensorFormat?) {
@@ -81,6 +95,7 @@ enum Loader {
             gy:   idx("gravY"),
             gz:   idx("gravZ"),
             baro: idx("baro"),
+            spd:  idx("spd"),
             wx:   idx("gyrX"),
             wy:   idx("gyrY"),
             wz:   idx("gyrZ")
@@ -104,6 +119,7 @@ enum Loader {
                 gravY: map.gy.flatMap { Double(f[$0]) } ?? 0,
                 gravZ: map.gz.flatMap { Double(f[$0]) } ?? 0,
                 baro: map.baro.flatMap { Double(f[$0]) } ?? 0,
+                speed: map.spd.flatMap { Double(f[$0]) },
                 gyrX: map.wx.flatMap { Double(f[$0]) } ?? 0,
                 gyrY: map.wy.flatMap { Double(f[$0]) } ?? 0,
                 gyrZ: map.wz.flatMap { Double(f[$0]) } ?? 0
@@ -164,17 +180,20 @@ struct RawRow: Decodable {
     let gravY: Double
     let gravZ: Double
     let baro: Double
+    let speed: Double?
     let gyrX: Double
     let gyrY: Double
     let gyrZ: Double
 
     init(timestamp: Double, accX: Double, accY: Double, accZ: Double,
          gravX: Double, gravY: Double, gravZ: Double, baro: Double,
+         speed: Double? = nil,
          gyrX: Double, gyrY: Double, gyrZ: Double) {
         self.timestamp = TimestampValue(value: timestamp)
         self.accX = accX; self.accY = accY; self.accZ = accZ
         self.gravX = gravX; self.gravY = gravY; self.gravZ = gravZ
         self.baro = baro
+        self.speed = speed
         self.gyrX = gyrX; self.gyrY = gyrY; self.gyrZ = gyrZ
     }
 

@@ -951,6 +951,7 @@ final class JumpDetector {
     // v7 wants MONOTONIC seconds since session start (not wall-clock).
     // We derive it from the first sample's timestamp.
     private var t0Wall: Date?
+    private var sessionWallStart: Date?
 
     /// Per-sample counter used to throttle CSV logging during IDLE.
     private var sampleCount: Int = 0
@@ -972,6 +973,7 @@ final class JumpDetector {
         latestSpeedMS = 0
         os_unfair_lock_unlock(&gpsLock)
         t0Wall = nil
+        sessionWallStart = nil
         sampleCount = 0
 
         setState(.idle)
@@ -1018,7 +1020,10 @@ final class JumpDetector {
     func processSample(_ sample: IMUSample) {
         sampleCount += 1
         // Establish the monotonic base on the first sample.
-        if t0Wall == nil { t0Wall = sample.timestamp }
+        if t0Wall == nil {
+            t0Wall = sample.timestamp
+            sessionWallStart = sample.timestamp
+        }
 
         let s = makeSensorSample(sample)   // reads + clears the one-shot GPS fix
         session.onSample(s)
@@ -1147,10 +1152,12 @@ final class JumpDetector {
             }
         }
 
-        // Reconstruct the wall-clock window from air time (v7 returns no raw
-        // buffer, so we anchor the end at "now" and back-date the start).
-        let end = Date()
-        let start = end.addingTimeInterval(-r.airTimeSeconds)
+        // Reconstruct the wall-clock window from the detector's monotonic
+        // sample times. Anchoring at Date() here shifts historical/replayed
+        // jumps to processing time and corrupts the session timeline.
+        let base = sessionWallStart ?? t0Wall ?? Date()
+        let start = base.addingTimeInterval(r.takeoffTimeSeconds)
+        let end = base.addingTimeInterval(r.landingTimeSeconds)
         var jump = Jump(sessionId: sessionId, startTime: start)
         jump.endTime      = end
         jump.height       = r.jumpHeightMeters

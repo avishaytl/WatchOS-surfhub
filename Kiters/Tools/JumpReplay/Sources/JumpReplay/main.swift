@@ -102,12 +102,20 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
 
         detector.reset(mode: opts.mode)
 
+        // Prefer the on-device CSV speed column when present. Falling back to
+        // MockGPS keeps older synthetic logs usable.
+        let hasLogSpeeds = log.speeds.contains { ($0 ?? 0) > 0 }
+
         // Mock GPS that fires before each new sample — keeps state in RIDING.
         let gps = MockGPS(speed: opts.speed, detector: detector)
 
         // Drive samples through detector
-        for sample in log.samples {
-            gps.tickIfNeeded(at: sample.timestamp)
+        for (idx, sample) in log.samples.enumerated() {
+            if hasLogSpeeds, idx < log.speeds.count, let spd = log.speeds[idx] {
+                detector.updateGPS(speed: spd, altitude: 0, latitude: 0, longitude: 0, timestamp: sample.timestamp)
+            } else {
+                gps.tickIfNeeded(at: sample.timestamp)
+            }
             detector.processSample(sample)
         }
 
