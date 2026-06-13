@@ -31,6 +31,10 @@
 "session.end" = "End";
 "session.end_confirm" = "End Session?";
 "session.end_message" = "Are you sure you want to end this session?";
+"session.upload_prompt_title" = "Upload Session?";
+"session.upload_prompt_message" = "This session is saved on your watch. Upload it to SurfHub cloud too?";
+"session.upload_now" = "Upload";
+"session.keep_local" = "Keep Local";
 "session.cancel" = "Cancel";
 "session.water_lock_active" = "Water Lock active";
 "session.water_lock_unlock_hint" = "Hold Digital Crown to unlock";

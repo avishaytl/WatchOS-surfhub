@@ -25,6 +25,26 @@ struct ContentView: View {
         .sheet(isPresented: $showingSportSelection) {
             SportSelectionView(isPresented: $showingSportSelection)
         }
+        .alert(
+            L("session.upload_prompt_title"),
+            isPresented: Binding(
+                get: { sessionManager.pendingCloudUpload != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        sessionManager.keepPendingSessionLocal()
+                    }
+                }
+            )
+        ) {
+            Button(L("session.keep_local"), role: .cancel) {
+                sessionManager.keepPendingSessionLocal()
+            }
+            Button(L("session.upload_now")) {
+                sessionManager.uploadPendingSessionToCloud()
+            }
+        } message: {
+            Text(L("session.upload_prompt_message"))
+        }
     }
 }
 

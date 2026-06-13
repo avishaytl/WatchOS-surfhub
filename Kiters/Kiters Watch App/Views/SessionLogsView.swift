@@ -2,7 +2,7 @@
 //  SessionLogsView.swift
 //  iSurf-Watch
 //
-//  Lists session log CSV files and lets the user share them.
+//  Lists session log files and lets the user share them.
 //
 //  watchOS limitations:
 //    • No Mail/Gmail/WhatsApp apps on the watch.
@@ -12,7 +12,7 @@
 //
 //  Two share options:
 //    1. "Share via Messages" — sends a short summary + first rows as text
-//    2. "Send to iPhone"    — transfers the full CSV file to the phone
+//    2. "Send to iPhone"    — transfers the full log file to the phone
 //
 
 import SwiftUI
@@ -254,7 +254,7 @@ struct LogFileRow: View {
 
             // ── Option 1: Share via Messages (text content) ──
             // ShareLink with String is reliable on watchOS.
-            // We send a summary + as much CSV as Messages can handle.
+            // We send a summary + as much decoded text as Messages can handle.
             if !shareText.isEmpty {
                 ShareLink(
                     item: shareText,
@@ -275,7 +275,7 @@ struct LogFileRow: View {
                 .buttonStyle(.plain)
             }
 
-            // ── Option 2: Send full CSV to iPhone ──
+            // ── Option 2: Send full log to iPhone ──
             // The iPhone can then share via Email, WhatsApp, AirDrop, etc.
             Button(action: { sendToPhone() }) {
                 HStack {
@@ -317,62 +317,10 @@ struct LogFileRow: View {
 
     // MARK: - Helpers
 
-    /// Build share text: summary header + as much CSV as is safe for Messages.
+    /// Build share text: summary header + as much decoded log text as is safe for Messages.
     /// Messages on watchOS can handle ~10–15 KB of text reliably.
     private func buildShareText() -> String {
-        let maxChars = 12_000 // safe for Messages compose on watchOS
-        let filename = url.lastPathComponent
-
-        var s = "🏄‍♂️ iSurf Session Log\n"
-        s += "━━━━━━━━━━━━━━━━━━━━\n"
-        s += "File: \(filename)\n"
-        s += "Size: \(fileSize)\n\n"
-
-        // Read the file header + beginning of CSV data
-        guard let fh = try? FileHandle(forReadingFrom: url) else { return s }
-        let readSize = min(Int(fileSizeBytes), maxChars + 2_000)
-        let data = fh.readData(ofLength: readSize)
-        try? fh.close()
-
-        guard let content = String(data: data, encoding: .utf8) else { return s }
-
-        // Extract comment header lines
-        let lines = content.components(separatedBy: "\n")
-        var csvStart = 0
-        for (i, line) in lines.enumerated() {
-            let t = line.trimmingCharacters(in: .whitespaces)
-            if t.hasPrefix("#") {
-                // Show session metadata (skip verbose column description lines)
-                if t.hasPrefix("# session:") || t.hasPrefix("# date:") ||
-                   t.hasPrefix("# mode:") || t.hasPrefix("# devMode:") ||
-                   t.hasPrefix("# sampleRate:") || t.hasPrefix("# minSpeed") ||
-                   t.hasPrefix("# takeoffG") || t.hasPrefix("# landingG") ||
-                   t.hasPrefix("# minAirtime") || t.hasPrefix("# maxAirtime") ||
-                   t.hasPrefix("# cooldown") {
-                    s += t.replacingOccurrences(of: "# ", with: "  ") + "\n"
-                }
-            } else if t.hasPrefix("idx,") {
-                csvStart = i
-                break
-            } else {
-                csvStart = i
-                break
-            }
-        }
-
-        s += "\n📊 CSV DATA:\n"
-
-        // Include the column header + as many data rows as fit
-        let csvLines = Array(lines.dropFirst(csvStart))
-        for line in csvLines {
-            if s.count + line.count + 1 > maxChars {
-                s += "\n... (truncated — send to iPhone for full file)\n"
-                break
-            }
-            s += line + "\n"
-        }
-
-        return s
+        SessionLogger.shared.buildShareText(for: url, fileSize: fileSize, maxChars: 12_000)
     }
 
     /// Load file size, estimate row count, and prepare share text.
@@ -391,7 +339,7 @@ struct LogFileRow: View {
                 } else {
                     size = String(format: "%.1f MB", Double(b) / 1_048_576)
                 }
-                rows = max(0, Int(b / 120))
+                rows = SessionLogger.shared.estimatedRowCount(for: url, fileSizeBytes: b)
             }
             DispatchQueue.main.async {
                 self.fileSize = size
@@ -403,7 +351,7 @@ struct LogFileRow: View {
         }
     }
 
-    /// Transfer the full CSV to the paired iPhone via WatchConnectivity.
+    /// Transfer the full log to the paired iPhone via WatchConnectivity.
     /// From the iPhone the user can share via Mail, WhatsApp, Gmail, AirDrop, etc.
     private func sendToPhone() {
         isSending = true

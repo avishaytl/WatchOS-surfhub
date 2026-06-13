@@ -31,6 +31,10 @@
 "session.end" = "סיים";
 "session.end_confirm" = "לסיים אימון?";
 "session.end_message" = "האם אתה בטוח שברצונך לסיים את האימון?";
+"session.upload_prompt_title" = "להעלות לענן?";
+"session.upload_prompt_message" = "האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?";
+"session.upload_now" = "העלה לענן";
+"session.keep_local" = "השאר מקומי";
 "session.cancel" = "ביטול";
 "session.water_lock_active" = "נעילת מים פעילה";
 "session.water_lock_unlock_hint" = "לחץ והחזק את הכתר הדיגיטלי לשחרור";

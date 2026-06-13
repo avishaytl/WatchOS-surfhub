@@ -73,8 +73,22 @@ final class CloudSyncService {
         guard let fileData = try? Data(contentsOf: fileURL) else {
             throw CloudSyncError.missingFileData
         }
-        guard let content = String(data: fileData, encoding: .utf8) else {
-            throw CloudSyncError.invalidFileText
+
+        let isBinaryLog = fileURL.pathExtension.lowercased() == "kslog"
+        let content: String
+        let contentType: String
+        let contentEncoding: String?
+        if isBinaryLog {
+            content = fileData.base64EncodedString()
+            contentType = "application/x-kiters-session-log"
+            contentEncoding = "base64"
+        } else {
+            guard let text = String(data: fileData, encoding: .utf8) else {
+                throw CloudSyncError.invalidFileText
+            }
+            content = text
+            contentType = "text/csv"
+            contentEncoding = nil
         }
 
         let sessionName = fileURL.deletingPathExtension().lastPathComponent
@@ -90,7 +104,8 @@ final class CloudSyncService {
         let payload = CloudLogPayload(
             type: "session_log",
             filename: fileURL.lastPathComponent,
-            contentType: "text/csv",
+            contentType: contentType,
+            contentEncoding: contentEncoding,
             appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             build: Bundle.main.infoDictionary?["CFBundleVersion"] as? String,
             uploadedAt: ISO8601DateFormatter().string(from: Date()),
@@ -214,6 +229,7 @@ private struct CloudLogPayload: Encodable {
     let type: String
     let filename: String
     let contentType: String
+    let contentEncoding: String?
     let appVersion: String?
     let build: String?
     let uploadedAt: String
