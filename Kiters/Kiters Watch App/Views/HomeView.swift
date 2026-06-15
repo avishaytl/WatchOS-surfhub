@@ -14,10 +14,23 @@ struct HomeView: View {
     @State private var showingSettings = false
     @State private var showingPermissionAlert = false
     @State private var waitingForPermission = false
-    @AppStorage("appTheme") private var appTheme: String = "blue"
+    @State private var gpsPulse = false
+    @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("appTheme") private var appTheme: String = "orange"
     @AppStorage("appLanguage") private var languageCode: String = "en"
-    
+
     private let storageManager = StorageManager()
+
+    /// Localized one-word GPS signal status for the Home indicator.
+    private var gpsStatusText: String {
+        switch sessionManager.gpsSignalQuality {
+        case .none:   return L("gps.signal_none")
+        case .weak:   return L("gps.signal_weak")
+        case .fair:   return L("gps.signal_fair")
+        case .good:   return L("gps.signal_good")
+        case .strong: return L("gps.signal_strong")
+        }
+    }
     
     private var themeColor: Color {
         switch appTheme {
@@ -27,13 +40,36 @@ struct HomeView: View {
         case "orange": return .orange
         case "cyan":   return .cyan
         case "pink":   return .pink
-        default:       return .blue
+        default:       return .orange
         }
     }
     
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
+                // GPS status — live while Home is foregrounded (GPS prewarm).
+                // Mirrors the indicator shown during an active session so the
+                // user can confirm a fix before starting.
+                HStack(spacing: 6) {
+                    GPSTrackerIndicator(
+                        signalQuality: sessionManager.gpsSignalQuality,
+                        pointCount: sessionManager.gpsPointCount,
+                        isActive: sessionManager.isGPSActive,
+                        gpsPulse: $gpsPulse
+                    )
+                    Text(gpsStatusText)
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                    Spacer()
+                    if sessionManager.lastGPSAccuracy > 0 {
+                        Text("±\(Int(sessionManager.lastGPSAccuracy))m")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundColor(.gray)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 4)
+
                 // Start Session Button
                 Button(action: {
                     handleStartTapped()
@@ -98,6 +134,17 @@ struct HomeView: View {
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
         .onAppear {
             loadSessions()
+            sessionManager.prewarmGPS()
+        }
+        .onDisappear {
+            sessionManager.stopGPSPrewarm()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .active:   sessionManager.prewarmGPS()
+            case .background, .inactive: sessionManager.stopGPSPrewarm()
+            @unknown default: break
+            }
         }
         .onChange(of: sessionManager.locationAuthStatus) { oldStatus, newStatus in
             guard waitingForPermission else { return }

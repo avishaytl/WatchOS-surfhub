@@ -45,6 +45,48 @@ struct ContentView: View {
         } message: {
             Text(L("session.upload_prompt_message"))
         }
+        .alert(
+            L(sessionManager.sessionNotice?.titleKey ?? "common.ok"),
+            isPresented: Binding(
+                get: { sessionManager.sessionNotice != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        sessionManager.sessionNotice = nil
+                    }
+                }
+            )
+        ) {
+            Button(L("common.ok"), role: .cancel) {
+                sessionManager.sessionNotice = nil
+            }
+        } message: {
+            if let notice = sessionManager.sessionNotice {
+                Text(L(notice.messageKey))
+            }
+        }
+        .alert(
+            L(authService.launchNotice?.titleKey ?? "common.ok"),
+            isPresented: Binding(
+                get: { authService.launchNotice != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        authService.launchNotice = nil
+                    }
+                }
+            )
+        ) {
+            Button(L("common.ok"), role: .cancel) {
+                authService.launchNotice = nil
+            }
+        } message: {
+            if let notice = authService.launchNotice {
+                if let arg = notice.messageArg {
+                    Text(String(format: L(notice.messageKey), arg))
+                } else {
+                    Text(L(notice.messageKey))
+                }
+            }
+        }
     }
 }
 

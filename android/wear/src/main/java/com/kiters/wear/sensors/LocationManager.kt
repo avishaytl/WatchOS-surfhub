@@ -28,6 +28,11 @@ class LocationManager(context: Context) {
     @Volatile var isTracking = false
         private set
 
+    // Distinguishes a Home-screen warm-up from a real session so tearing down
+    // the Home screen can never stop a session's GPS.
+    @Volatile private var isPrewarming = false
+    @Volatile private var sessionOwned = false
+
     var onLocationUpdate: ((GpsPoint) -> Unit)? = null
 
     private val request: LocationRequest =
@@ -59,14 +64,39 @@ class LocationManager(context: Context) {
         ContextCompat.checkSelfPermission(appContext, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
+    /**
+     * Warm up GPS ahead of a session so the first fix is ready quickly and the
+     * Home screen can show live signal quality. Safe to call repeatedly; does
+     * not request permission and no-ops if tracking is already running.
+     */
+    @SuppressLint("MissingPermission")
+    fun prewarm() {
+        if (isTracking || !hasPermission()) return
+        client.requestLocationUpdates(request, callback, Looper.getMainLooper())
+        isTracking = true
+        isPrewarming = true
+    }
+
+    /** Stop warm-up updates — but never while a real session owns the GPS. */
+    fun stopPrewarm() {
+        if (!isPrewarming) return
+        isPrewarming = false
+        if (sessionOwned) return
+        client.removeLocationUpdates(callback)
+        isTracking = false
+    }
+
     @SuppressLint("MissingPermission")
     fun startTracking() {
+        sessionOwned = true
+        isPrewarming = false
         if (isTracking || !hasPermission()) return
         client.requestLocationUpdates(request, callback, Looper.getMainLooper())
         isTracking = true
     }
 
     fun stopTracking() {
+        sessionOwned = false
         if (!isTracking) return
         client.removeLocationUpdates(callback)
         isTracking = false

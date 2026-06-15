@@ -21,6 +21,7 @@ class LocationManager: NSObject, ObservableObject {
     private var hasReceivedAuthorizationResponse = false
     private var permissionRequestInProgress = false
     private var wantsToTrack = false
+    private var isPrewarming = false
     
     // Location buffer for batch processing
     private var locationBuffer: [GPSPoint] = []
@@ -71,8 +72,35 @@ class LocationManager: NSObject, ObservableObject {
         // On watchOS, that causes a fake kCLErrorDenied before the dialog appears
     }
     
+    /// Warms up GPS ahead of a session so the first fix is ready quickly and the
+    /// Home screen can display live signal quality. Safe to call repeatedly.
+    /// Does NOT request permission (that stays a deliberate Start-Session action)
+    /// and does nothing if tracking is already running (session or prewarm).
+    func prewarm() {
+        let status = locationManager.authorizationStatus
+        authorizationStatus = status
+        guard status == .authorizedWhenInUse || status == .authorizedAlways else { return }
+        guard !isTracking else { return }
+        isPrewarming = true
+        locationManager.startUpdatingLocation()
+        isTracking = true
+        print("📍 GPS prewarm started")
+    }
+
+    /// Stops prewarm updates — but never while a real session owns the GPS
+    /// (`wantsToTrack`), so calling this on Home teardown can't kill a session.
+    func stopPrewarm() {
+        guard isPrewarming else { return }
+        isPrewarming = false
+        guard !wantsToTrack else { return }   // session owns GPS — leave it on
+        locationManager.stopUpdatingLocation()
+        isTracking = false
+        print("📍 GPS prewarm stopped")
+    }
+
     func startTracking() {
         wantsToTrack = true
+        isPrewarming = false   // a real session now owns the GPS
         let currentStatus = locationManager.authorizationStatus
         authorizationStatus = currentStatus
         

@@ -7,8 +7,19 @@ enum AuthState: Equatable {
     case error(message: String)
 }
 
+/// One-shot banner shown at app launch to confirm the watch reconnected
+/// (or to flag that the stored pairing expired). Cleared once dismissed.
+struct AuthLaunchNotice: Identifiable {
+    let id = UUID()
+    let titleKey: String
+    let messageKey: String
+    /// Optional `%@` argument for the message (e.g. the account label).
+    let messageArg: String?
+}
+
 final class AuthService: ObservableObject {
     @Published var state: AuthState = .signedOut
+    @Published var launchNotice: AuthLaunchNotice?
 
     var isSignedIn: Bool {
         guard case .signedIn = state else { return false }
@@ -22,9 +33,22 @@ final class AuthService: ObservableObject {
 
     init() {
         Task {
-            if await WatchPairingStore.shared.isPaired,
-               let pairing = try? await WatchPairingStore.shared.validPairing() {
+            // Only surface a launch notice when a pairing was previously stored,
+            // so fresh installs stay silent and just see the connect screen.
+            guard await WatchPairingStore.shared.isPaired else { return }
+            if let pairing = try? await WatchPairingStore.shared.validPairing() {
                 await set(.signedIn(email: pairing.accountLabel))
+                await setLaunchNotice(AuthLaunchNotice(
+                    titleKey: "account.connected_title",
+                    messageKey: "account.connected_message",
+                    messageArg: pairing.accountLabel
+                ))
+            } else {
+                await setLaunchNotice(AuthLaunchNotice(
+                    titleKey: "account.connect_failed_title",
+                    messageKey: "account.connect_failed_message",
+                    messageArg: nil
+                ))
             }
         }
     }
@@ -78,5 +102,10 @@ final class AuthService: ObservableObject {
     @MainActor
     private func set(_ newState: AuthState) {
         state = newState
+    }
+
+    @MainActor
+    private func setLaunchNotice(_ notice: AuthLaunchNotice) {
+        launchNotice = notice
     }
 }

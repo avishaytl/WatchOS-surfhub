@@ -25,6 +25,17 @@
     <string name="session_end">End</string>
     <string name="session_end_confirm">End Session?</string>
     <string name="session_end_message">Are you sure you want to end this session?</string>
+    <string name="session_upload_prompt_title">Upload Session?</string>
+    <string name="session_upload_prompt_message">This session is saved on your watch. Upload it to SurfHub cloud too?</string>
+    <string name="session_upload_now">Upload</string>
+    <string name="session_keep_local">Keep Local</string>
+    <string name="session_too_short_title">Session Not Saved</string>
+    <string name="session_too_short_message">Sessions shorter than 1 minute are discarded.</string>
+    <string name="session_upload_failed_title">Could Not Upload</string>
+    <string name="session_upload_no_gps_message">No GPS point was recorded, so this session could not be started on the server. It stayed on your watch.</string>
+    <string name="session_upload_failed_message">The session stayed on your watch. Check GPS, sign-in, and network connection, then try again later.</string>
+    <string name="session_upload_success_title">Session Uploaded</string>
+    <string name="session_upload_success_message">Your session was uploaded to SurfHub cloud successfully.</string>
     <string name="session_cancel">Cancel</string>
     <string name="session_screen_lock_active">Screen lock active</string>
     <string name="session_best_jump">🏆 Best Jump</string>
@@ -93,7 +104,7 @@
     <string name="logs_title">Session Logs</string>
     <string name="logs_empty">No logs yet</string>
     <string name="logs_empty_hint">Start a session to create a diagnostic log file.</string>
-    <string name="logs_share">Share CSV</string>
+    <string name="logs_share">Share Log</string>
     <string name="logs_delete_all">Delete All Logs</string>
     <string name="logs_delete_confirm">Delete all log files?</string>
     <string name="logs_rows">~%d rows</string>
@@ -144,6 +155,10 @@
     <!-- Account / Sign In -->
     <string name="account_section_title">Account</string>
     <string name="account_sign_in">Connect Watch</string>
+    <string name="account_connected_title">Connected</string>
+    <string name="account_connected_message">Signed in as %s</string>
+    <string name="account_connect_failed_title">Sign-In Expired</string>
+    <string name="account_connect_failed_message">Your watch pairing expired. Reconnect from Settings → Account.</string>
     <string name="account_email_placeholder">Email address</string>
     <string name="account_send_code">Send Code</string>
     <string name="account_code_sent_to">Code sent to</string>

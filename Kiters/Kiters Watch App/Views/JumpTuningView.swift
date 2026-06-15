@@ -9,7 +9,7 @@ import SwiftUI
 
 struct JumpTuningView: View {
     @AppStorage("appLanguage") private var languageCode: String = "en"
-    @AppStorage("appTheme") private var appTheme: String = "blue"
+    @AppStorage("appTheme") private var appTheme: String = "orange"
 
     @State private var minSpeed: Double = 15.0 / 3.6       // m/s
     @State private var takeoffG: Double = 1.5
@@ -31,7 +31,7 @@ struct JumpTuningView: View {
         case "orange": return .orange
         case "cyan":   return .cyan
         case "pink":   return .pink
-        default:       return .blue
+        default:       return .orange
         }
     }
 

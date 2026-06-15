@@ -1,0 +1,26 @@
+Kiters Session Log
+File: sample-session.kslog
+Size: 771 bytes
+Format: binary kslog v1
+session: sample-session-0001
+date: 20260613_120000
+mode: Standard
+devMode: false
+sampleRate: 50 Hz
+minSpeed(m/s): 4.17
+takeoffG(g): 1.50
+landingG(g): 2.00
+minAirtime(s): 0.50
+maxAirtime(s): 8.00
+cooldown(s): 1.50
+
+CSV preview decoded from binary:
+idx,t,ax,ay,az,aM,gx,gy,gz,gM,gvX,gvY,gvZ,baro,baseBaro,spd,lowG,state,evt
+1,0.000,,,,,,,,,,,,,,0.00,,idle,state->IDLE
+2,0.200,0.015,-0.010,0.020,0.027,0.020,0.010,0.000,0.022,0.000,0.000,-1.000,1013.24,1013.24,0.00,0,idle,
+3,1.200,,,,,,,,,,,,,,5.20,,riding,state->RIDING
+4,1.220,1.820,0.080,0.420,1.870,2.450,1.110,0.620,2.760,0.010,-0.040,-0.999,1013.20,1013.24,5.20,0,riding,release
+5,1.300,,,,,,,,,,,,,,5.40,,airborne,state->AIRBORNE
+6,1.800,0.210,-0.040,0.120,0.250,4.200,1.800,0.900,4.650,0.020,-0.030,-0.999,1013.09,1013.24,5.40,0,airborne,
+7,3.220,2.150,0.150,0.610,2.240,1.200,0.400,0.200,1.280,0.010,-0.020,-0.999,1013.22,1013.24,5.10,0,airborne,land
+8,3.600,,,,,,,,,,,,,,5.10,,cooldown,JUMP ACCEPTED h=1.3m air=1.9s rot=0 conf=0.74 src=kinematic land=hardImpact

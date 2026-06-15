@@ -25,6 +25,17 @@
     <string name="session_end">סיים</string>
     <string name="session_end_confirm">לסיים אימון?</string>
     <string name="session_end_message">האם אתה בטוח שברצונך לסיים את האימון?</string>
+    <string name="session_upload_prompt_title">להעלות לענן?</string>
+    <string name="session_upload_prompt_message">האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?</string>
+    <string name="session_upload_now">העלה לענן</string>
+    <string name="session_keep_local">השאר מקומי</string>
+    <string name="session_too_short_title">האימון לא נשמר</string>
+    <string name="session_too_short_message">אימונים קצרים מדקה נמחקים ולא נשמרים.</string>
+    <string name="session_upload_failed_title">לא ניתן להעלות</string>
+    <string name="session_upload_no_gps_message">לא נרשמה נקודת GPS, לכן אי אפשר להתחיל את האימון בשרת. האימון נשאר בשעון.</string>
+    <string name="session_upload_failed_message">האימון נשאר בשעון. בדוק GPS, התחברות ורשת, ונסה שוב מאוחר יותר.</string>
+    <string name="session_upload_success_title">האימון הועלה</string>
+    <string name="session_upload_success_message">האימון הועלה בהצלחה לענן SurfHub.</string>
     <string name="session_cancel">ביטול</string>
     <string name="session_screen_lock_active">נעילת מסך פעילה</string>
     <string name="session_best_jump">🏆 הקפיצה הטובה ביותר</string>
@@ -93,7 +104,7 @@
     <string name="logs_title">לוגים של אימונים</string>
     <string name="logs_empty">אין לוגים עדיין</string>
     <string name="logs_empty_hint">התחל אימון כדי ליצור קובץ לוג דיאגנוסטי.</string>
-    <string name="logs_share">שתף CSV</string>
+    <string name="logs_share">שתף לוג</string>
     <string name="logs_delete_all">מחק את כל הלוגים</string>
     <string name="logs_delete_confirm">למחוק את כל קבצי הלוג?</string>
     <string name="logs_rows">~%d שורות</string>
@@ -144,6 +155,10 @@
     <!-- Account / Sign In -->
     <string name="account_section_title">חשבון</string>
     <string name="account_sign_in">חבר שעון</string>
+    <string name="account_connected_title">מחובר</string>
+    <string name="account_connected_message">מחובר כ-%s</string>
+    <string name="account_connect_failed_title">ההתחברות פגה</string>
+    <string name="account_connect_failed_message">החיבור של השעון פג. התחבר מחדש דרך הגדרות ← חשבון.</string>
     <string name="account_email_placeholder">כתובת אימייל</string>
     <string name="account_send_code">שלח קוד</string>
     <string name="account_code_sent_to">קוד נשלח אל</string>

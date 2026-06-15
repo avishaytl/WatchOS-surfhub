@@ -103,7 +103,7 @@ struct AmbientSessionView: View {
 
 struct MetricsView: View {
     @EnvironmentObject var sessionManager: SessionManager
-    @AppStorage("appTheme") private var appTheme: String = "blue"
+    @AppStorage("appTheme") private var appTheme: String = "orange"
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("metricsTopPadding") private var metricsTopPaddingStored: Double = -1  // -1 = auto
     @Environment(\.isLuminanceReduced) var isLuminanceReduced
@@ -117,7 +117,7 @@ struct MetricsView: View {
         case "orange": return .orange
         case "cyan":   return .cyan
         case "pink":   return .pink
-        default:       return .blue
+        default:       return .orange
         }
     }
     

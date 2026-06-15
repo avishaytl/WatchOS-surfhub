@@ -35,6 +35,13 @@
 "session.upload_prompt_message" = "האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?";
 "session.upload_now" = "העלה לענן";
 "session.keep_local" = "השאר מקומי";
+"session.too_short_title" = "האימון לא נשמר";
+"session.too_short_message" = "אימונים קצרים מדקה נמחקים ולא נשמרים.";
+"session.upload_failed_title" = "לא ניתן להעלות";
+"session.upload_no_gps_message" = "לא נרשמה נקודת GPS, לכן אי אפשר להתחיל את האימון בשרת. האימון נשאר בשעון.";
+"session.upload_failed_message" = "האימון נשאר בשעון. בדוק GPS, התחברות ורשת, ונסה שוב מאוחר יותר.";
+"session.upload_success_title" = "האימון הועלה";
+"session.upload_success_message" = "האימון הועלה בהצלחה לענן SurfHub.";
 "session.cancel" = "ביטול";
 "session.water_lock_active" = "נעילת מים פעילה";
 "session.water_lock_unlock_hint" = "לחץ והחזק את הכתר הדיגיטלי לשחרור";
@@ -198,6 +205,10 @@
 // MARK: - Account / Sign In
 "account.section_title" = "חשבון";
 "account.sign_in" = "חבר שעון";
+"account.connected_title" = "מחובר";
+"account.connected_message" = "מחובר כ-%@";
+"account.connect_failed_title" = "ההתחברות פגה";
+"account.connect_failed_message" = "החיבור של השעון פג. התחבר מחדש דרך הגדרות ← חשבון.";
 "account.email_placeholder" = "כתובת אימייל";
 "account.send_code" = "שלח קוד";
 "account.code_sent" = "קוד נשלח אל";

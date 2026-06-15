@@ -11,6 +11,7 @@ import android.os.VibratorManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.kiters.wear.R
 import com.kiters.wear.engine.GpsUtil
 import com.kiters.wear.engine.JumpDetector
 import com.kiters.wear.model.GpsPoint
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.Executors
 
 /**
@@ -42,6 +44,18 @@ import java.util.concurrent.Executors
  * keeps an incremental running distance, feeds the jump detector on the sensor
  * thread first, then publishes UI state. Exposes everything as StateFlows.
  */
+data class PendingSessionCloudUpload(
+    val session: Session,
+    val logFile: File?,
+)
+
+data class SessionUserNotice(
+    val titleRes: Int,
+    val messageRes: Int,
+    /** Optional `%s` argument substituted into [messageRes] (e.g. account label). */
+    val messageArg: String? = null,
+)
+
 class SessionManager(app: Application) : AndroidViewModel(app) {
 
     private val settings = SettingsStore(app)
@@ -80,6 +94,10 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
     val duration: StateFlow<Double> = _duration.asStateFlow()
     private val _heartRate = MutableStateFlow(0.0)
     val heartRate: StateFlow<Double> = _heartRate.asStateFlow()
+    private val _pendingCloudUpload = MutableStateFlow<PendingSessionCloudUpload?>(null)
+    val pendingCloudUpload: StateFlow<PendingSessionCloudUpload?> = _pendingCloudUpload.asStateFlow()
+    private val _sessionNotice = MutableStateFlow<SessionUserNotice?>(null)
+    val sessionNotice: StateFlow<SessionUserNotice?> = _sessionNotice.asStateFlow()
 
     private val _gpsPointCount = MutableStateFlow(0)
     val gpsPointCount: StateFlow<Int> = _gpsPointCount.asStateFlow()
@@ -103,6 +121,14 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
     private var lastGpsPoint: GpsPoint? = null
     private val speedSmoothingBuffer = ArrayList<Double>()
     private val speedSmoothingWindow = 5
+
+    /**
+     * Speed (m/s) below which the rider is treated as stationary: the displayed
+     * current speed is forced to 0 and the session max-speed is NOT advanced.
+     * Kills GPS jitter that otherwise "fakes" a few km/h while standing still.
+     * ~5.4 km/h — far below any real kitesurf riding speed.
+     */
+    private val stationarySpeedThreshold = 1.5
     private var sessionStartMonotonic: Double? = null
     private var sampleLogCounter = 0
 
@@ -121,6 +147,24 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
         workoutManager.onHeartRate = { bpm -> mainHandler.post { _heartRate.value = bpm } }
 
         refreshLocationAuth()
+        emitLaunchAuthNotice()
+    }
+
+    /**
+     * One-shot confirmation at app launch that the watch is still signed in.
+     * Only fires when a pairing/token was previously stored, so fresh installs
+     * stay silent and simply land on the connect screen. Mirrors the iOS
+     * AuthService launch notice.
+     */
+    private fun emitLaunchAuthNotice() {
+        if (settings.authAccessToken.isNotBlank() && settings.authUserId.isNotBlank()) {
+            val label = settings.authEmail.ifBlank { settings.authUserId }
+            _sessionNotice.value = SessionUserNotice(
+                R.string.account_connected_title,
+                R.string.account_connected_message,
+                messageArg = label,
+            )
+        }
     }
 
     // MARK: - Permissions
@@ -134,6 +178,25 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
     fun onPermissionResult(granted: Boolean) {
         _locationAuthStatus.value =
             if (granted) LocationAuthStatus.AUTHORIZED else LocationAuthStatus.DENIED
+    }
+
+    /**
+     * Warm up GPS while the Home screen is in the foreground so a session can
+     * start with an immediate fix and the user sees live signal quality.
+     * No-op when not authorized or when a session is already recording.
+     */
+    fun prewarmGps() {
+        if (_isRecording.value) return
+        locationManager.prewarm()
+    }
+
+    /** Stop the Home-screen GPS warm-up. Never affects an active session. */
+    fun stopGpsPrewarm() {
+        locationManager.stopPrewarm()
+        if (!_isRecording.value) {
+            _isGpsActive.value = false
+            _gpsSignalQuality.value = GpsSignalQuality.NONE
+        }
     }
 
     // MARK: - Session Control
@@ -154,6 +217,8 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
         _isGpsActive.value = false
         _lastGpsAccuracy.value = 0.0
         _gpsSignalQuality.value = GpsSignalQuality.NONE
+        _pendingCloudUpload.value = null
+        _sessionNotice.value = null
         runningDistance = 0.0
         lastGpsPoint = null
         speedSmoothingBuffer.clear()
@@ -201,21 +266,58 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
         motionManager.stopTracking()
         workoutManager.endWorkout()
         sessionLogger.stop()
+        val completedLogFile = sessionLogger.mostRecentLogFile()
         timerJob = false
 
         s.endTimeMs = System.currentTimeMillis()
         s.status = SessionStatus.COMPLETED
+
+        if (s.duration < 60.0) {
+            sessionLogger.deleteLogFile(completedLogFile)
+            stopRecordingService()
+            resetFinishedSessionState()
+            _pendingCloudUpload.value = null
+            uploadState.reset(null)
+            _sessionNotice.value = SessionUserNotice(
+                R.string.session_too_short_title,
+                R.string.session_too_short_message,
+            )
+            android.util.Log.i("Session", "Session discarded — shorter than 60 seconds")
+            return
+        }
+
         storageManager.saveSession(s)
-        uploadSessionEnd(s)
 
         stopRecordingService()
 
-        _currentSession.value = null
-        _isRecording.value = false
-        _isPaused.value = false
-        _jumpCount.value = 0
-        _isGpsActive.value = false
-        _gpsSignalQuality.value = GpsSignalQuality.NONE
+        resetFinishedSessionState()
+        if (s.gpsPoints.isEmpty()) {
+            _pendingCloudUpload.value = null
+            uploadState.reset(null)
+            _sessionNotice.value = SessionUserNotice(
+                R.string.session_upload_failed_title,
+                R.string.session_upload_no_gps_message,
+            )
+            return
+        }
+        _pendingCloudUpload.value = PendingSessionCloudUpload(s, completedLogFile)
+    }
+
+    fun keepPendingSessionLocal() {
+        val pending = _pendingCloudUpload.value ?: return
+        _pendingCloudUpload.value = null
+        if (uploadState.activeSessionId == pending.session.id) uploadState.reset(null)
+        android.util.Log.i("Upload", "Session kept local only: ${pending.session.id}")
+    }
+
+    fun uploadPendingSessionToCloud() {
+        val pending = _pendingCloudUpload.value ?: return
+        _pendingCloudUpload.value = null
+        uploadCompletedSessionToCloud(pending.session)
+    }
+
+    fun dismissSessionNotice() {
+        _sessionNotice.value = null
     }
 
     fun loadAllSessions(): List<Session> = storageManager.loadAllSessions()
@@ -230,6 +332,18 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
     // MARK: - Data handling
 
     private fun handleGpsPoint(point: GpsPoint) {
+        // Always reflect GPS signal quality so the Home screen can show a live
+        // indicator while GPS warms up — even before a session has started.
+        _isGpsActive.value = true
+        _lastGpsAccuracy.value = point.horizontalAccuracy
+        _gpsSignalQuality.value = GpsSignalQuality.from(point.horizontalAccuracy)
+
+        // Everything below is session-recording work only. During Home-screen
+        // prewarm there is no active session, so skip detector/metrics entirely
+        // (and avoid polluting the speed-smoothing buffer the session reuses).
+        val session = _currentSession.value ?: return
+        if (session.status != SessionStatus.ACTIVE) return
+
         // Smooth speed via moving average before feeding the detector.
         speedSmoothingBuffer.add(point.speed)
         if (speedSmoothingBuffer.size > speedSmoothingWindow) speedSmoothingBuffer.removeAt(0)
@@ -245,9 +359,6 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
             timestamp = tMono,
         )
 
-        val session = _currentSession.value ?: return
-        if (session.status != SessionStatus.ACTIVE) return
-
         session.gpsPoints.add(point)
         lastGpsPoint?.let { prev ->
             runningDistance += GpsUtil.haversine(prev.latitude, prev.longitude, point.latitude, point.longitude)
@@ -256,21 +367,23 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
         session.cachedDistance = runningDistance
 
         _distance.value = runningDistance
-        _maxSpeed.value = maxOf(_maxSpeed.value, point.speed)
-        _currentSpeed.value = point.speed
+        // Use the smoothed speed with a stationary deadband so standing-still
+        // GPS jitter neither shows a phantom current speed nor inflates the max.
+        val displaySpeed = if (smoothed >= stationarySpeedThreshold) smoothed else 0.0
+        _currentSpeed.value = displaySpeed
+        if (displaySpeed > 0.0) {
+            _maxSpeed.value = maxOf(_maxSpeed.value, smoothed)
+        }
+        // GPS point count is session-scoped (signal quality / accuracy are already
+        // updated unconditionally at the top of this method).
         _gpsPointCount.value = session.gpsPoints.size
-        _isGpsActive.value = true
-        _lastGpsAccuracy.value = point.horizontalAccuracy
-        _gpsSignalQuality.value = GpsSignalQuality.from(point.horizontalAccuracy)
-
-        handleUploadOnGps(point, session)
     }
 
     private fun handleImuSample(sample: ImuSample) {
         // Feed the detector first (most latency-sensitive), on the sensor thread.
         jumpDetector.processSample(sample)
 
-        // CSV log: full rate when active, throttled to ~10 Hz during IDLE.
+        // Binary session log: full rate when active, throttled to ~10 Hz during IDLE.
         if (sessionStartMonotonic == null) sessionStartMonotonic = sample.timestamp
         sampleLogCounter += 1
         val state = jumpDetector.state
@@ -287,117 +400,10 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
             session.jumps.add(jump)
             _currentSession.value = session.copy(jumps = ArrayList(session.jumps))
             _jumpCount.value = session.jumps.size
-            handleUploadOnJump(jump)
         }
     }
 
-    // MARK: - Watch Ingest Upload
-
-    private fun handleUploadOnGps(point: GpsPoint, session: Session) {
-        val nowMs = System.currentTimeMillis()
-
-        if (uploadState.serverSessId == null) {
-            if (!uploadState.beginStartAttempt(session.id, nowMs, point.latitude, point.longitude)) return
-            val localSessionId = session.id
-            viewModelScope.launch {
-                val result = uploader.start(point.latitude, point.longitude, java.util.Date(session.startTimeMs))
-                val resp = result.getOrNull()
-                if (resp != null) {
-                    if (uploadState.acceptStart(localSessionId, resp.sessId)) {
-                        android.util.Log.i("Upload", "Session live — sessId=${resp.sessId} spot=${resp.spot}")
-                        flushPendingRecordsIfNeeded(resp.sessId, localSessionId)
-                    }
-                } else {
-                    uploadState.failStart(localSessionId)
-                    val e = result.exceptionOrNull()
-                    android.util.Log.w("Upload", "Session start failed: ${e?.message}")
-                }
-            }
-            return
-        }
-        val sessId = uploadState.serverSessId ?: return
-
-        // Decimate track: one point every ~5 s
-        uploadState.appendTrackIfDue(nowMs, point.latitude, point.longitude)
-
-        // Ping every ~10 s
-        if (uploadState.shouldPing(nowMs)) {
-            val jcnt = session.jumps.size
-            viewModelScope.launch {
-                uploader.ping(sessId, point.latitude, point.longitude,
-                    uploadState.pingBestJumpM,
-                    if (jcnt > 0) jcnt else null).onFailure { e ->
-                    android.util.Log.w("Upload", "Ping failed: ${e.message}")
-                }
-            }
-        }
-
-        // Record new speed best (1 km/h threshold)
-        val kmh = point.speed * 3.6
-        uploadState.speedRecordIfImproved(kmh)?.let {
-            postRecord(sessId, session.id, speedKmh = it, reason = "speed")
-        }
-
-        val distKm = runningDistance / 1000.0
-        uploadState.distanceRecordIfImproved(distKm)?.let {
-            postRecord(sessId, session.id, distKm = it, reason = "distance")
-        }
-    }
-
-    private suspend fun flushPendingRecordsIfNeeded(sessId: Int, localSessionId: String) {
-        val record = uploadState.claimPendingRecord(localSessionId) ?: return
-        val result = uploader.record(
-            sessId,
-            jumpM = record.jumpM,
-            airS = record.airS,
-            speedKmh = record.speedKmh,
-            distKm = record.distKm,
-        )
-        result.onSuccess { r ->
-            if (r.broken.isNotEmpty())
-                android.util.Log.i("Upload", "New all-time PB: ${r.broken.joinToString()}")
-        }.onFailure { e ->
-            if (uploadState.activeSessionId == localSessionId)
-                uploadState.enqueue(record)
-            android.util.Log.w("Upload", "Pending record flush failed: ${e.message}")
-        }
-    }
-
-    private fun postRecord(
-        sessId: Int,
-        localSessionId: String,
-        jumpM: Double? = null,
-        airS: Double? = null,
-        speedKmh: Double? = null,
-        distKm: Double? = null,
-        reason: String,
-    ) {
-        viewModelScope.launch {
-            uploader.record(sessId, jumpM = jumpM, airS = airS, speedKmh = speedKmh, distKm = distKm)
-                .onSuccess { r ->
-                    if (r.broken.isNotEmpty())
-                        android.util.Log.i("Upload", "New all-time PB ($reason): ${r.broken.joinToString()}")
-                }
-                .onFailure { e ->
-                    if (uploadState.activeSessionId == localSessionId)
-                        uploadState.enqueue(PendingLiveRecord(jumpM, airS, speedKmh, distKm))
-                    android.util.Log.w("Upload", "Record ($reason) failed: ${e.message}")
-                }
-        }
-    }
-
-    private fun handleUploadOnJump(jump: Jump) {
-        val record = uploadState.jumpRecordIfImproved(jump.height, jump.airtime) ?: return
-        val sessId = uploadState.serverSessId
-        val localSessionId = uploadState.activeSessionId
-        if (sessId == null || localSessionId == null) {
-            uploadState.enqueue(record)
-            return
-        }
-        postRecord(sessId, localSessionId, jumpM = record.jumpM, airS = record.airS, reason = "jump")
-    }
-
-    private fun uploadSessionEnd(session: Session) {
+    private fun uploadCompletedSessionToCloud(session: Session) {
         val durMin  = maxOf(1, (session.duration / 60).toInt())
         val jmax    = session.jumps.maxOfOrNull { it.height }  ?: 0.0
         val jcnt    = session.jumps.size
@@ -420,49 +426,72 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
             )
         }
 
-        // Fall back to building track from gps points if live collection was empty
-        val track: List<List<Int>>
-        if (uploadState.trackPoints.isNotEmpty()) {
-            track = uploadState.trackPoints.toList()
-        } else {
-            val pts = mutableListOf<List<Int>>()
-            var lastT = Long.MIN_VALUE
-            for (pt in session.gpsPoints) {
-                if (pt.timestampMs - lastT >= 5_000L) {
-                    pts.add(listOf((pt.latitude * 1e4).toInt(), (pt.longitude * 1e4).toInt()))
-                    lastT = pt.timestampMs
-                }
+        val track = mutableListOf<List<Int>>()
+        var lastT = Long.MIN_VALUE
+        for (pt in session.gpsPoints) {
+            if (pt.timestampMs - lastT >= 5_000L) {
+                val compact = listOf((pt.latitude * 1e4).toInt(), (pt.longitude * 1e4).toInt())
+                if (track.lastOrNull() != compact) track.add(compact)
+                lastT = pt.timestampMs
             }
-            track = if (pts.isEmpty()) listOf(listOf(0, 0)) else pts
         }
 
         viewModelScope.launch {
-            val sessId = waitForServerSessionId(session.id)
-            if (sessId == null) {
-                android.util.Log.w("Upload", "Skip end upload — session never started on server (no GPS/auth?)")
+            val firstPoint = session.gpsPoints.firstOrNull()
+            if (firstPoint == null) {
+                android.util.Log.w("Upload", "Session cloud upload skipped — no GPS fix was recorded")
                 if (uploadState.activeSessionId == session.id) uploadState.reset(null)
+                _sessionNotice.value = SessionUserNotice(
+                    R.string.session_upload_failed_title,
+                    R.string.session_upload_no_gps_message,
+                )
                 return@launch
             }
-            flushPendingRecordsIfNeeded(sessId, session.id)
-            uploader.end(sessId, durMin, jmax, jcnt, airS, spdKmh, distKm,
-                avgKmh = avgKmh, track = track, jData = jData).onSuccess { r ->
-                android.util.Log.i("Upload", "Session uploaded — sessId=$sessId finalPBs=${r.broken}")
-            }.onFailure { e ->
-                android.util.Log.w("Upload", "Session end upload failed: ${e.message}")
+
+            val startResult = uploader.start(firstPoint.latitude, firstPoint.longitude, java.util.Date(session.startTimeMs))
+            val started = startResult.getOrNull()
+            if (started == null) {
+                android.util.Log.w("Upload", "Session start upload failed: ${startResult.exceptionOrNull()?.message}")
+                if (uploadState.activeSessionId == session.id) uploadState.reset(null)
+                _sessionNotice.value = SessionUserNotice(
+                    R.string.session_upload_failed_title,
+                    R.string.session_upload_failed_message,
+                )
+                return@launch
             }
+
+            val finalTrack = if (track.isEmpty()) {
+                listOf(listOf((firstPoint.latitude * 1e4).toInt(), (firstPoint.longitude * 1e4).toInt()))
+            } else {
+                track
+            }
+
+            uploader.end(started.sessId, durMin, jmax, jcnt, airS, spdKmh, distKm,
+                avgKmh = avgKmh, track = finalTrack, jData = jData).onSuccess { r ->
+                android.util.Log.i("Upload", "Session uploaded — sessId=${started.sessId} finalPBs=${r.broken}")
+                _sessionNotice.value = SessionUserNotice(
+                    R.string.session_upload_success_title,
+                    R.string.session_upload_success_message,
+                )
+            }.onFailure { e ->
+                android.util.Log.w("Upload", "Session cloud upload failed: ${e.message}")
+                _sessionNotice.value = SessionUserNotice(
+                    R.string.session_upload_failed_title,
+                    R.string.session_upload_failed_message,
+                )
+            }
+
             if (uploadState.activeSessionId == session.id) uploadState.reset(null)
         }
     }
 
-    private suspend fun waitForServerSessionId(localSessionId: String): Int? {
-        repeat(40) {
-            val snapshot = uploadState.startSnapshot(localSessionId)
-            if (!snapshot.isCurrent) return null
-            snapshot.sessId?.let { return it }
-            if (!snapshot.startInFlight) return null
-            delay(500)
-        }
-        return if (uploadState.activeSessionId == localSessionId) uploadState.serverSessId else null
+    private fun resetFinishedSessionState() {
+        _currentSession.value = null
+        _isRecording.value = false
+        _isPaused.value = false
+        _jumpCount.value = 0
+        _isGpsActive.value = false
+        _gpsSignalQuality.value = GpsSignalQuality.NONE
     }
 
     // MARK: - Timer

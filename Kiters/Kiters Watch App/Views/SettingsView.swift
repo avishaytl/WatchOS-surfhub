@@ -10,17 +10,12 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var authService: AuthService
     @AppStorage("units") private var units: String = "metric"
-    @AppStorage("appTheme") private var appTheme: String = "blue"
+    @AppStorage("appTheme") private var appTheme: String = "orange"
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("detectionMode") private var detectionModeRaw: String = DetectionMode.standard.rawValue
     @AppStorage("autoLock") private var autoLock: Bool = true
     @AppStorage("hapticFeedback") private var hapticFeedback: Bool = true
-    @AppStorage("voiceAnnouncements") private var voiceAnnouncements: Bool = false
     @AppStorage("metricsTopPadding") private var metricsTopPadding: Double = -1  // -1 = auto
-
-    private var detectionMode: DetectionMode {
-        DetectionMode(rawValue: detectionModeRaw) ?? .standard
-    }
 
     private var themeColor: Color {
         switch appTheme {
@@ -30,7 +25,7 @@ struct SettingsView: View {
         case "orange": return .orange
         case "cyan":   return .cyan
         case "pink":   return .pink
-        default:       return .blue
+        default:       return .orange
         }
     }
     
@@ -202,101 +197,6 @@ struct SettingsView: View {
                 
                 Divider()
                 
-                // Jump Detection Section
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(L("settings.jump_detection"))
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .textCase(.uppercase)
-
-                    // Detection mode cards (Standard only)
-                    ForEach([DetectionMode.standard], id: \.self) { mode in
-                        Button(action: { detectionModeRaw = mode.rawValue }) {
-                            HStack(spacing: 10) {
-                                Image(systemName: mode.icon)
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(modeColor(mode))
-                                    .frame(width: 22)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(mode.displayName)
-                                        .font(.caption)
-                                        .fontWeight(detectionMode == mode ? .bold : .regular)
-                                        .foregroundColor(.white)
-                                    Text(mode.description)
-                                        .font(.system(size: 9))
-                                        .foregroundColor(.gray)
-                                        .lineLimit(2)
-                                }
-
-                                Spacer()
-
-                                if detectionMode == mode {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(modeColor(mode))
-                                        .font(.caption)
-                                }
-                            }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 10)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(detectionMode == mode
-                                          ? modeColor(mode).opacity(0.18)
-                                          : Color.white.opacity(0.05))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(detectionMode == mode
-                                            ? modeColor(mode).opacity(0.6)
-                                            : Color.white.opacity(0.1),
-                                            lineWidth: 1)
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    // Live threshold preview for selected mode
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Active thresholds")
-                            .font(.system(size: 9))
-                            .foregroundColor(.gray)
-                        HStack(spacing: 12) {
-                            thresholdBadge(label: "Takeoff", value: "\(String(format:"%.1f",detectionMode.takeoffG))g")
-                            thresholdBadge(label: "Speed", value: "\(Int(detectionMode.minSpeed * 3.6))km/h")
-                            thresholdBadge(label: "Min air", value: "\(String(format:"%.1f",detectionMode.minAirtime))s")
-                        }
-                    }
-                    .padding(.top, 4)
-                }
-                
-                // Dev / Toss Test toggle
-                VStack(alignment: .leading, spacing: 4) {
-                    Toggle(isOn: Binding(
-                        get: { JumpDetectionConfig.shared.devMode },
-                        set: { JumpDetectionConfig.shared.devMode = $0 }
-                    )) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "ant.fill")
-                                .foregroundColor(.orange)
-                                .frame(width: 18)
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(L("settings.dev_mode"))
-                                    .font(.caption)
-                                Text(L("settings.dev_mode_help"))
-                                    .font(.system(size: 8))
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                    }
-                    .toggleStyle(.switch)
-                }
-                .padding(8)
-                .background(Color.orange.opacity(0.08))
-                .cornerRadius(8)
-                
-                Divider()
-                
                 // Display & Feedback Section
                 VStack(alignment: .leading, spacing: 12) {
                     Text(L("settings.display_feedback"))
@@ -387,16 +287,6 @@ struct SettingsView: View {
                                 .foregroundColor(.orange)
                                 .frame(width: 20)
                             Text(L("settings.haptic_feedback"))
-                                .font(.caption)
-                        }
-                    }
-                    
-                    Toggle(isOn: $voiceAnnouncements) {
-                        HStack {
-                            Image(systemName: "speaker.wave.2.fill")
-                                .foregroundColor(.green)
-                                .frame(width: 20)
-                            Text(L("settings.voice_announcements"))
                                 .font(.caption)
                         }
                     }
@@ -502,28 +392,6 @@ struct SettingsView: View {
         }
     }
     
-    private func modeColor(_ mode: DetectionMode) -> Color {
-        switch mode {
-        case .standard: return .blue
-        case .custom:   return .purple
-        }
-    }
-
-    @ViewBuilder
-    private func thresholdBadge(label: String, value: String) -> some View {
-        VStack(spacing: 1) {
-            Text(value)
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(.white)
-            Text(label)
-                .font(.system(size: 8))
-                .foregroundColor(.gray)
-        }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
-        .background(Color.white.opacity(0.07))
-        .cornerRadius(5)
-    }
 }
 
 struct DataManagementView: View {

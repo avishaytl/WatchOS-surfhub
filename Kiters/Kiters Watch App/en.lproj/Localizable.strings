@@ -35,6 +35,13 @@
 "session.upload_prompt_message" = "This session is saved on your watch. Upload it to SurfHub cloud too?";
 "session.upload_now" = "Upload";
 "session.keep_local" = "Keep Local";
+"session.too_short_title" = "Session Not Saved";
+"session.too_short_message" = "Sessions shorter than 1 minute are discarded.";
+"session.upload_failed_title" = "Could Not Upload";
+"session.upload_no_gps_message" = "No GPS point was recorded, so this session could not be started on the server. It stayed on your watch.";
+"session.upload_failed_message" = "The session stayed on your watch. Check GPS, sign-in, and network connection, then try again later.";
+"session.upload_success_title" = "Session Uploaded";
+"session.upload_success_message" = "Your session was uploaded to SurfHub cloud successfully.";
 "session.cancel" = "Cancel";
 "session.water_lock_active" = "Water Lock active";
 "session.water_lock_unlock_hint" = "Hold Digital Crown to unlock";
@@ -198,6 +205,10 @@
 // MARK: - Account / Sign In
 "account.section_title" = "Account";
 "account.sign_in" = "Connect Watch";
+"account.connected_title" = "Connected";
+"account.connected_message" = "Signed in as %@";
+"account.connect_failed_title" = "Sign-In Expired";
+"account.connect_failed_message" = "Your watch pairing expired. Reconnect from Settings → Account.";
 "account.email_placeholder" = "Email address";
 "account.send_code" = "Send Code";
 "account.code_sent" = "Code sent to";

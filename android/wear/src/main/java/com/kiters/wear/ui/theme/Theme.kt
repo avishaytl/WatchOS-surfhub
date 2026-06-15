@@ -14,7 +14,7 @@ fun themeColor(name: String): Color = when (name) {
     "orange" -> Color(0xFFFF9800)
     "cyan" -> Color(0xFF00BCD4)
     "pink" -> Color(0xFFE91E63)
-    else -> Color(0xFF2196F3) // blue
+    else -> Color(0xFFFF9800) // orange
 }
 
 @Composable

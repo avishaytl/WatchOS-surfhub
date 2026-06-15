@@ -64,6 +64,12 @@ struct PendingSessionCloudUpload: Identifiable {
     var id: String { session.id }
 }
 
+struct SessionUserNotice: Identifiable {
+    let id = UUID()
+    let titleKey: String
+    let messageKey: String
+}
+
 class SessionManager: ObservableObject {
     // Services
     private let locationManager = LocationManager()
@@ -85,6 +91,7 @@ class SessionManager: ObservableObject {
     @Published var heartRate: Double = 0
     @Published var activeCalories: Double = 0
     @Published var pendingCloudUpload: PendingSessionCloudUpload?
+    @Published var sessionNotice: SessionUserNotice?
     
     // GPS tracking state
     @Published var gpsPointCount: Int = 0
@@ -126,6 +133,14 @@ class SessionManager: ObservableObject {
     /// Raw speeds are still preserved on Session.gpsPoints for max/avg stats.
     private var speedSmoothingBuffer: [Double] = []
     private let speedSmoothingWindow = 5
+
+    /// Speed (m/s) below which the rider is treated as stationary: the displayed
+    /// current speed is forced to 0 and the session max-speed is NOT advanced.
+    /// This kills GPS jitter that otherwise "fakes" a few km/h while standing
+    /// still (e.g. the 3.9 km/h max seen while the watch sat on a table).
+    /// ≈ 5.4 km/h — far below any real kitesurf riding speed, so genuine motion
+    /// is never clipped.
+    private let stationarySpeedThreshold = 1.5
 
     // MARK: - Watch Ingest upload state (all accessed on main thread only)
     private let uploadState = LiveSessionUploadState()
@@ -252,7 +267,26 @@ class SessionManager: ObservableObject {
         permissionRequested = true
         locationManager.requestPermission()
     }
-    
+
+    /// Warm up GPS while the Home screen is in the foreground so a session can
+    /// start with an immediate fix and the user sees live signal quality.
+    /// No-op when not authorized or when a session is already recording.
+    func prewarmGPS() {
+        guard !isRecording else { return }
+        locationManager.prewarm()
+    }
+
+    /// Stop the Home-screen GPS warm-up (e.g. when backgrounded). Never affects
+    /// an active session — the LocationManager guards on session ownership.
+    func stopGPSPrewarm() {
+        locationManager.stopPrewarm()
+        // If no session is running, reset the transient signal indicator.
+        if !isRecording {
+            isGPSActive = false
+            gpsSignalQuality = .none
+        }
+    }
+
     // MARK: - Session Control
     
     func startSession(sport: Sport) {
@@ -284,6 +318,7 @@ class SessionManager: ObservableObject {
         lastGPSAccuracy = 0
         gpsSignalQuality = .none
         pendingCloudUpload = nil
+        sessionNotice = nil
         runningDistance = 0
         lastGPSPoint = nil
         speedSmoothingBuffer.removeAll(keepingCapacity: true)
@@ -402,6 +437,21 @@ class SessionManager: ObservableObject {
             // Update session
             session.endTime = Date()
             session.status = .completed
+
+            if session.duration < 60 {
+                self.deleteLogFile(completedLogURL)
+                print("⌚️ Session discarded — shorter than 60 seconds")
+                DispatchQueue.main.async {
+                    self.resetFinishedSessionState()
+                    self.pendingCloudUpload = nil
+                    self.uploadState.reset(sessionId: nil)
+                    self.sessionNotice = SessionUserNotice(
+                        titleKey: "session.too_short_title",
+                        messageKey: "session.too_short_message"
+                    )
+                }
+                return
+            }
             
             // Save session locally
             self.storageManager.saveSession(session)
@@ -409,12 +459,16 @@ class SessionManager: ObservableObject {
             
             // Reset state on main thread
             DispatchQueue.main.async {
-                self.currentSession = nil
-                self.isRecording = false
-                self.isPaused = false
-                self.jumpCount = 0
-                self.isGPSActive = false
-                self.gpsSignalQuality = .none
+                self.resetFinishedSessionState()
+                if session.gpsPoints.isEmpty {
+                    self.pendingCloudUpload = nil
+                    self.uploadState.reset(sessionId: nil)
+                    self.sessionNotice = SessionUserNotice(
+                        titleKey: "session.upload_failed_title",
+                        messageKey: "session.upload_no_gps_message"
+                    )
+                    return
+                }
                 self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: completedLogURL)
             }
         }
@@ -450,10 +504,43 @@ class SessionManager: ObservableObject {
             }
         }
     }
+
+    private func resetFinishedSessionState() {
+        currentSession = nil
+        isRecording = false
+        isPaused = false
+        jumpCount = 0
+        isGPSActive = false
+        gpsSignalQuality = .none
+    }
+
+    private func deleteLogFile(_ url: URL?) {
+        guard let url else { return }
+        do {
+            try FileManager.default.removeItem(at: url)
+            print("🗑️ Discarded short-session log: \(url.lastPathComponent)")
+        } catch {
+            print("⚠️ Failed to delete short-session log: \(error.localizedDescription)")
+        }
+    }
     
     // MARK: - Data Handling
     
     private func handleGPSPoint(_ point: GPSPoint) {
+        // Always reflect GPS signal quality so the Home screen can show a live
+        // indicator while GPS warms up — even before a session has started.
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.isGPSActive = true
+            self.lastGPSAccuracy = point.horizontalAccuracy
+            self.gpsSignalQuality = GPSSignalQuality.from(accuracy: point.horizontalAccuracy)
+        }
+
+        // Everything below is session-recording work only. During Home-screen
+        // prewarm there is no session, so we skip detector/metrics entirely
+        // (and avoid polluting the speed-smoothing buffer that the session reuses).
+        guard isRecording else { return }
+
         // Smooth speed via simple moving average to remove GPS jitter
         // before feeding the detector. Buffer is bounded to N samples.
         speedSmoothingBuffer.append(point.speed)
@@ -492,16 +579,20 @@ class SessionManager: ObservableObject {
             session.cachedDistance = self.runningDistance
             self.currentSession = session
 
-            // Update UI metrics
+            // Update UI metrics.
+            // Use the *smoothed* speed with a stationary deadband so jitter
+            // while standing still neither shows a phantom current speed nor
+            // inflates the session max. Real riding is well above the threshold.
             self.distance = self.runningDistance
-            self.maxSpeed = max(self.maxSpeed, point.speed)
-            self.currentSpeed = point.speed
+            let displaySpeed = smoothedSpeed >= self.stationarySpeedThreshold ? smoothedSpeed : 0
+            self.currentSpeed = displaySpeed
+            if displaySpeed > 0 {
+                self.maxSpeed = max(self.maxSpeed, smoothedSpeed)
+            }
             
-            // Update GPS tracking state
+            // GPS point count is session-scoped (signal quality / accuracy are
+            // already updated unconditionally at the top of this method).
             self.gpsPointCount = session.gpsPoints.count
-            self.isGPSActive = true
-            self.lastGPSAccuracy = point.horizontalAccuracy
-            self.gpsSignalQuality = GPSSignalQuality.from(accuracy: point.horizontalAccuracy)
         }
     }
     
@@ -684,8 +775,6 @@ class SessionManager: ObservableObject {
 
     /// Called only after the rider explicitly approves the cloud prompt.
     private func uploadCompletedSessionToCloud(session: Session, logURL: URL?) {
-        uploadLogToCloud(logURL)
-
         let durMin  = max(1, Int(session.duration / 60))
         let jmax    = session.jumps.map(\.height).max() ?? 0
         let jcnt    = session.jumps.count
@@ -730,6 +819,10 @@ class SessionManager: ObservableObject {
                     if self.uploadState.activeSessionId == session.id {
                         self.uploadState.reset(sessionId: nil)
                     }
+                    self.sessionNotice = SessionUserNotice(
+                        titleKey: "session.upload_failed_title",
+                        messageKey: "session.upload_no_gps_message"
+                    )
                 }
                 return
             }
@@ -748,8 +841,21 @@ class SessionManager: ObservableObject {
                     jData: jData
                 )
                 print("☁️ Session uploaded — sessId=\(started.sessId) finalPBs=\(r.broken)")
+                self.uploadLogToCloud(logURL)
+                await MainActor.run {
+                    self.sessionNotice = SessionUserNotice(
+                        titleKey: "session.upload_success_title",
+                        messageKey: "session.upload_success_message"
+                    )
+                }
             } catch {
                 print("☁️ Session cloud upload failed: \(error.localizedDescription)")
+                await MainActor.run {
+                    self.sessionNotice = SessionUserNotice(
+                        titleKey: "session.upload_failed_title",
+                        messageKey: "session.upload_failed_message"
+                    )
+                }
             }
             await MainActor.run {
                 if self.uploadState.activeSessionId == session.id {

@@ -1,12 +1,29 @@
 package com.kiters.wear.ui
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.Text
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
+import com.kiters.wear.R
 import com.kiters.wear.session.SessionManager
 import com.kiters.wear.ui.screens.AccountScreen
 import com.kiters.wear.ui.screens.ActiveSessionScreen
@@ -21,6 +38,8 @@ import com.kiters.wear.ui.screens.SportSelectionScreen
 fun KitersApp(vm: SessionManager) {
     MaterialTheme {
         val isRecording by vm.isRecording.collectAsStateWithLifecycle()
+        val pendingCloudUpload by vm.pendingCloudUpload.collectAsStateWithLifecycle()
+        val sessionNotice by vm.sessionNotice.collectAsStateWithLifecycle()
         val revision by vm.settingsStore.revision.collectAsStateWithLifecycle()
         // Re-evaluate on every settings change so sign-in/out instantly updates routing.
         val isSignedIn = revision.let {
@@ -29,6 +48,8 @@ fun KitersApp(vm: SessionManager) {
 
         when {
             isRecording -> ActiveSessionScreen(vm)
+            sessionNotice != null -> SessionNoticePrompt(vm, sessionNotice!!)
+            pendingCloudUpload != null -> CloudUploadPrompt(vm)
             !isSignedIn -> {
                 val nav = rememberSwipeDismissableNavController()
                 AccountScreen(vm, nav)
@@ -48,6 +69,75 @@ fun KitersApp(vm: SessionManager) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SessionNoticePrompt(vm: SessionManager, notice: com.kiters.wear.session.SessionUserNotice) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = context.getString(notice.titleRes),
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = if (notice.messageArg != null) {
+                context.getString(notice.messageRes, notice.messageArg)
+            } else {
+                context.getString(notice.messageRes)
+            },
+            color = Color.Gray,
+            fontSize = 11.sp,
+            textAlign = TextAlign.Center,
+        )
+        Button(
+            onClick = { vm.dismissSessionNotice() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(context.getString(R.string.common_ok), color = Color.White)
+        }
+    }
+}
+
+@Composable
+private fun CloudUploadPrompt(vm: SessionManager) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = context.getString(R.string.session_upload_prompt_title),
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = context.getString(R.string.session_upload_prompt_message),
+            color = Color.Gray,
+            fontSize = 11.sp,
+            textAlign = TextAlign.Center,
+        )
+        Button(
+            onClick = { vm.uploadPendingSessionToCloud() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(context.getString(R.string.session_upload_now), color = Color.White)
+        }
+        Button(
+            onClick = { vm.keepPendingSessionLocal() },
+            colors = ButtonDefaults.secondaryButtonColors(),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(context.getString(R.string.session_keep_local))
         }
     }
 }

@@ -103,7 +103,7 @@ fun SessionLogsScreen() {
                     modifier = Modifier.fillMaxWidth(),
                     label = {
                         Column(Modifier.fillMaxWidth()) {
-                            Text(file.name.removePrefix("log_").removeSuffix(".csv"), fontSize = 12.sp, color = Color.White)
+                            Text(file.name.removePrefix("log_").substringBeforeLast('.'), fontSize = 12.sp, color = Color.White)
                             Text("${file.length() / 1024} KB · ${context.getString(R.string.logs_share)}",
                                 fontSize = 9.sp, color = Color.Gray)
                         }
@@ -123,10 +123,9 @@ fun SessionLogsScreen() {
     }
 }
 
-/** Share a log's contents via the Android share sheet (text/plain, watch-sized). */
+/** Share a decoded log preview via the Android share sheet (text/plain, watch-sized). */
 private fun shareLog(context: android.content.Context, file: File) {
-    val maxChars = 12_000
-    val content = try { file.readText().take(maxChars) } catch (e: Exception) { return }
+    val content = try { SessionLogger.shared.buildShareText(file) } catch (e: Exception) { return }
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_SUBJECT, "Kiters Log — ${file.name}")

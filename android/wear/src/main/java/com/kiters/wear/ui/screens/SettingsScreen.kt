@@ -21,7 +21,6 @@ import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.Text
 import com.kiters.wear.R
-import com.kiters.wear.model.JumpDetectionConfig
 import com.kiters.wear.session.SessionManager
 import com.kiters.wear.ui.components.ListScaffold
 import com.kiters.wear.ui.theme.themeColor
@@ -91,31 +90,6 @@ fun SettingsScreen(vm: SessionManager, nav: NavController) {
         item { ChipRow(context.getString(R.string.settings_units_metric), selColors(settings.units == "metric")) { settings.units = "metric" } }
         item { ChipRow(context.getString(R.string.settings_units_imperial), selColors(settings.units == "imperial")) { settings.units = "imperial" } }
 
-        // Jump detection (Standard only) + active thresholds
-        item { SectionTitle(context.getString(R.string.settings_jump_detection)) }
-        item {
-            ChipRow(vm.settingsStore.detectionMode.displayName, selColors(true)) { }
-        }
-        item {
-            val m = settings.detectionMode
-            Text(
-                "${context.getString(R.string.settings_threshold_takeoff)} ${"%.1f".format(m.takeoffG)}g  " +
-                    "${context.getString(R.string.settings_threshold_speed)} ${(m.minSpeed * 3.6).toInt()}km/h  " +
-                    "${context.getString(R.string.settings_threshold_min_air)} ${"%.1f".format(m.minAirtime)}s",
-                color = Color.Gray, fontSize = 9.sp, textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            )
-        }
-
-        // Toss test (devMode)
-        item {
-            val dev = JumpDetectionConfig.shared.devMode
-            ChipRow(
-                "${context.getString(R.string.settings_dev_mode)}: ${onOff(dev, context)}",
-                selColors(dev),
-            ) { JumpDetectionConfig.shared.devMode = !dev }
-        }
-
         // Display & feedback
         item { SectionTitle(context.getString(R.string.settings_display_feedback)) }
         item {
@@ -145,12 +119,6 @@ fun SettingsScreen(vm: SessionManager, nav: NavController) {
             val v = settings.hapticFeedback
             ChipRow("${context.getString(R.string.settings_haptic_feedback)}: ${onOff(v, context)}", selColors(v)) {
                 settings.hapticFeedback = !v
-            }
-        }
-        item {
-            val v = settings.voiceAnnouncements
-            ChipRow("${context.getString(R.string.settings_voice_announcements)}: ${onOff(v, context)}", selColors(v)) {
-                settings.voiceAnnouncements = !v
             }
         }
 

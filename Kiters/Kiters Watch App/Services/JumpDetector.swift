@@ -1172,8 +1172,13 @@ final class JumpDetector {
         jump.imuSamples   = []
 
         #if os(watchOS)
-        let strong = (CONFIDENCE_AS_PERCENT ? jump.confidence : jump.confidence * 100) >= 75
-        WKInterfaceDevice.current().play(strong ? .success : .notification)
+        // Respect the "Haptic Feedback" setting (Settings → Display & Feedback).
+        // Mirrors the autoLock default convention: missing key ⇒ enabled.
+        let hapticsEnabled = UserDefaults.standard.object(forKey: "hapticFeedback") as? Bool ?? true
+        if hapticsEnabled {
+            let strong = (CONFIDENCE_AS_PERCENT ? jump.confidence : jump.confidence * 100) >= 75
+            WKInterfaceDevice.current().play(strong ? .success : .notification)
+        }
         #endif
 
         Log.event("JUMP ACCEPTED h=\(r.jumpHeightMeters)m air=\(r.airTimeSeconds)s "

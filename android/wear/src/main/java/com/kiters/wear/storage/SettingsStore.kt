@@ -38,7 +38,7 @@ class SettingsStore(context: Context) : KeyValueStore {
         set(v) { prefs.edit().putString("units", v).apply() }
 
     var appTheme: String
-        get() = prefs.getString("appTheme", "blue") ?: "blue"
+        get() = prefs.getString("appTheme", "orange") ?: "orange"
         set(v) { prefs.edit().putString("appTheme", v).apply() }
 
     var appLanguage: String
@@ -59,10 +59,6 @@ class SettingsStore(context: Context) : KeyValueStore {
     var hapticFeedback: Boolean
         get() = if (prefs.contains("hapticFeedback")) prefs.getBoolean("hapticFeedback", true) else true
         set(v) { prefs.edit().putBoolean("hapticFeedback", v).apply() }
-
-    var voiceAnnouncements: Boolean
-        get() = prefs.getBoolean("voiceAnnouncements", false)
-        set(v) { prefs.edit().putBoolean("voiceAnnouncements", v).apply() }
 
     // MARK: - Auth
 
