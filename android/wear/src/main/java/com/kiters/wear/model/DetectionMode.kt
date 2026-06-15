@@ -95,6 +95,11 @@ enum class DetectionMode {
 // Faithful port of the Swift JumpDetectionConfig (UserDefaults-backed).
 
 class JumpDetectionConfig(private var store: KeyValueStore) {
+    private val currentStandardCalibrationVersion = "surfr-v7-20260615-gpsfree-toss"
+
+    init {
+        installStandardCalibrationIfNeeded()
+    }
 
     private object Key {
         const val minSpeed = "jd_minSpeed"
@@ -112,29 +117,33 @@ class JumpDetectionConfig(private var store: KeyValueStore) {
         const val standardMaxAirtime = "jd_standard_maxAirtime"
         const val standardCooldown = "jd_standard_cooldown"
         const val standardKinematicCalibration = "jd_standard_kinematicCalibration"
+        const val standardCalibrationVersion = "jd_standard_calibrationVersion"
     }
 
     var standardMinSpeed: Double
-        get() = store.getDouble(Key.standardMinSpeed, 15.0 / 3.6)
+        get() = store.getDouble(Key.standardMinSpeed, 5.0 / 3.6)
         set(v) = store.setDouble(Key.standardMinSpeed, v)
     var standardTakeoffG: Double
-        get() = store.getDouble(Key.standardTakeoffG, 1.5)
+        get() = store.getDouble(Key.standardTakeoffG, 1.7)
         set(v) = store.setDouble(Key.standardTakeoffG, v)
     var standardLandingG: Double
-        get() = store.getDouble(Key.standardLandingG, 2.0)
+        get() = store.getDouble(Key.standardLandingG, 1.4)
         set(v) = store.setDouble(Key.standardLandingG, v)
     var standardMinAirtime: Double
-        get() = store.getDouble(Key.standardMinAirtime, 0.5)
+        get() = store.getDouble(Key.standardMinAirtime, 2.0)
         set(v) = store.setDouble(Key.standardMinAirtime, v)
     var standardMaxAirtime: Double
-        get() = store.getDouble(Key.standardMaxAirtime, 8.0)
+        get() = store.getDouble(Key.standardMaxAirtime, 6.5)
         set(v) = store.setDouble(Key.standardMaxAirtime, v)
     var standardCooldown: Double
-        get() = store.getDouble(Key.standardCooldown, 1.5)
+        get() = store.getDouble(Key.standardCooldown, 1.0)
         set(v) = store.setDouble(Key.standardCooldown, v)
     var standardKinematicCalibration: Double
-        get() = store.getDouble(Key.standardKinematicCalibration, 1.12)
+        get() = store.getDouble(Key.standardKinematicCalibration, 1.0)
         set(v) = store.setDouble(Key.standardKinematicCalibration, v)
+    var standardCalibrationVersion: String?
+        get() = store.getString(Key.standardCalibrationVersion)
+        set(v) = store.setString(Key.standardCalibrationVersion, v)
 
     var minSpeed: Double
         get() = store.getDouble(Key.minSpeed, 15.0 / 3.6)
@@ -158,9 +167,12 @@ class JumpDetectionConfig(private var store: KeyValueStore) {
         get() = store.getDouble(Key.kinematicCalibration, 1.12)
         set(v) = store.setDouble(Key.kinematicCalibration, v)
 
-    /** Dev mode: skip GPS speed gate, allow toss-testing without riding. */
+    /**
+     * Toss / GPS-independent detection is on by default in the app. It lets the
+     * detector accept the IMU jump pattern without depending on GPS speed.
+     */
     var devMode: Boolean
-        get() = if (store.contains(Key.devMode)) store.getBool(Key.devMode, false) else false
+        get() = if (store.contains(Key.devMode)) store.getBool(Key.devMode, true) else true
         set(v) = store.setBool(Key.devMode, v)
 
     fun resetToDefaults() {
@@ -171,7 +183,20 @@ class JumpDetectionConfig(private var store: KeyValueStore) {
         maxAirtime = 8.0
         cooldown = 1.5
         kinematicCalibration = 1.12
-        devMode = false
+        devMode = true
+    }
+
+    private fun installStandardCalibrationIfNeeded() {
+        if (standardCalibrationVersion == currentStandardCalibrationVersion) return
+        standardMinSpeed = 5.0 / 3.6
+        standardTakeoffG = 1.7
+        standardLandingG = 1.4
+        standardMinAirtime = 2.0
+        standardMaxAirtime = 6.5
+        standardCooldown = 1.0
+        standardKinematicCalibration = 1.0
+        devMode = true
+        standardCalibrationVersion = currentStandardCalibrationVersion
     }
 
     companion object {

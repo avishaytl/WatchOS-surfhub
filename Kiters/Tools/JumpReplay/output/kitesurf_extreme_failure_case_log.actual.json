@@ -5,17 +5,7 @@
   "file" : "kitesurf_extreme_failure_case_log.json",
   "format" : "android",
   "jumps" : [
-    {
-      "accepted" : true,
-      "airtime" : 1,
-      "confidence" : 78.2,
-      "height" : 1.37,
-      "heightSource" : "kin",
-      "index" : 0,
-      "jumpDistance" : 8,
-      "rotations" : 0,
-      "takeoffOffsetSec" : 6267252.405416131
-    }
+
   ],
   "mockSpeedMps" : 8,
   "sampleCount" : 900

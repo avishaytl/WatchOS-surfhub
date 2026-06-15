@@ -36,11 +36,14 @@ struct ContentView: View {
                 }
             )
         ) {
-            Button(L("session.keep_local"), role: .cancel) {
-                sessionManager.keepPendingSessionLocal()
-            }
             Button(L("session.upload_now")) {
                 sessionManager.uploadPendingSessionToCloud()
+            }
+            Button(L("session.keep_local")) {
+                sessionManager.keepPendingSessionLocal()
+            }
+            Button(L("session.discard"), role: .destructive) {
+                sessionManager.discardPendingSession()
             }
         } message: {
             Text(L("session.upload_prompt_message"))

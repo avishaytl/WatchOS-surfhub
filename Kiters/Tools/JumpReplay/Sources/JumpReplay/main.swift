@@ -11,6 +11,8 @@ struct CLIOptions {
     var expectedDir: URL = URL(fileURLWithPath: "expected", isDirectory: true)
     var verbose: Bool = false
     var silenceLogger: Bool = true
+    var surfr: Bool = false
+    var toss: Bool = false
 }
 
 func parseArgs() -> CLIOptions {
@@ -43,6 +45,10 @@ func parseArgs() -> CLIOptions {
             o.verbose = true
         case "--with-logger":
             o.silenceLogger = false
+        case "--surfr":
+            o.surfr = true
+        case "--toss":
+            o.toss = true
         case "-h", "--help":
             printUsage()
             exit(0)
@@ -77,6 +83,8 @@ func printUsage() {
       --bless                         Copy actual → expected after run
       --compare                       Compare actual to expected; exit 1 on mismatch
       --with-logger                   Enable SessionLogger CSV writes (default: silent)
+      --surfr                         Print Surfr screenshot timing comparison
+      --toss                          Use app toss/no-GPS live tuning during replay
       -v, --verbose                   Print sample-level events
       -h, --help                      Show this help
     """
@@ -100,6 +108,7 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
         // The detector only fires onJumpDetected for accepted jumps.
         // For rejected jumps we'd need to introspect logs — skip for now.
 
+        JumpDetectionConfig.shared.setRuntimeDevModeOverride(opts.toss)
         detector.reset(mode: opts.mode)
 
         // Prefer the on-device CSV speed column when present. Falling back to
@@ -130,6 +139,7 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 index: i,
                 takeoffOffsetSec: j.startTime.timeIntervalSince(base),
                 airtime: j.airtime,
+                physicalAirtime: j.endTime.timeIntervalSince(j.startTime),
                 height: j.height,
                 heightSource: baroUsed ? "baro" : "kin",
                 apexTime: j.apexTime,
@@ -153,6 +163,9 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
 
         // Print human-readable
         Reporter.printHuman(report, &stdout)
+        if opts.surfr {
+            SurfrReference.printComparison(report, &stdout)
+        }
 
         // Write actual JSON
         let actualURL = opts.outputDir.appendingPathComponent("\(url.deletingPathExtension().lastPathComponent).actual.json")

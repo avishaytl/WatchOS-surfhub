@@ -35,6 +35,7 @@
 "session.upload_prompt_message" = "האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?";
 "session.upload_now" = "העלה לענן";
 "session.keep_local" = "השאר מקומי";
+"session.discard" = "מחק סשן";
 "session.too_short_title" = "האימון לא נשמר";
 "session.too_short_message" = "אימונים קצרים מדקה נמחקים ולא נשמרים.";
 "session.upload_failed_title" = "לא ניתן להעלות";
@@ -102,8 +103,6 @@
 "settings.version" = "גרסה";
 "settings.build" = "בנייה";
 "settings.tune_parameters" = "כיול מותאם";
-"settings.dev_mode" = "בדיקת זריקה";
-"settings.dev_mode_help" = "דלג על דרישת מהירות GPS — זהה קפיצות מזריקת יד. כבה לאימון אמיתי.";
 
 // MARK: - Jump Tuning (6 Parameters)
 "tuning.title" = "כיול מותאם";

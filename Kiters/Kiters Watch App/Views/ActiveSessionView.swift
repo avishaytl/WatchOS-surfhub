@@ -821,9 +821,6 @@ struct JumpStateIndicator: View {
     let state: JumpDetector.JumpState
     @State private var pulse = false
 
-    /// In dev mode, show expanded indicator with state label
-    private var isDevMode: Bool { JumpDetectionConfig.shared.devMode }
-
     private var stateColor: Color {
         switch state {
         case .idle:     return .gray
@@ -838,21 +835,10 @@ struct JumpStateIndicator: View {
     }
 
     var body: some View {
-        if isDevMode {
-            // Expanded dev indicator — state label visible
-            HStack(spacing: 2) {
-                Circle()
-                    .fill(stateColor)
-                    .frame(width: 6, height: 6)
-                Text(state.rawValue.prefix(3))
-                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                    .foregroundColor(stateColor)
-            }
-            .padding(.horizontal, 3)
-            .padding(.vertical, 1)
-            .background(stateColor.opacity(0.15))
-            .cornerRadius(4)
-            .opacity(isActive ? (pulse ? 1.0 : 0.3) : 0.9)
+        Circle()
+            .fill(stateColor)
+            .frame(width: 6, height: 6)
+            .opacity(isActive ? (pulse ? 1.0 : 0.3) : 0.6)
             .animation(isActive ? .easeInOut(duration: 0.4).repeatForever(autoreverses: true) : .default, value: pulse)
             .onChange(of: state) { _, newState in
                 pulse = false
@@ -865,25 +851,6 @@ struct JumpStateIndicator: View {
             .onAppear {
                 if isActive { pulse = true }
             }
-        } else {
-            // Normal compact dot
-            Circle()
-                .fill(stateColor)
-                .frame(width: 6, height: 6)
-                .opacity(isActive ? (pulse ? 1.0 : 0.3) : 0.6)
-                .animation(isActive ? .easeInOut(duration: 0.4).repeatForever(autoreverses: true) : .default, value: pulse)
-                .onChange(of: state) { _, newState in
-                    pulse = false
-                    if newState == .airborne {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                            pulse = true
-                        }
-                    }
-                }
-                .onAppear {
-                    if isActive { pulse = true }
-                }
-        }
     }
 }
 

@@ -29,6 +29,7 @@
     <string name="session_upload_prompt_message">האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?</string>
     <string name="session_upload_now">העלה לענן</string>
     <string name="session_keep_local">השאר מקומי</string>
+    <string name="session_discard">מחק סשן</string>
     <string name="session_too_short_title">האימון לא נשמר</string>
     <string name="session_too_short_message">אימונים קצרים מדקה נמחקים ולא נשמרים.</string>
     <string name="session_upload_failed_title">לא ניתן להעלות</string>
@@ -83,8 +84,6 @@
     <string name="settings_about">אודות</string>
     <string name="settings_version">גרסה</string>
     <string name="settings_build">בנייה</string>
-    <string name="settings_dev_mode">בדיקת זריקה</string>
-    <string name="settings_dev_mode_help">דלג על דרישת מהירות GPS — זהה קפיצות מזריקת יד. כבה לאימון אמיתי.</string>
     <string name="settings_active_thresholds">ערכי סף פעילים</string>
     <string name="settings_threshold_takeoff">המראה</string>
     <string name="settings_threshold_speed">מהירות</string>

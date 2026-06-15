@@ -876,7 +876,13 @@ final class JumpDetector {
     /// v7 already gates internally on confidence ≥ 0.40 before firing.
     /// This is an ADDITIONAL gate the adapter applies, matching the old
     /// "accept ≥ 50/100" rule. Set to 0 to defer entirely to v7.
-    private let acceptConfidence01: Double = 0.40
+    /// In dev/Toss-Test mode it is relaxed so a hand-toss still registers.
+    private var acceptConfidence01: Double { devMode ? 0.20 : 0.40 }
+
+    /// IMU fallback when the GPS speed gate fails (no/weak GPS): accept a jump
+    /// anyway if it has a clearly real airtime AND a rotation or high confidence.
+    private let fallbackMinAirtimeSec: Double = 1.5
+    private let fallbackMinConfidence: Double = 0.75
 
     // MARK: - Public State Machine (UNCHANGED surface)
 
@@ -1056,6 +1062,22 @@ final class JumpDetector {
         cfg.kinematicCalibration = mode.kinematicCalibrationSafe
         // minSpeed → handled by the adapter's arming gate (updateGPS).
         // cooldown → v7 refractory window between consecutive jumps.
+
+        // ── Toss-Test (dev) mode ───────────────────────────────────
+        // When enabled, relax the gates so tossing the watch in your hand
+        // registers as a jump (short airtime, low height, gentle launch and
+        // catch with little wrist spin). The GPS speed gate is already
+        // bypassed for devMode in the adapter's arming logic. Testing only —
+        // the help text tells users to turn it off for real sessions.
+        if JumpDetectionConfig.shared.devMode {
+            cfg.releaseFloorG            = 1.30
+            cfg.minAirTimeSec            = 0.25
+            cfg.hardLandingMinAirTimeSec = 0.25
+            cfg.minJumpHeightMeters      = 0.20
+            cfg.landingContactGyro       = 0.8
+            cfg.landingSpikeGyro         = 0.5
+        }
+
         session = KitesurfSession(detectorConfig: cfg,
                                   refractorySec: mode.cooldownSafe,
                                   synchronousAnalysis: synchronousAnalysis)
@@ -1147,8 +1169,19 @@ final class JumpDetector {
         if !devMode {
             let minKnots = mode.minSpeedSafe * 1.94384   // m/s → knots
             if r.maxSessionSpeedKnots < minKnots {
-                Log.event("JUMP rejected: maxSpeed \(r.maxSessionSpeedKnots)kn < minSpeed \(String(format: "%.1f", minKnots))kn")
-                return
+                // GPS speed gate failed — either GPS is unavailable/weak or the
+                // rider wasn't moving fast enough. FALLBACK: still accept if the
+                // IMU shows a clearly real jump (a genuine airtime AND either a
+                // rotation or high confidence). This rescues jumps when GPS has
+                // no fix, while bumps/handling (short airtime, no spin, low
+                // confidence) are still rejected.
+                let clearImuJump = r.airTimeSeconds >= fallbackMinAirtimeSec
+                    && (r.rotations >= 1 || r.confidence >= fallbackMinConfidence)
+                if !clearImuJump {
+                    Log.event("JUMP rejected: maxSpeed \(r.maxSessionSpeedKnots)kn < minSpeed \(String(format: "%.1f", minKnots))kn (no clear IMU fallback)")
+                    return
+                }
+                Log.event("JUMP accepted via IMU fallback (low/no GPS speed): air=\(String(format: "%.1f", r.airTimeSeconds))s rot=\(r.rotations) conf=\(String(format: "%.2f", r.confidence))")
             }
         }
 
@@ -1161,7 +1194,7 @@ final class JumpDetector {
         var jump = Jump(sessionId: sessionId, startTime: start)
         jump.endTime      = end
         jump.height       = r.jumpHeightMeters
-        jump.airtime      = r.airTimeSeconds
+        jump.airtime      = r.displayedAirTimeSeconds
         jump.jumpDistance = r.jumpDistanceMeters ?? r.jumpDistanceGPSMeters ?? 0
         jump.rotations    = r.rotations
         jump.apexTime     = r.apexTimeSeconds
@@ -1181,7 +1214,8 @@ final class JumpDetector {
         }
         #endif
 
-        Log.event("JUMP ACCEPTED h=\(r.jumpHeightMeters)m air=\(r.airTimeSeconds)s "
+        Log.event("JUMP ACCEPTED h=\(r.jumpHeightMeters)m air=\(r.displayedAirTimeSeconds)s "
+            + "physAir=\(r.airTimeSeconds)s "
             + "rot=\(r.rotations) conf=\(jump.confidence) src=\(r.heightSource.rawValue) "
             + "land=\(r.landingKind.rawValue)")
 

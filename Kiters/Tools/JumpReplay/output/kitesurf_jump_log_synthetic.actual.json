@@ -5,17 +5,7 @@
   "file" : "kitesurf_jump_log_synthetic.csv",
   "format" : "coreMotion",
   "jumps" : [
-    {
-      "accepted" : false,
-      "airtime" : 1.5,
-      "confidence" : 42.9,
-      "height" : 3.09,
-      "heightSource" : "kin",
-      "index" : 0,
-      "jumpDistance" : 12,
-      "rotations" : 8,
-      "takeoffOffsetSec" : 1780854733.628076
-    }
+
   ],
   "mockSpeedMps" : 8,
   "sampleCount" : 281

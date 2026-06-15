@@ -281,6 +281,12 @@ class JumpDetectionConfig {
     static let shared = JumpDetectionConfig()
 
     private let defaults = UserDefaults.standard
+    private let currentStandardCalibrationVersion = "surfr-v7-20260615-gpsfree-toss"
+    private var runtimeDevModeOverride: Bool?
+
+    private init() {
+        installStandardCalibrationIfNeeded()
+    }
 
     private enum Key: String {
         case minSpeed              = "jd_minSpeed"
@@ -302,37 +308,37 @@ class JumpDetectionConfig {
     }
 
     var standardMinSpeed: Double {
-        get { val(.standardMinSpeed, default: 15.0 / 3.6) }
+        get { val(.standardMinSpeed, default: 5.0 / 3.6) }
         set { defaults.set(newValue, forKey: Key.standardMinSpeed.rawValue) }
     }
 
     var standardTakeoffG: Double {
-        get { val(.standardTakeoffG, default: 1.5) }
+        get { val(.standardTakeoffG, default: 1.7) }
         set { defaults.set(newValue, forKey: Key.standardTakeoffG.rawValue) }
     }
 
     var standardLandingG: Double {
-        get { val(.standardLandingG, default: 2.0) }
+        get { val(.standardLandingG, default: 1.4) }
         set { defaults.set(newValue, forKey: Key.standardLandingG.rawValue) }
     }
 
     var standardMinAirtime: Double {
-        get { val(.standardMinAirtime, default: 0.5) }
+        get { val(.standardMinAirtime, default: 2.0) }
         set { defaults.set(newValue, forKey: Key.standardMinAirtime.rawValue) }
     }
 
     var standardMaxAirtime: Double {
-        get { val(.standardMaxAirtime, default: 8.0) }
+        get { val(.standardMaxAirtime, default: 6.5) }
         set { defaults.set(newValue, forKey: Key.standardMaxAirtime.rawValue) }
     }
 
     var standardCooldown: Double {
-        get { val(.standardCooldown, default: 1.5) }
+        get { val(.standardCooldown, default: 1.0) }
         set { defaults.set(newValue, forKey: Key.standardCooldown.rawValue) }
     }
 
     var standardKinematicCalibration: Double {
-        get { val(.standardKinematicCalibration, default: 1.12) }
+        get { val(.standardKinematicCalibration, default: 1.0) }
         set { defaults.set(newValue, forKey: Key.standardKinematicCalibration.rawValue) }
     }
 
@@ -377,13 +383,21 @@ class JumpDetectionConfig {
         set { defaults.set(newValue, forKey: Key.kinematicCalibration.rawValue) }
     }
 
-    /// Dev mode: skip GPS speed gate, allow toss-testing without riding.
+    /// Toss / GPS-independent detection. Now ON by default (no Settings toggle):
+    /// a jump is detected from the IMU pattern alone — tossing the watch
+    /// registers a jump with no dependency on GPS speed, matching Surfr.
+    /// Bypasses the GPS speed gate and relaxes the airtime/height gates.
     var devMode: Bool {
         get {
-            guard defaults.object(forKey: Key.devMode.rawValue) != nil else { return false }
+            if let runtimeDevModeOverride { return runtimeDevModeOverride }
+            guard defaults.object(forKey: Key.devMode.rawValue) != nil else { return true }
             return defaults.bool(forKey: Key.devMode.rawValue)
         }
         set { defaults.set(newValue, forKey: Key.devMode.rawValue) }
+    }
+
+    func setRuntimeDevModeOverride(_ value: Bool?) {
+        runtimeDevModeOverride = value
     }
 
     func resetToDefaults() {
@@ -394,7 +408,7 @@ class JumpDetectionConfig {
         maxAirtime            = 8.0
         cooldown              = 1.5
         kinematicCalibration  = 1.12
-        devMode               = false
+        devMode               = true
     }
 
     func applyStandardCalibration(_ schema: CloudCalibrationSchema) {
@@ -406,6 +420,19 @@ class JumpDetectionConfig {
         standardCooldown = schema.cooldown
         standardKinematicCalibration = schema.kinematicCalibration
         standardCalibrationVersion = schema.version
+    }
+
+    private func installStandardCalibrationIfNeeded() {
+        guard standardCalibrationVersion != currentStandardCalibrationVersion else { return }
+        standardMinSpeed = 5.0 / 3.6
+        standardTakeoffG = 1.7
+        standardLandingG = 1.4
+        standardMinAirtime = 2.0
+        standardMaxAirtime = 6.5
+        standardCooldown = 1.0
+        standardKinematicCalibration = 1.0
+        devMode = true   // toss / GPS-independent detection on by default
+        standardCalibrationVersion = currentStandardCalibrationVersion
     }
 
     private func val(_ key: Key, default defaultValue: Double) -> Double {

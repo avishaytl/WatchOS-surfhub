@@ -53,6 +53,7 @@ data class JumpResult(
     val baroHeightMeters: Double,
     val kinematicHeightMeters: Double,
     val airTimeSeconds: Double,
+    val displayedAirTimeSeconds: Double,
     val apexTimeSeconds: Double?,
     val rotations: Int,
     val jumpDistanceMeters: Double?,
@@ -62,6 +63,8 @@ data class JumpResult(
     val confidence: Double,                 // 0..1
     val landingKind: LandingKind,
     val heightSource: HeightSource,
+    val takeoffTimeSeconds: Double,
+    val landingTimeSeconds: Double,
     val deltaPressureHPa: Double,
     val peakTakeoffG: Double,
     val peakGyro: Double,
@@ -70,6 +73,7 @@ data class JumpResult(
     val landingIndex: Int,
 ) {
     enum class LandingKind(val rawValue: String) {
+        CONTACT("contact"),
         HARD_IMPACT("hardImpact"),
         BARO_RECOVERY("baroRecovery"),
         SETTLE("settle"),

@@ -2,9 +2,13 @@ package com.kiters.wear.engine
 
 import com.kiters.wear.model.ImuSample
 import com.kiters.wear.model.Vector3
+import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.PI
 import kotlin.math.sqrt
 
@@ -18,12 +22,25 @@ object ReplayLoader {
 
     enum class Format { CORE_MOTION, ANDROID, ON_DEVICE }
 
-    data class Loaded(val samples: List<ImuSample>, val format: Format)
+    data class Loaded(val samples: List<ImuSample>, val speeds: List<Double?>, val format: Format)
 
     fun loadResource(name: String): Loaded {
         val text = ReplayLoader::class.java.classLoader!!
             .getResourceAsStream(name)!!.bufferedReader().readText()
         return parseCsv(text)
+    }
+
+    fun loadFile(path: String): Loaded {
+        val text = File(path).readText()
+        return if (path.endsWith(".json")) parseJsonEnvelope(text) else parseCsv(text)
+    }
+
+    private fun parseJsonEnvelope(text: String): Loaded {
+        val obj = Json.parseToJsonElement(text).jsonObject
+        val contentType = obj["contentType"]?.jsonPrimitive?.content?.lowercase().orEmpty()
+        val content = obj["content"]?.jsonPrimitive?.content
+        if (contentType.contains("csv") && content != null) return parseCsv(content)
+        error("unsupported replay JSON envelope")
     }
 
     private fun parseCsv(text: String): Loaded {
@@ -46,12 +63,14 @@ object ReplayLoader {
         val ayi = idx("accY"); val azi = idx("accZ")
         val gxi = idx("gravX"); val gyi = idx("gravY"); val gzi = idx("gravZ")
         val baroi = idx("baro")
+        val spdi = idx("spd")
         val wxi = idx("gyrX"); val wyi = idx("gyrY"); val wzi = idx("gyrZ")
 
         data class Row(
             val t: Double, val ax: Double, val ay: Double, val az: Double,
             val gravX: Double, val gravY: Double, val gravZ: Double,
             val baro: Double, val gx: Double, val gy: Double, val gz: Double,
+            val speed: Double?,
         )
 
         val rows = ArrayList<Row>()
@@ -66,6 +85,7 @@ object ReplayLoader {
                     gravX = d(gxi), gravY = d(gyi), gravZ = d(gzi),
                     baro = d(baroi),
                     gx = d(wxi), gy = d(wyi), gz = d(wzi),
+                    speed = spdi?.let { f.getOrNull(it)?.trim()?.toDoubleOrNull() },
                 )
             )
         }
@@ -107,7 +127,7 @@ object ReplayLoader {
                 pressure = if (r.baro > 0) r.baro else null,
             )
         }
-        return Loaded(samples, format)
+        return Loaded(samples, rows.map { it.speed }, format)
     }
 
     private fun detectFormat(gravMags: List<Double>): Format {

@@ -316,6 +316,20 @@ class SessionManager(app: Application) : AndroidViewModel(app) {
         uploadCompletedSessionToCloud(pending.session)
     }
 
+    /**
+     * Discard the just-finished session entirely: neither keep it locally nor
+     * upload it. The session was already persisted in [endSession], so this
+     * deletes the stored session and its diagnostic log.
+     */
+    fun discardPendingSession() {
+        val pending = _pendingCloudUpload.value ?: return
+        _pendingCloudUpload.value = null
+        if (uploadState.activeSessionId == pending.session.id) uploadState.reset(null)
+        storageManager.deleteSession(pending.session.id)
+        sessionLogger.deleteLogFile(pending.logFile)
+        android.util.Log.i("Upload", "Session discarded (not saved, not uploaded): ${pending.session.id}")
+    }
+
     fun dismissSessionNotice() {
         _sessionNotice.value = null
     }

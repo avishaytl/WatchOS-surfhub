@@ -35,6 +35,7 @@
 "session.upload_prompt_message" = "This session is saved on your watch. Upload it to SurfHub cloud too?";
 "session.upload_now" = "Upload";
 "session.keep_local" = "Keep Local";
+"session.discard" = "Discard";
 "session.too_short_title" = "Session Not Saved";
 "session.too_short_message" = "Sessions shorter than 1 minute are discarded.";
 "session.upload_failed_title" = "Could Not Upload";
@@ -102,8 +103,6 @@
 "settings.version" = "Version";
 "settings.build" = "Build";
 "settings.tune_parameters" = "Custom Tuning";
-"settings.dev_mode" = "Toss Test";
-"settings.dev_mode_help" = "Skip GPS speed gate — detect jumps from hand toss. Turn off for real sessions.";
 
 // MARK: - Jump Tuning (6 Parameters)
 "tuning.title" = "Custom Tuning";

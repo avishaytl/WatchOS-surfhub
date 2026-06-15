@@ -29,6 +29,7 @@
     <string name="session_upload_prompt_message">This session is saved on your watch. Upload it to SurfHub cloud too?</string>
     <string name="session_upload_now">Upload</string>
     <string name="session_keep_local">Keep Local</string>
+    <string name="session_discard">Discard</string>
     <string name="session_too_short_title">Session Not Saved</string>
     <string name="session_too_short_message">Sessions shorter than 1 minute are discarded.</string>
     <string name="session_upload_failed_title">Could Not Upload</string>
@@ -83,8 +84,6 @@
     <string name="settings_about">About</string>
     <string name="settings_version">Version</string>
     <string name="settings_build">Build</string>
-    <string name="settings_dev_mode">Toss Test</string>
-    <string name="settings_dev_mode_help">Skip GPS speed gate — detect jumps from hand toss. Turn off for real sessions.</string>
     <string name="settings_active_thresholds">Active thresholds</string>
     <string name="settings_threshold_takeoff">Takeoff</string>
     <string name="settings_threshold_speed">Speed</string>

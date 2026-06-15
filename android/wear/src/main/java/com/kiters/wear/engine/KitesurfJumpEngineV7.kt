@@ -2,7 +2,6 @@ package com.kiters.wear.engine
 
 import kotlin.math.abs
 import kotlin.math.floor
-import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 // ================================================================
@@ -23,14 +22,19 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
         var baroTrustLoHPa: Double = 0.06,
         var baroTrustHiHPa: Double = 0.18,
         // Event detection (adaptive, kite-aware)
-        var releaseSigmaK: Double = 3.5,
-        var releaseFloorG: Double = 1.30,
-        var landingSpikeG: Double = 1.60,
+        var releaseSigmaK: Double = 1.5,
+        var releaseFloorG: Double = 1.70,
+        var releaseGyroMinRad: Double = 2.0,
+        var landingContactG: Double = 1.15,
+        var landingContactGyro: Double = 2.0,
+        var landingSpikeG: Double = 1.40,
+        var landingSpikeGyro: Double = 1.0,
         var settleTolG: Double = 0.35,
         var settleSamplesNeeded: Int = 6,
-        var minAirTimeSec: Double = 0.30,
-        var maxAirTimeSec: Double = 14.0,
-        var minJumpHeightMeters: Double = 1.0,
+        var minAirTimeSec: Double = 2.0,
+        var hardLandingMinAirTimeSec: Double = 2.0,
+        var maxAirTimeSec: Double = 6.5,
+        var minJumpHeightMeters: Double = 1.5,
         // Gyro
         var gyroQualityThreshold: Double = 8.0,
         var gyroIsDegPerSec: Boolean? = false,
@@ -39,8 +43,9 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
         var enableIMUBiasCorrection: Boolean = true,
         // Kite-aware height (asymmetric arc)
         var airtimeCeilingTolerance: Double = 1.25,
-        var maxPlausibleHeightM: Double = 500.0,
-        var symmetricAscentFraction: Double = 0.5,
+        var maxPlausibleHeightM: Double = 50.0,
+        var symmetricAscentFraction: Double = 0.143,
+        var displayedAirtimeScale: Double = 0.73,
     )
 
     /** Public entry: analyse a captured jump buffer. */
@@ -90,7 +95,7 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
             while (i < n - 4) {
                 if (accMag[i] >= releaseThr) {
                     val gyroAhead = gyroMag.subList(i, minOf(n - 1, i + 6) + 1).maxOrNull() ?: 0.0
-                    if (gyroAhead >= cfg.gyroQualityThreshold * 0.4 ||
+                    if (gyroAhead >= cfg.releaseGyroMinRad ||
                         (haveBaro && willBaroDrop(baroSmooth, i, baselineP))
                     ) {
                         t0 = i; break
@@ -103,46 +108,31 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
 
         // LANDING: impact spike OR baro recovery OR settle OR watchdog
         val maxAS = (cfg.maxAirTimeSec / dt).toInt()
-        val minAS = (cfg.minAirTimeSec / dt).toInt()
+        val hardMinAS = maxOf((cfg.minAirTimeSec / dt).toInt(), (cfg.hardLandingMinAirTimeSec / dt).toInt())
         var tl = -1
         var landingKind = JumpResult.LandingKind.TIMEOUT
         var jumpMinP = if (haveBaro) baselineP else 0.0
 
-        var settleRun = 0
         var i = t0 + 1
         while (i < n && (i - t0) <= maxAS) {
             if (haveBaro) jumpMinP = minOf(jumpMinP, baroSmooth[i])
             val air = (i - t0).toDouble() * dt
 
             if (air >= cfg.minAirTimeSec) {
-                // (a) hard impact
-                if (accMag[i] >= cfg.landingSpikeG) {
+                // (a) first water/board contact
+                if (accMag[i] >= cfg.landingContactG && gyroMag[i] >= cfg.landingContactGyro) {
+                    tl = i; landingKind = JumpResult.LandingKind.CONTACT; break
+                }
+                // (b) hard impact
+                if ((i - t0) >= hardMinAS && accMag[i] >= cfg.landingSpikeG && gyroMag[i] >= cfg.landingSpikeGyro) {
                     tl = i; landingKind = JumpResult.LandingKind.HARD_IMPACT; break
-                }
-                // (b) baro recovery
-                if (haveBaro) {
-                    val drop = baselineP - jumpMinP
-                    if (drop > cfg.baroNoiseFloorHPa) {
-                        val recover = maxOf(drop * 0.08, cfg.baroNoiseFloorHPa)
-                        if (baroSmooth[i] >= baselineP - recover) {
-                            tl = i; landingKind = JumpResult.LandingKind.BARO_RECOVERY; break
-                        }
-                    }
-                }
-                // (c) settle
-                if (abs(accMag[i] - rideMeanA) < cfg.settleTolG && gyroMag[i] < cfg.gyroQualityThreshold) {
-                    settleRun += 1
-                    if (settleRun >= cfg.settleSamplesNeeded && (i - t0) > minAS) {
-                        tl = i - settleRun + 1; landingKind = JumpResult.LandingKind.SETTLE; break
-                    }
-                } else {
-                    settleRun = 0
                 }
             }
             i++
         }
         if (tl == -1) { tl = minOf(n - 1, t0 + maxAS); landingKind = JumpResult.LandingKind.TIMEOUT }
         if (tl <= t0) return null
+        if (landingKind == JumpResult.LandingKind.TIMEOUT) return null
 
         val airTimeSec = (tl - t0).toDouble() * dt
 
@@ -157,7 +147,7 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
         // KINEMATIC HEIGHTS (kite-aware, asymmetric arc)
         val symCeilingH = K.g * airTimeSec * airTimeSec / 8.0
         var tRise = airTimeSec * cfg.symmetricAscentFraction
-        if (haveBaro && dP > cfg.baroNoiseFloorHPa) {
+        if (haveBaro && dP >= cfg.baroTrustHiHPa) {
             var minIdx = t0
             var mp = Double.MAX_VALUE
             for (k in t0..tl) {
@@ -170,7 +160,7 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
 
         // PHYSICAL CONSISTENCY GATE
         val airtimeCeiling = symCeilingH * cfg.airtimeCeilingTolerance
-        val baroConsistent = baroH > 0 && baroH <= airtimeCeiling
+        val baroConsistent = dP >= cfg.baroTrustHiHPa && baroH > 0 && baroH <= airtimeCeiling
 
         // HEIGHT SELECTION
         val heightM: Double
@@ -227,6 +217,7 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
             baroHeightMeters = r2(baroH),
             kinematicHeightMeters = r2(riseH),
             airTimeSeconds = r2(airTimeSec),
+            displayedAirTimeSeconds = r2(airTimeSec * cfg.displayedAirtimeScale),
             apexTimeSeconds = apex?.let { r2(it) },
             rotations = rotations,
             jumpDistanceMeters = jumpDistSpeedTime,
@@ -236,6 +227,8 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
             confidence = (conf * 1000).roundToLong() / 1000.0,
             landingKind = landingKind,
             heightSource = source,
+            takeoffTimeSeconds = samples[t0].t,
+            landingTimeSeconds = samples[tl].t,
             deltaPressureHPa = (dP * 10000).roundToLong() / 10000.0,
             peakTakeoffG = r2(peakTakeoffG),
             peakGyro = r2(peakGyro),

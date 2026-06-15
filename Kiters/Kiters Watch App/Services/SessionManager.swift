@@ -489,6 +489,20 @@ class SessionManager: ObservableObject {
         uploadCompletedSessionToCloud(session: pending.session, logURL: pending.logURL)
     }
 
+    /// Discard the just-finished session entirely: neither keep it locally nor
+    /// upload it. The session was already persisted in `endSession`, so this
+    /// deletes the stored session and its diagnostic log.
+    func discardPendingSession() {
+        guard let pending = pendingCloudUpload else { return }
+        pendingCloudUpload = nil
+        if uploadState.activeSessionId == pending.session.id {
+            uploadState.reset(sessionId: nil)
+        }
+        storageManager.deleteSession(id: pending.session.id)
+        deleteLogFile(pending.logURL)
+        print("🗑️ Session discarded (not saved, not uploaded): \(pending.session.id)")
+    }
+
     private func uploadLogToCloud(_ logURL: URL?) {
         guard let logURL else {
             print("☁️ No session log available for cloud upload")

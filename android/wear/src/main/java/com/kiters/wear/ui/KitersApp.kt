@@ -139,5 +139,12 @@ private fun CloudUploadPrompt(vm: SessionManager) {
         ) {
             Text(context.getString(R.string.session_keep_local))
         }
+        Button(
+            onClick = { vm.discardPendingSession() },
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(context.getString(R.string.session_discard), color = Color.White)
+        }
     }
 }

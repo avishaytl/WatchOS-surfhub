@@ -121,7 +121,6 @@ fun SettingsScreen(vm: SessionManager, nav: NavController) {
                 settings.hapticFeedback = !v
             }
         }
-
         // Data
         item { SectionTitle(context.getString(R.string.settings_data)) }
         item { ChipRow(context.getString(R.string.settings_manage_sessions), ChipDefaults.secondaryChipColors()) { nav.navigate("data") } }

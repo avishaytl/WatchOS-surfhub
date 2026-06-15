@@ -42,3 +42,15 @@
 
 - מסך ההגדרות נקי וברור יותר, ללא בחירות מדומות או כלי פיתוח חשופים למשתמש.
 - הלוגיקה נשמרה — רק שכבת ה-UF הוסרה — כך שאין רגרסיה בזיהוי הקפיצות.
+
+## עדכון (החזרת Toss Test)
+
+ה-toggle של **Toss Test (devMode)** **הוחזר** למסך ההגדרות בשתי הפלטפורמות לבקשת המשתמש —
+הוא נחוץ לבדיקה בזריקת השעון (סימולציית קפיצה ללא רכיבה אמיתית). בנוסף, מנוע V7 החדש החמיר את
+הספים (`minAirTimeSec=2.0`, `minJumpHeightMeters=1.5`), ולכן devMode כעת גם **מרכך את ספי המנוע**
+כדי שזריקה קצרה ונמוכה תיתפס: ב-`buildSession` (iOS `JumpDetector.swift`, Android `engine/JumpDetector.kt`)
+כש-devMode פעיל מוגדרים `releaseFloorG=1.30`, `minAirTimeSec=0.25`, `hardLandingMinAirTimeSec=0.25`,
+`minJumpHeightMeters=0.20`, `landingContactGyro=0.8`, `landingSpikeGyro=0.5`, וסף הביטחון יורד ל-0.20.
+שער מהירות ה-GPS כבר עוקף ב-devMode. ראו [[task-3-haptics-waterlock]].
+
+(הודעות קוליות נותרו מוסרות; רק Toss Test הוחזר.)

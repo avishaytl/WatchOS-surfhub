@@ -1,6 +1,5 @@
 package com.kiters.wear.engine
 
-import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -33,12 +32,16 @@ class KitesurfSession(
     private val baselineWarmupSec = 8.0
 
     private val takeoffReleaseFloorG = detectorConfig.releaseFloorG
+    private val releaseGyroMinRad = detectorConfig.releaseGyroMinRad
     private val releaseSigmaK = detectorConfig.releaseSigmaK
     private val minAirSec = detectorConfig.minAirTimeSec
     private val maxAirborneSec = detectorConfig.maxAirTimeSec
     private val refractorySec = maxOf(0.0, refractorySec)
+    private val detectorLandingContactG = detectorConfig.landingContactG
+    private val detectorLandingContactGyro = detectorConfig.landingContactGyro
     private val detectorLandingSpikeG = detectorConfig.landingSpikeG
-    private val detectorNoiseFloorHPa = detectorConfig.baroNoiseFloorHPa
+    private val detectorLandingSpikeGyro = detectorConfig.landingSpikeGyro
+    private val hardLandingMinAirSec = detectorConfig.hardLandingMinAirTimeSec
 
     // Derived from measured rate
     private var dt = K.dt
@@ -76,7 +79,6 @@ class KitesurfSession(
     private val speedTop3 = ArrayList<Double>()
     private var refractoryUntil = Double.NEGATIVE_INFINITY
     private var postCountdown = 0
-    private var settleRun = 0
 
     // Output
     var onJumpDetected: ((JumpResult) -> Unit)? = null
@@ -137,7 +139,6 @@ class KitesurfSession(
                     baselineAtTakeoff = sessionBaselineP
                     jumpMinPressure = s.baro ?: sessionBaselineP
                     baselineFrozen = true
-                    settleRun = 0
                     transition(State.AIRBORNE)
                 }
             }
@@ -175,28 +176,15 @@ class KitesurfSession(
         val sd = std(rideWindow, DSP.mean(rideWindow))
         val thr = maxOf(takeoffReleaseFloorG, mu + releaseSigmaK * maxOf(sd, 0.05))
         // Require gyro energy too — a real launch spins the wrist; a knock does not.
-        return a >= thr && s.gyroMag >= 1.5
+        return a >= thr && s.gyroMag >= releaseGyroMinRad
     }
 
-    /** Landing: hard impact OR (significant) baro recovery OR sustained settle. */
+    /** Landing: first water/board contact OR hard impact. */
     private fun landingDetected(s: SensorSample, air: Double): Boolean {
-        if (s.accelMagG >= detectorLandingSpikeG) return true
-        val p = s.baro
-        if (p != null) {
-            val drop = baselineAtTakeoff - jumpMinPressure
-            if (drop > detectorNoiseFloorHPa) {
-                val recover = maxOf(drop * 0.08, detectorNoiseFloorHPa)
-                if (p >= baselineAtTakeoff - recover) return true
-            }
-        }
-        val rideMean = if (rideWindow.isEmpty()) 0.1 else DSP.median(rideWindow)
-        if (abs(s.accelMagG - rideMean) < 0.35 && s.gyroMag < 8.0) {
-            settleRun += 1
-            if (settleRun >= 6) return true
-        } else {
-            settleRun = 0
-        }
-        return false
+        if (s.accelMagG >= detectorLandingContactG && s.gyroMag >= detectorLandingContactGyro) return true
+        return air >= hardLandingMinAirSec &&
+            s.accelMagG >= detectorLandingSpikeG &&
+            s.gyroMag >= detectorLandingSpikeGyro
     }
 
     // Offline analysis
@@ -212,7 +200,6 @@ class KitesurfSession(
             takeoffIndexInBuffer = -1
             jumpMinPressure = Double.MAX_VALUE
             baselineFrozen = false
-            settleRun = 0
             isAnalyzing = false
             refractoryUntil = (lastT ?: 0.0) + refractorySec
             transition(State.RIDING)

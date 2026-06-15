@@ -3,6 +3,7 @@ package com.kiters.wear.engine
 import com.kiters.wear.model.DetectionMode
 import com.kiters.wear.model.ImuSample
 import com.kiters.wear.model.Jump
+import com.kiters.wear.model.JumpDetectionConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -22,6 +23,7 @@ class EngineParityTest {
         val detector = JumpDetector(synchronousAnalysis = true)
         val jumps = ArrayList<Jump>()
         detector.onJumpDetected = { jumps.add(it) }
+        JumpDetectionConfig.shared.devMode = false
         detector.reset(DetectionMode.STANDARD)
 
         var lastEmit: Double? = null
@@ -38,6 +40,43 @@ class EngineParityTest {
             detector.processSample(sample)
         }
         return jumps
+    }
+
+    private fun replayResultsFromFile(path: String): List<JumpResult> {
+        val loaded = ReplayLoader.loadFile(path)
+        val session = KitesurfSession(
+            detectorConfig = KitesurfJumpEngineV7.Config(),
+            refractorySec = DetectionMode.STANDARD.cooldown,
+            synchronousAnalysis = true,
+        )
+        val out = ArrayList<JumpResult>()
+        session.onJumpDetected = { out.add(it) }
+        session.start()
+        for ((idx, sample) in loaded.samples.withIndex()) {
+            val grav = sample.gravity
+            session.onSample(
+                SensorSample(
+                    t = sample.timestamp,
+                    ax = sample.accelerationX,
+                    ay = sample.accelerationY,
+                    az = sample.accelerationZ,
+                    aM = sample.accelerationMagnitude,
+                    gx = sample.rotationX,
+                    gy = sample.rotationY,
+                    gz = sample.rotationZ,
+                    gM = sample.rotationMagnitude,
+                    gravX = grav?.x ?: 0.0,
+                    gravY = grav?.y ?: 0.0,
+                    gravZ = grav?.z ?: -1.0,
+                    baro = sample.pressure,
+                    gpsSpeedMS = loaded.speeds.getOrNull(idx),
+                    gpsLat = null,
+                    gpsLon = null,
+                    gpsAccuracyM = null,
+                )
+            )
+        }
+        return out
     }
 
     @Test
@@ -80,5 +119,18 @@ class EngineParityTest {
             )
         }
         assertEquals(null, engine.process(tiny, maxSessionSpeedMS = 8.0))
+    }
+
+    @Test
+    fun surfrLog2_replayMatchesSwiftTimingShape() {
+        val jumps = replayResultsFromFile("../log2.json")
+        assertEquals("Swift replay currently emits 11 accepted candidates for log2", 11, jumps.size)
+        val times = jumps.map { it.takeoffTimeSeconds }
+        val expected = listOf(132.10, 148.55, 437.84, 484.50, 558.66, 646.24, 681.00, 743.76, 912.72, 981.74, 1624.04)
+        expected.zip(times).forEachIndexed { idx, (e, actual) ->
+            assertEquals("takeoff #$idx", e, actual, 0.15)
+        }
+        val firstSurfrWindow = jumps.minBy { kotlin.math.abs(it.takeoffTimeSeconds - 558.0) }
+        assertEquals("first Surfr timing residual", 0.66, firstSurfrWindow.takeoffTimeSeconds - 558.0, 0.2)
     }
 }

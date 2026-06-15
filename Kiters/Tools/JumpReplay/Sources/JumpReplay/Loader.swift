@@ -42,19 +42,100 @@ enum Loader {
 
     private struct SessionLogEnvelope: Decodable {
         let contentType: String?
+        let contentEncoding: String?
         let content: String?
     }
 
     private static func parseJSONLog(_ data: Data) throws -> ([RawRow], SensorFormat?) {
         if let envelope = try? JSONDecoder().decode(SessionLogEnvelope.self, from: data),
-           envelope.contentType?.lowercased().contains("csv") == true,
-           let content = envelope.content,
-           let csvData = content.data(using: .utf8) {
-            return try parseCSV(csvData)
+           let content = envelope.content {
+            let contentType = envelope.contentType?.lowercased() ?? ""
+            let encoding = envelope.contentEncoding?.lowercased() ?? ""
+            if contentType.contains("csv"), let csvData = content.data(using: .utf8) {
+                return try parseCSV(csvData)
+            }
+            if encoding == "base64" || contentType.contains("kiters-session-log") || contentType.contains("kslog") {
+                guard let blob = Data(base64Encoded: content, options: [.ignoreUnknownCharacters]) else {
+                    throw LoaderError.encoding
+                }
+                return try parseKSLog(blob)
+            }
         }
 
         let decoder = JSONDecoder()
         return (try decoder.decode([RawRow].self, from: data), nil)
+    }
+
+    private static func parseKSLog(_ data: Data) throws -> ([RawRow], SensorFormat?) {
+        let b = [UInt8](data)
+        guard b.count >= 8,
+              b[0] == 0x4b, b[1] == 0x53, b[2] == 0x4c, b[3] == 0x47 else {
+            throw LoaderError.encoding
+        }
+        let headerLength = Int(readUInt16(b, 6))
+        var i = 8 + headerLength
+        var rows: [RawRow] = []
+        rows.reserveCapacity(max(0, (b.count - i) / 46))
+
+        while i < b.count {
+            let type = b[i]
+            if type == 1 {
+                guard i + 46 <= b.count else { break }
+                let tMillis = readUInt32(b, i + 5)
+                let ax = scaled(readInt16(b, i + 9), 1000)
+                let ay = scaled(readInt16(b, i + 11), 1000)
+                let az = scaled(readInt16(b, i + 13), 1000)
+                let gx = scaled(readInt16(b, i + 17), 1000)
+                let gy = scaled(readInt16(b, i + 19), 1000)
+                let gz = scaled(readInt16(b, i + 21), 1000)
+                let gvX = scaled(readInt16(b, i + 25), 1000)
+                let gvY = scaled(readInt16(b, i + 27), 1000)
+                let gvZ = scaled(readInt16(b, i + 29), 1000)
+                let baro = scaled(readInt32(b, i + 31), 100)
+                let speed = Double(readUInt16(b, i + 39)) / 100.0
+                let eventLength = Int(readUInt16(b, i + 44))
+                rows.append(RawRow(
+                    timestamp: Double(tMillis) / 1000.0,
+                    accX: ax ?? 0, accY: ay ?? 0, accZ: az ?? 0,
+                    gravX: gvX ?? 0, gravY: gvY ?? 0, gravZ: gvZ ?? 0,
+                    baro: baro ?? 0,
+                    speed: speed,
+                    gyrX: gx ?? 0, gyrY: gy ?? 0, gyrZ: gz ?? 0
+                ))
+                i += 46 + eventLength
+            } else if type == 2 {
+                guard i + 14 <= b.count else { break }
+                let eventLength = Int(readUInt16(b, i + 12))
+                i += 14 + eventLength
+            } else {
+                break
+            }
+        }
+        return (rows, .onDevice)
+    }
+
+    private static func readUInt16(_ b: [UInt8], _ i: Int) -> UInt16 {
+        UInt16(b[i]) | (UInt16(b[i + 1]) << 8)
+    }
+
+    private static func readUInt32(_ b: [UInt8], _ i: Int) -> UInt32 {
+        UInt32(readUInt16(b, i)) | (UInt32(readUInt16(b, i + 2)) << 16)
+    }
+
+    private static func readInt16(_ b: [UInt8], _ i: Int) -> Int16 {
+        Int16(bitPattern: readUInt16(b, i))
+    }
+
+    private static func readInt32(_ b: [UInt8], _ i: Int) -> Int32 {
+        Int32(bitPattern: readUInt32(b, i))
+    }
+
+    private static func scaled(_ value: Int16, _ scale: Double) -> Double? {
+        value == Int16.min ? nil : Double(value) / scale
+    }
+
+    private static func scaled(_ value: Int32, _ scale: Double) -> Double? {
+        value == Int32.min ? nil : Double(value) / scale
     }
 
     private static func parseCSV(_ data: Data) throws -> ([RawRow], SensorFormat?) {

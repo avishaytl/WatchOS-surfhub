@@ -21,7 +21,13 @@ class JumpDetector(
 
     // v7 emits confidence 0..1; the rest of the app reads 0..100.
     private val confidenceAsPercent = true
-    private val acceptConfidence01 = 0.40
+    // Relaxed in dev/Toss-Test mode so a hand-toss still registers.
+    private val acceptConfidence01: Double get() = if (devMode) 0.20 else 0.40
+
+    // IMU fallback when the GPS speed gate fails (no/weak GPS): accept a jump
+    // anyway if it has a clearly real airtime AND a rotation or high confidence.
+    private val fallbackMinAirtimeSec = 1.5
+    private val fallbackMinConfidence = 0.75
 
     enum class JumpState(val rawValue: String) {
         IDLE("IDLE"),
@@ -118,6 +124,19 @@ class JumpDetector(
             minAirTimeSec = mode.minAirtime
             maxAirTimeSec = mode.maxAirtime
             kinematicCalibration = mode.kinematicCalibration
+
+            // Toss-Test (dev) mode: relax the gates so tossing the watch in your
+            // hand registers as a jump (short airtime, low height, gentle launch
+            // and catch). The GPS speed gate is already bypassed for devMode in
+            // the adapter's arming logic. Testing only.
+            if (JumpDetectionConfig.shared.devMode) {
+                releaseFloorG = 1.30
+                minAirTimeSec = 0.25
+                hardLandingMinAirTimeSec = 0.25
+                minJumpHeightMeters = 0.20
+                landingContactGyro = 0.8
+                landingSpikeGyro = 0.5
+            }
         }
         session = KitesurfSession(
             detectorConfig = cfg,
@@ -186,7 +205,15 @@ class JumpDetector(
 
         if (!devMode) {
             val minKnots = mode.minSpeed * 1.94384
-            if (r.maxSessionSpeedKnots < minKnots) return
+            if (r.maxSessionSpeedKnots < minKnots) {
+                // GPS speed gate failed (no/weak GPS, or not riding fast enough).
+                // FALLBACK: still accept if the IMU shows a clearly real jump —
+                // a genuine airtime AND either a rotation or high confidence.
+                // Bumps/handling (short airtime, no spin, low confidence) stay rejected.
+                val clearImuJump = r.airTimeSeconds >= fallbackMinAirtimeSec &&
+                    (r.rotations >= 1 || r.confidence >= fallbackMinConfidence)
+                if (!clearImuJump) return
+            }
         }
 
         val end = System.currentTimeMillis()
@@ -198,7 +225,7 @@ class JumpDetector(
             startTimeMs = start,
             endTimeMs = end,
             height = r.jumpHeightMeters,
-            airtime = r.airTimeSeconds,
+            airtime = r.displayedAirTimeSeconds,
             jumpDistance = r.jumpDistanceMeters ?: r.jumpDistanceGPSMeters ?: 0.0,
             rotations = r.rotations,
             confidence = confidence,
