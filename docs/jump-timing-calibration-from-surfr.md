@@ -295,6 +295,244 @@ timestamp filter. That filter was deliberately not added.
 
 ---
 
+### 8.2 2026-06-19 strict GPS-free replay
+
+Command:
+
+```bash
+cd "Kiters/Tools/JumpReplay"
+swift build
+.build/debug/JumpReplay --surfr -v ../../../docs/log2.json
+```
+
+Sanity:
+
+- `log2.json` is the upload envelope `log_20260612_121459_4173200D.csv`.
+- Header reports session `4173200D-12D1-4FAE-9495-EAE3484A48F4`, build `46`,
+  CSV `contentType: text/csv`, and `sampleRate: 50 Hz`.
+- Parsed rows: `84,261`; measured duration `1684.6s` (`~28.1 min`) at `~49.9 Hz`.
+- The replay uses the real CSV `spd` column when present. The log speed is non-zero for
+  nearly all rows; max speed is `11.26 m/s` (`40.5 km/h`), close to the Surfr summary
+  max speed of `38 km/h`.
+
+Parameter change applied for this pass:
+
+- Removed the relaxed toss/dev branch from the production path.
+- Kept detection GPS-independent: GPS speed never arms/disarms the jump engine and never
+  rejects a candidate.
+- Restored strict V7 gates in Swift and Android parity:
+  `releaseFloorG=1.70`, `releaseSigmaK=1.50`, `releaseGyroMinRad=2.00`,
+  `minAirTimeSec=2.00`, `hardLandingMinAirTimeSec=2.00`, `minJumpHeightMeters=1.00`,
+  `landingContactGyro=2.00`, `landingSpikeGyro=1.00`,
+  `symmetricAscentFraction=0.143`, `displayedAirtimeScale=0.73`.
+
+Before/after on `log2`:
+
+| Replay profile | Accepted candidates | Strict Surfr match | Notes |
+|---|---:|---|---|
+| Relaxed sensor-only/toss branch | 105 | **No** | Very high recall, but obvious FP explosion. |
+| Strict GPS-free V7 | 12 | **No** | Much safer, but still not the exact Surfr table. |
+| Moderate gyro relaxation (`releaseGyro=1.6`, `landingContactGyro=1.5`) | 13 | **No** | Adds an extra FP and does not recover rows 2-4 within `±3s`. Rejected. |
+
+Strict GPS-free alignment against the Surfr screenshot:
+
+| # | Surfr t | V7 t | Δt | Surfr h | V7 h | Δh | Surfr air | V7 displayed air | Δair | Surfr dist | V7 dist | Δdist | Notes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 1 | 558s | 558.66s | +0.66s | 3.17 | 2.25 | -0.92 | 4.59 | 3.46 | -1.13 | 7 | 41.0 | +34.0 | nearest accepted |
+| 2 | 735s | 743.76s | +8.76s | 3.45 | 2.88 | -0.57 | 4.12 | 3.91 | -0.21 | 24 | 46.0 | +22.0 | nearest accepted |
+| 3 | 958s | 981.74s | +23.74s | 3.14 | 3.35 | +0.21 | 4.37 | 4.22 | -0.15 | 10 | 44.0 | +34.0 | nearest accepted |
+| 4 | 1333s | 1624.04s | +291.04s | 3.77 | 3.29 | -0.48 | 4.33 | 1.64 | -2.69 | 20 | 0.0 | -20.0 | nearest accepted |
+
+Extra accepted candidates after matching the nearest four rows:
+
+`43.37s`, `132.10s`, `148.55s`, `437.84s`, `484.50s`, `646.24s`, `681.00s`, `912.72s`.
+
+Embedded on-watch events inside `log2`:
+
+The CSV itself contains event strings from the build-46 detector. Those embedded events
+also do **not** match the Surfr screenshot:
+
+| Embedded event time | Event |
+|---:|---|
+| `56.621s` | `JUMP ACCEPTED h=1.17m air=0.92s ...` |
+| `217.720s` | `JUMP ACCEPTED h=1.07m air=0.88s ...` |
+| `915.126s` | `JUMP ACCEPTED h=1.22m air=0.94s ...` |
+| `917.511s` | `JUMP ACCEPTED h=1.22m air=0.94s ...` |
+| `1295.565s` | `JUMP ACCEPTED h=3.79m air=1.66s ...` |
+
+So the watch log is useful as raw sensor input, but its embedded accepted-jump events are
+not a clean four-jump ground truth matching the image.
+
+Session-time caveat:
+
+`log2` filename/header starts at `20260612_121459`, while the Surfr screenshot title says
+`12 Jun 2026, 12:09 GMT+3`. If that title is the true Surfr session start, the screenshot
+times map roughly to `199/376/599/974s` in the log rather than `558/735/958/1333s`.
+That shifted comparison is also not a clean `±3s` match for all four rows, though it does
+place the fourth Surfr row close to V7's `981.74s` accepted candidate. This means the current
+artifact set still has unresolved start-time alignment, not just detector-parameter drift.
+
+Missed/late Surfr rows:
+
+- Row 2 is late by `+8.76s`.
+- Row 3 is late by `+23.74s`.
+- Row 4 is not recovered near `1333s`; strict replay sees multiple timeout/rejection
+  candidates later in the `1293-1410s` region, but no accepted candidate within `±3s`.
+
+Conclusion:
+
+`log2` still looks like the closest/most relevant capture because the first Surfr time
+lands exactly and the speed/session metadata are plausible. However, the current evidence
+does **not** satisfy the §5 proof for a single-offset timing match. A parameter-only change
+cannot honestly make this replay emit exactly `558/735/958/1333` with `0 FP / 0 FN` without
+adding a reference-session-specific timestamp filter or a new detector feature that has
+not yet been validated on independent no-jump logs. That timestamp filter was deliberately
+not added.
+
+Regression:
+
+- `./verify.sh` passes `7/7` after blessing the strict GPS-free baselines.
+- `log_ondevice_synthetic.csv` now expects `0` jumps because its synthetic gyro is near
+  zero and strict V7 requires wrist-rotation confirmation.
+
+### 8.3 Surfr window calibration gate
+
+`JumpReplay --surfr` now also reads the on-device `evt` column from `log2` and reports a
+separate **Surfr windows** table. This does not pretend that V7 final acceptance is already
+perfect; it verifies the lower-level fact we need for the next tuning pass: all four Surfr
+time windows contain a real jump-like signal in the watch log.
+
+Current local check:
+
+```bash
+cd "Kiters/Tools/JumpReplay"
+.build/debug/JumpReplay --require-surfr-windows ../../../docs/log2.json
+./verify.sh
+```
+
+Window gate:
+
+- nearest `AIRBORNE`/`JUMP ACCEPTED` event within `±10s` of the Surfr row,
+- raw max acceleration in the row window `>= 1.5g`,
+- raw max gyro in the row window `>= 2.0 rad/s`.
+
+GPS/speed is reported for diagnostics only; it is not part of the Surfr window gate.
+
+Current result:
+
+| # | Surfr ref | nearest event | V7 accepted near ref | Window signal |
+|---|---:|---:|---:|---|
+| 1 | `558s` | `558.66s` | `558.66s` | pass |
+| 2 | `735s` | `733.24s` | `743.76s` | pass |
+| 3 | `958s` | `964.46s` | `981.74s` | pass |
+| 4 | `1333s` | `1340.29s` | `1624.04s` | pass |
+
+`./verify.sh` now includes this check when `docs/log2.json` is present.
+
+Important: this is an intermediate calibration gate. It proves the four main Surfr jumps are
+present in the watch log and lets us ignore sub-metre/noise candidates during local tuning.
+The log can still contain additional valid smaller jumps; the next step is to use the
+window/cluster insight for ranking and diagnostics, not to force the production engine to
+hide every non-Surfr-row jump.
+
+### 8.4 2026-06-19 no-GPS production replay
+
+Implemented after comparing the current V7 path with the older engine:
+
+- Reintroduced soft landing candidates (`baroRecovery` / `settle`) as pending fallbacks,
+  while still allowing a later stronger `contact` / `hardImpact` landing to win.
+- Kept the production path GPS-independent: GPS does not arm/disarm the detector, does not
+  reject jumps, and no longer adds a confidence bonus. The same sensor-only confidence credit
+  is applied without checking `maxSessionSpeedMS`.
+- Added `JumpReplay --no-gps`, which withholds GPS speed/location from the detector.
+- Added narrow inertial timeout recovery: a timeout can be accepted without baro only when
+  the candidate has enough kinematic height, high takeoff accel, high gyro, and a sustained
+  takeoff+gyro burst (`timeoutRecoveryMinBurstSamples=14`).
+- Lowered the production display gate from `1.5m` to `1.0m`: sub-metre chop is still
+  ignored, but small real jumps are retained.
+- The streaming FSM now passes its landing hint into the offline V7 analyzer. This prevents
+  a jump from being triggered by a valid live contact and then rejected by a second,
+  disagreeing offline landing scan.
+- Mirrored the V7 behavior into the Android parity engine.
+
+Current replay result on `docs/log2.json`:
+
+| Mode | Accepted jumps | Surfr window gate | Notes |
+|---|---:|---|---|
+| normal replay | 24 | 4/4 pass | Uses the CSV speed column for diagnostics/distance only. |
+| `--no-gps` replay | 24 | 4/4 pass | Same accepted jump count and timing without feeding GPS. |
+
+Current nearest accepted jumps to the Surfr screenshot rows:
+
+| # | Surfr t | V7 t | Δt | Surfr h | V7 h | Surfr air | V7 displayed air |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 558s | 558.66s | +0.66s | 3.17 | 2.25 | 4.59 | 3.46 |
+| 2 | 735s | 743.76s | +8.76s | 3.45 | 2.88 | 4.12 | 3.91 |
+| 3 | 958s | 981.74s | +23.74s | 3.14 | 3.35 | 4.37 | 4.22 |
+| 4 | 1333s | 1350.53s | +17.53s | 3.77 | 1.62 | 4.33 | 2.93 |
+
+Recovered high-energy timeout:
+
+- Around `1293s`, the raw sensor window contains a strong candidate (`max accel ~2.98g`,
+  `max gyro ~9.23 rad/s`) and the embedded build-46 event reported `h=3.79m`.
+- After the inertial timeout recovery, V7 accepts `1293.25s` as
+  `h=4.24m`, `displayed air=4.74s`, `physical air=6.47s`, `conf=64`, `land=timeout`.
+- This recovery is deliberately not based on GPS and not based on baro. Filtered real baro
+  around this candidate is effectively flat, so the evidence is inertial/kinematic.
+- The screenshot row at `1333s` is still not a strict `±3s` timing match to the accepted
+  jump list, which keeps the start-time/alignment caveat open.
+
+Regression after this pass:
+
+```bash
+cd "Kiters/Tools/JumpReplay" && ./verify.sh
+cd "Kiters" && swift run WatchLiveSessionCoreChecks
+```
+
+Both pass. `verify.sh` currently reports `9 passed, 0 failed, 0 skipped`: the standard
+replay baselines, the Surfr window gate, and the same Surfr window gate with `--no-gps`.
+
+### 8.5 2026-06-19 watch log `61A41698`
+
+Input: `log_20260619_123224_61A41698.kslog`.
+
+Sanity:
+
+- Raw binary `.kslog`, session `61A41698-B42D-42A7-9470-E63D34C975EB`.
+- Header reports `sensorOnly=true`, `sampleRateHz=50`, `minAirtime=2`,
+  `maxAirtime=6.5`, `takeoffG=1.7`.
+- Parsed replay rate: `50.5Hz`, `4700` samples, `93.1s`.
+- Normal replay and `--no-gps` replay produce the same accepted jumps.
+
+Before this pass, replay accepted only two jumps:
+
+| t | h | displayed air | Notes |
+|---:|---:|---:|---|
+| `25.26s` | `3.44m` | `4.28s` | accepted |
+| `61.81s` | `1.85m` | `3.14s` | accepted |
+
+Root causes for the missed user jumps:
+
+- `minJumpHeightMeters=1.5` rejected valid small jumps at roughly `1.1-1.4m`.
+- The live streaming FSM saw a valid landing at `48.72s`, but the offline analyzer did not
+  receive that landing index and reclassified the same candidate as a timeout.
+
+After lowering the height gate to `1.0m` and passing the landing hint into V7:
+
+| # | t | h | displayed air | physical air | confidence | landing |
+|---|---:|---:|---:|---:|---:|---|
+| 1 | `25.26s` | `3.37m` | `4.23s` | `5.81s` | `53` | `hardImpact` |
+| 2 | `48.72s` | `1.40m` | `2.73s` | `3.74s` | `67` | `contact` |
+| 3 | `61.81s` | `1.77m` | `3.07s` | `4.20s` | `53` | `contact` |
+| 4 | `67.55s` | `1.11m` | `2.42s` | `3.31s` | `76` | `contact` |
+| 5 | `72.02s` | `1.42m` | `2.74s` | `3.80s` | `68` | `contact` |
+
+Rejected nearby candidates:
+
+- `3.90s`: computed height `0.91m`, below the `1.0m` gate.
+- `8.38s` and `32.38s`: high-gyro/high-accel handling bursts, but no valid landing and no
+  sustained timeout recovery; still rejected.
+
 ## 9. Ready-to-use prompt (English)
 
 > **Task: Calibrate the V7 jump-detection algorithm's timing accuracy against a Surfr reference.**

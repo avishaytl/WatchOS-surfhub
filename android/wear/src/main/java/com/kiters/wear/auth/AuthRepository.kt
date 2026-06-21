@@ -58,10 +58,11 @@ class AuthRepository {
                 if (status !in 200..299) throw mapError(body, status)
 
                 val json = JSONObject(body)
+                val code = json.getString("code")
                 PairingRequest(
-                    code = json.getString("code"),
+                    code = code,
                     qrPayload = stringValue(json, "qrPayload", "qr_payload")
-                        ?: error("Missing QR payload"),
+                        ?: "surfhub://watch-pair?code=$code",
                     expiresAtEpochSeconds = parseExpiresAt(
                         stringValue(json, "expiresAt", "expires_at"),
                     ),

@@ -48,8 +48,8 @@ fun KitersApp(vm: SessionManager) {
 
         when {
             isRecording -> ActiveSessionScreen(vm)
-            sessionNotice != null -> SessionNoticePrompt(vm, sessionNotice!!)
             pendingCloudUpload != null -> CloudUploadPrompt(vm)
+            sessionNotice != null -> SessionNoticePrompt(vm, sessionNotice!!)
             !isSignedIn -> {
                 val nav = rememberSwipeDismissableNavController()
                 AccountScreen(vm, nav)
@@ -109,6 +109,7 @@ private fun SessionNoticePrompt(vm: SessionManager, notice: com.kiters.wear.sess
 @Composable
 private fun CloudUploadPrompt(vm: SessionManager) {
     val context = LocalContext.current
+    val canUpload by vm.canUploadPendingSession.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
@@ -121,16 +122,21 @@ private fun CloudUploadPrompt(vm: SessionManager) {
             textAlign = TextAlign.Center,
         )
         Text(
-            text = context.getString(R.string.session_upload_prompt_message),
+            text = context.getString(
+                if (canUpload) R.string.session_upload_prompt_message
+                else R.string.session_upload_offline_message,
+            ),
             color = Color.Gray,
             fontSize = 11.sp,
             textAlign = TextAlign.Center,
         )
-        Button(
-            onClick = { vm.uploadPendingSessionToCloud() },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(context.getString(R.string.session_upload_now), color = Color.White)
+        if (canUpload) {
+            Button(
+                onClick = { vm.uploadPendingSessionToCloud() },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(context.getString(R.string.session_upload_now), color = Color.White)
+            }
         }
         Button(
             onClick = { vm.keepPendingSessionLocal() },

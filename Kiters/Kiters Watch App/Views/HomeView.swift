@@ -167,33 +167,14 @@ struct HomeView: View {
     
     private func handleStartTapped() {
         guard !waitingForPermission else { return }
-        
-        if sessionManager.isLocationAuthorized {
-            // Already authorized - go to sport selection immediately
-            showingSportSelection = true
-        } else if sessionManager.isLocationDenied {
-            // Permission was denied - show instructions alert
-            showingPermissionAlert = true
-        } else {
-            // notDetermined: permission was already requested at launch but the
-            // user hasn't responded yet. Show a brief waiting spinner and let
-            // the onChange(of: locationAuthStatus) handler proceed once they do.
-            waitingForPermission = true
-            // In case the system missed the launch request, re-trigger it.
+
+        // Location improves the session, but it should never block recording.
+        // If permission is still undecided, ask for it and continue into sport
+        // selection; denied/restricted users can still record from motion data.
+        if sessionManager.isLocationNotDetermined {
             sessionManager.requestLocationPermission()
-            
-            // Safety timeout – don't spin forever
-            DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
-                if self.waitingForPermission {
-                    self.waitingForPermission = false
-                    if self.sessionManager.isLocationAuthorized {
-                        self.showingSportSelection = true
-                    } else {
-                        self.showingPermissionAlert = true
-                    }
-                }
-            }
         }
+        showingSportSelection = true
     }
     
     private func loadSessions() {

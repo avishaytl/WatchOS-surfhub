@@ -1,0 +1,87 @@
+{
+  "detectedRateHz" : 50.335966798601575,
+  "detectionMode" : "standard",
+  "durationSec" : 160.8789999485016,
+  "file" : "log_20260619_161142_00DC2259.kslog",
+  "format" : "onDevice",
+  "jumps" : [
+    {
+      "accepted" : true,
+      "airtime" : 6.02,
+      "apexTime" : 0.12,
+      "confidence" : 53.400000000000006,
+      "height" : 6.81,
+      "heightSource" : "kin",
+      "index" : 0,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 8.22599995136261,
+      "rotations" : 4,
+      "takeoffOffsetSec" : 31.057000041007996
+    },
+    {
+      "accepted" : true,
+      "airtime" : 5.59,
+      "apexTime" : 5.28,
+      "confidence" : 52.7,
+      "height" : 5.89,
+      "heightSource" : "kin",
+      "index" : 1,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 7.725000023841858,
+      "rotations" : 5,
+      "takeoffOffsetSec" : 53.592000007629395
+    },
+    {
+      "accepted" : true,
+      "airtime" : 4.73,
+      "confidence" : 54.300000000000004,
+      "height" : 4.21,
+      "heightSource" : "kin",
+      "index" : 2,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 6.52400004863739,
+      "rotations" : 1,
+      "takeoffOffsetSec" : 61.91699993610382
+    },
+    {
+      "accepted" : true,
+      "airtime" : 3.59,
+      "apexTime" : 2.99,
+      "confidence" : 52.300000000000004,
+      "height" : 2.43,
+      "heightSource" : "kin",
+      "index" : 3,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 4.924999952316284,
+      "rotations" : 4,
+      "takeoffOffsetSec" : 76.98699998855591
+    },
+    {
+      "accepted" : true,
+      "airtime" : 4.42,
+      "apexTime" : 0.9,
+      "confidence" : 53.7,
+      "height" : 3.68,
+      "heightSource" : "kin",
+      "index" : 4,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 6.151000022888184,
+      "rotations" : 2,
+      "takeoffOffsetSec" : 89.69400000572205
+    },
+    {
+      "accepted" : true,
+      "airtime" : 4.19,
+      "confidence" : 54.800000000000004,
+      "height" : 3.3,
+      "heightSource" : "kin",
+      "index" : 5,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 5.7230000495910645,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 96.5789999961853
+    }
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 8099
+}

@@ -86,7 +86,7 @@ final class AuthService: ObservableObject {
         if let pairing = try? await WatchPairingStore.shared.validPairing() {
             await set(.signedIn(email: pairing.accountLabel))
         } else {
-            await set(.signedIn(email: uid))
+            await set(.signedIn(email: L("account.connected_title")))
         }
     }
 

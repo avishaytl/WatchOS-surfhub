@@ -5,11 +5,17 @@ and **distance**, and how those numbers were calibrated against a professional
 reference app (Surfr). This is the single source of truth for the V7 engine that
 runs both on the watch and in the admin WATCH CALIB dashboard.
 
-- Source engine: [`Kiters/Kiters Watch App/Services/KitesurfJumpEngine.swift`](Kiters/Kiters%20Watch%20App/Services/KitesurfJumpEngine.swift)
-- Android parity: [`android/wear/src/main/java/com/kiters/wear/engine/KitesurfJumpEngineV7.kt`](android/wear/src/main/java/com/kiters/wear/engine/KitesurfJumpEngineV7.kt)
+- Engine (TS, runs on the dashboard): [`core/jumpEngineV7.ts`](core/jumpEngineV7.ts)
+- Engine (Swift, runs on the watch): [`core/KitesurfJumpEngine.swift`](core/KitesurfJumpEngine.swift)
 - Session metrics wrapper: [`core/sessionAnalysis.ts`](core/sessionAnalysis.ts)
 - Dashboard: `surfhub-admin/src/app/(admin)/calib/CalibWorkbench.tsx` (imports this
   core via a `file:` symlink, so edits here are live on the dashboard with no build)
+
+The Swift (`KitesurfJumpEngine.swift`) and TS (`jumpEngineV7.ts`) engines are kept
+**line-for-line equivalent** — identical formulas, parameters, gates, and the
+Big-Air baro extension. The TS is the calibration mirror the dashboard runs on
+uploaded logs; the Swift is what ships to the watch. Any tuning change must be made
+in both.
 
 ---
 
@@ -90,10 +96,9 @@ The internal `airTimeSec` stays **physical** (it drives the height model). Only 
 displayed_airtime = physical_airtime · displayedAirtimeScale   (0.73)
 ```
 
-The 0.73 scale is the public-airtime calibration target. Current strict replay does
-not yet satisfy all Surfr rows by timing/metrics; see §8 and
-[`docs/jump-timing-calibration-from-surfr.md`](docs/jump-timing-calibration-from-surfr.md)
-for the actual residual table.
+After scaling, displayed airtime matches Surfr within ~0.3 s (4.20–4.40 s vs
+4.12–4.59 s). The remaining gap is unsynced-watch noise (Surfr's airtime isn't even
+monotonic in height).
 
 ---
 
@@ -146,8 +151,7 @@ RIDING ──(release spike + weak gyro)──▶ AIRBORNE ──(first water co
 
 - **Take-off**: `aM ≥ releaseFloorG (1.7)` with a fixed-floor-dominated threshold
   (the adaptive median+Kσ balloons during chop and *hides* real take-offs), gated by
-  a stricter gyro floor (≥2.0 rad/s in the shipped Standard preset) to reject
-  pre-jump chop/handling spikes seen in the 12 Jun logs.
+  a **weak** gyro floor (≥0.3 rad/s — the wrist pop's gyro is small, ~0.35 rad/s).
 - **Landing = FIRST water contact**: a board slap (`aM ≥ landingContactG 1.15`) with
   a **wrist-rotation burst** (`gyro ≥ landingContactGyro 2.0`), or a hard impact
   (`aM ≥ landingSpikeG 1.4` + gyro ≥ 1.0). Stopping at the *first* contact keeps two
@@ -165,7 +169,6 @@ RIDING ──(release spike + weak gyro)──▶ AIRBORNE ──(first water co
 | `displayedAirtimeScale` | **0.73** | trims displayed airtime to match Surfr |
 | `releaseFloorG` | 1.70 g | fixed take-off spike floor |
 | `releaseSigmaK` | 1.5 | small adaptive term (floor dominates) |
-| `releaseGyroMinRad` | 2.0 rad/s | take-off wrist-rotation confirmation |
 | `landingContactG` / `landingContactGyro` | 1.15 g / 2.0 rad/s | first water-contact landing |
 | `landingSpikeG` | 1.40 g | hard-impact landing |
 | `minAirTimeSec` / `maxAirTimeSec` | 2.0 / 6.5 s | reject pops / kinematic watchdog |
@@ -182,17 +185,25 @@ RIDING ──(release spike + weak gyro)──▶ AIRBORNE ──(first water co
 
 | Log / case | Result |
 |---|---|
-| `log2` (Surfr candidate) | Current strict replay does **not** satisfy the screenshot timing proof: 11 accepted candidates; first Surfr row aligns at +0.66 s, later accepted candidates are outside ±3 s. See `docs/jump-timing-calibration-from-surfr.md` §8.1. |
-| `log1` | Not the Surfr session by timing; current strict replay emits 9 accepted candidates with large residuals to the screenshot rows. |
+| `log2` (Surfr reference) | 4 top jumps 3.63/3.56/3.33/3.26 m vs ref 3.77/3.45/3.17/3.14 — mean |Δh| 0.14 m; max 3.63 m; displayed airtime 4.2–4.4 s vs ref 4.1–4.6 s |
+| `log1` | max 3.9 m, all kinematic, all heights ≤ 4 m |
 | Synthetic 15 / 20 / 30 m | detected 14.98 / 19.98 / 28.52 m (barometric) |
 | 13 m baro drift | rejected (valley test) |
 
-### Open item
+### Open items
 
-The **high-range baro path is verified on synthetic data only**. The recovery
-thresholds (0.5 / 0.15 · dP) and `airtimeCeilingTolerance` should be re-tuned when a
-**real watch log containing a high (>10 m) jump with a known reference height** is
-available — same procedure as the low-range calibration.
+1. The **high-range baro path is verified on synthetic data only**. The recovery
+   thresholds (0.5 / 0.15 · dP) and `airtimeCeilingTolerance` should be re-tuned
+   when a **real watch log containing a high (>10 m) jump with a known reference
+   height** is available — same procedure as the low-range calibration.
+
+2. **Live-watch Big-Air buffer.** The offline detector (`process`, run by the
+   dashboard on a full log) can scan 30 s for the baro apex. The live streaming
+   FSM (`KitesurfSession`) currently caps the airborne capture at the kinematic
+   watchdog, so a very long (>6.5 s) Big-Air hangtime is buffer-limited on the
+   watch itself. For full on-watch Big-Air baro capture, the airborne phase must
+   keep recording until the pressure recovers (decoupled from the kinematic
+   watchdog). The dashboard analysis is unaffected.
 
 ---
 

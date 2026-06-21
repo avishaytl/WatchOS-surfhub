@@ -23,6 +23,22 @@ struct ReplayReport: Codable {
     let mockSpeedMps: Double
     let detectionMode: String
     let jumps: [ReplayJump]
+    let surfrWindowMatches: [SurfrWindowMatch]?
+}
+
+struct SurfrWindowMatch: Codable {
+    let index: Int
+    let referenceTimeSec: Double
+    let nearestEventTimeSec: Double?
+    let nearestEventDeltaSec: Double?
+    let nearestEvent: String?
+    let nearestAcceptedTimeSec: Double?
+    let nearestAcceptedDeltaSec: Double?
+    let acceptedWithinTolerance: Bool
+    let windowSignalAccepted: Bool
+    let rawMaxAccelG: Double
+    let rawMaxGyro: Double
+    let rawMedianSpeedMS: Double
 }
 
 enum Reporter {
@@ -57,6 +73,19 @@ enum Reporter {
                 print(String(format: "  [%@] #%d  t=%.2fs  air=%.2fs phys=%.2fs  h=%.2fm(%@)  apex=%@s  conf=%d  rot=%d",
                              mark, j.index, j.takeoffOffsetSec, j.airtime, j.physicalAirtime ?? j.airtime,
                              j.height, j.heightSource, apex, Int(j.confidence), j.rotations), to: &s)
+            }
+        }
+        if let matches = report.surfrWindowMatches, !matches.isEmpty {
+            print("Surfr windows:", to: &s)
+            for m in matches {
+                let event = m.nearestEventTimeSec.map { String(format: "%.2fs", $0) } ?? "-"
+                let accepted = m.nearestAcceptedTimeSec.map { String(format: "%.2fs", $0) } ?? "-"
+                let acceptedDt = m.nearestAcceptedDeltaSec.map { String(format: "%+.2fs", $0) } ?? "-"
+                let mark = m.windowSignalAccepted ? "✓" : "✗"
+                let v7 = m.acceptedWithinTolerance ? "v7✓" : "v7✗"
+                print(String(format: "  [%@] #%d ref=%.0fs event=%@ accepted=%@ dt=%@ %@ rawA=%.2fg rawG=%.2f spd=%.2f",
+                             mark, m.index, m.referenceTimeSec, event, accepted, acceptedDt,
+                             v7, m.rawMaxAccelG, m.rawMaxGyro, m.rawMedianSpeedMS), to: &s)
             }
         }
         print("════════════════════════════════════════════════", to: &s)

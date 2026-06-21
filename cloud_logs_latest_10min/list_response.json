@@ -1,0 +1,179 @@
+{
+  "ok": true,
+  "files": [
+    {
+      "name": "log_20260619_234938_78F4CE13.kslog",
+      "path": "watch/log_20260619_234938_78F4CE13.kslog",
+      "size": 326772,
+      "created_at": "2026-06-19T20:52:13.876Z"
+    },
+    {
+      "name": "log_20260619_182742_B8F3B8E7.kslog",
+      "path": "watch/log_20260619_182742_B8F3B8E7.kslog",
+      "size": 1089304,
+      "created_at": "2026-06-19T20:29:01.256Z"
+    },
+    {
+      "name": "log_20260619_181339_37987CFB.kslog",
+      "path": "watch/log_20260619_181339_37987CFB.kslog",
+      "size": 161672,
+      "created_at": "2026-06-19T15:18:48.682Z"
+    },
+    {
+      "name": "log_20260619_181518_CE0EFDD6.kslog",
+      "path": "watch/log_20260619_181518_CE0EFDD6.kslog",
+      "size": 420011,
+      "created_at": "2026-06-19T15:18:41.040Z"
+    },
+    {
+      "name": "log_20260619_161142_00DC2259.kslog",
+      "path": "watch/log_20260619_161142_00DC2259.kslog",
+      "size": 373724,
+      "created_at": "2026-06-19T13:14:47.656Z"
+    },
+    {
+      "name": "log_20260619_160601_45647792.kslog",
+      "path": "watch/log_20260619_160601_45647792.kslog",
+      "size": 181336,
+      "created_at": "2026-06-19T13:07:37.778Z"
+    },
+    {
+      "name": "log_20260619_155720_36739DF7.kslog",
+      "path": "watch/log_20260619_155720_36739DF7.kslog",
+      "size": 639112,
+      "created_at": "2026-06-19T13:02:18.990Z"
+    },
+    {
+      "name": "log_20260619_133857_0703BCD1.kslog",
+      "path": "watch/log_20260619_133857_0703BCD1.kslog",
+      "size": 1633993,
+      "created_at": "2026-06-19T12:49:39.286Z"
+    },
+    {
+      "name": "log_20260619_125840_E4422EF7.kslog",
+      "path": "watch/log_20260619_125840_E4422EF7.kslog",
+      "size": 365031,
+      "created_at": "2026-06-19T10:01:46.686Z"
+    },
+    {
+      "name": "log_20260619_123224_61A41698.kslog",
+      "path": "watch/log_20260619_123224_61A41698.kslog",
+      "size": 217160,
+      "created_at": "2026-06-19T09:34:18.158Z"
+    },
+    {
+      "name": "log_20260613_205131_006741C5.kslog",
+      "path": "watch/log_20260613_205131_006741C5.kslog",
+      "size": 43995,
+      "created_at": "2026-06-19T09:23:42.550Z"
+    },
+    {
+      "name": "log_20260613_221258_3F0054EF.kslog",
+      "path": "watch/log_20260613_221258_3F0054EF.kslog",
+      "size": 111369,
+      "created_at": "2026-06-19T09:23:42.037Z"
+    },
+    {
+      "name": "log_20260614_215406_58C67828.kslog",
+      "path": "watch/log_20260614_215406_58C67828.kslog",
+      "size": 76737,
+      "created_at": "2026-06-19T09:23:41.300Z"
+    },
+    {
+      "name": "log_20260614_215947_4C0CE01A.kslog",
+      "path": "watch/log_20260614_215947_4C0CE01A.kslog",
+      "size": 237769,
+      "created_at": "2026-06-19T09:23:40.706Z"
+    },
+    {
+      "name": "log_20260615_095024_07E2E1FE.kslog",
+      "path": "watch/log_20260615_095024_07E2E1FE.kslog",
+      "size": 1334497,
+      "created_at": "2026-06-19T09:23:39.651Z"
+    },
+    {
+      "name": "log_20260615_152848_39375CC8.kslog",
+      "path": "watch/log_20260615_152848_39375CC8.kslog",
+      "size": 66453,
+      "created_at": "2026-06-19T09:23:35.370Z"
+    },
+    {
+      "name": "log_20260615_160918_99380D35.kslog",
+      "path": "watch/log_20260615_160918_99380D35.kslog",
+      "size": 160478,
+      "created_at": "2026-06-19T09:23:34.836Z"
+    },
+    {
+      "name": "log_20260615_163737_1F4ED948.kslog",
+      "path": "watch/log_20260615_163737_1F4ED948.kslog",
+      "size": 179813,
+      "created_at": "2026-06-19T09:23:33.905Z"
+    },
+    {
+      "name": "log_20260616_105605_F5651A71.kslog",
+      "path": "watch/log_20260616_105605_F5651A71.kslog",
+      "size": 122991,
+      "created_at": "2026-06-19T09:23:32.016Z"
+    },
+    {
+      "name": "log_20260619_102843_8A4C2C78.kslog",
+      "path": "watch/log_20260619_102843_8A4C2C78.kslog",
+      "size": 202263,
+      "created_at": "2026-06-19T09:23:31.302Z"
+    },
+    {
+      "name": "log_20260619_112834_825EC5FB.kslog",
+      "path": "watch/log_20260619_112834_825EC5FB.kslog",
+      "size": 127191,
+      "created_at": "2026-06-19T09:23:30.139Z"
+    },
+    {
+      "name": "log_20260619_113041_EAD80A94.kslog",
+      "path": "watch/log_20260619_113041_EAD80A94.kslog",
+      "size": 220576,
+      "created_at": "2026-06-19T09:23:29.370Z"
+    },
+    {
+      "name": "log_20260619_115328_57E8961D.kslog",
+      "path": "watch/log_20260619_115328_57E8961D.kslog",
+      "size": 441436,
+      "created_at": "2026-06-19T09:23:28.032Z"
+    },
+    {
+      "name": "log_20260619_122001_74EB4A67.kslog",
+      "path": "watch/log_20260619_122001_74EB4A67.kslog",
+      "size": 350146,
+      "created_at": "2026-06-19T09:23:25.978Z"
+    },
+    {
+      "name": "log_20260616_093432_30BA4E08.kslog",
+      "path": "watch/log_20260616_093432_30BA4E08.kslog",
+      "size": 394689,
+      "created_at": "2026-06-16T06:37:30.871Z"
+    },
+    {
+      "name": "log_20260616_075244_31E8E511.kslog",
+      "path": "watch/log_20260616_075244_31E8E511.kslog",
+      "size": 172487,
+      "created_at": "2026-06-16T04:54:25.373Z"
+    },
+    {
+      "name": "log_20260615_224222_07EDF1D2.kslog",
+      "path": "watch/log_20260615_224222_07EDF1D2.kslog",
+      "size": 213022,
+      "created_at": "2026-06-15T19:44:01.900Z"
+    },
+    {
+      "name": "log_20260615_220009_FB11465E.kslog",
+      "path": "watch/log_20260615_220009_FB11465E.kslog",
+      "size": 289971,
+      "created_at": "2026-06-15T19:02:24.688Z"
+    },
+    {
+      "name": "log_20260615_165853_SHAYDEMO.kslog",
+      "path": "shay-batgalim-0001/log_20260615_165853_SHAYDEMO.kslog",
+      "size": 161601,
+      "created_at": "2026-06-15T18:52:40.701Z"
+    }
+  ]
+}

@@ -52,7 +52,7 @@ final class WatchSessionUploader {
 
     // MARK: - start
 
-    /// Opens a live session. Call once after the first GPS fix.
+    /// Opens a live session with the best available coordinate, falling back to 0/0.
     /// Returns sessId (keep it for all subsequent calls), spot name, and POI kind.
     func start(lat: Double, lng: Double, startedAt: Date = Date()) async throws -> StartResponse {
         let iso = ISO8601DateFormatter().string(from: startedAt)
@@ -132,10 +132,12 @@ final class WatchSessionUploader {
         }
         var req = URLRequest(url: ingestURL)
         req.httpMethod = "POST"
-        req.setValue("application/json",              forHTTPHeaderField: "Content-Type")
+        // Every lifecycle message ships as a binary KLOG envelope — same schema
+        // and fields as before, just binary instead of JSON.
+        req.setValue("application/octet-stream",      forHTTPHeaderField: "Content-Type")
         req.setValue(anonKey,                         forHTTPHeaderField: "apikey")
         req.setValue("Bearer \(pairing.accessToken)", forHTTPHeaderField: "Authorization")
-        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        req.httpBody = BinaryLogEnvelope.encode(object: body)
 
         let (data, resp) = try await session.data(for: req)
         let status = (resp as? HTTPURLResponse)?.statusCode ?? 0

@@ -44,7 +44,7 @@ final class SessionLogger {
         let session: String
         let date: String
         let mode: String
-        let devMode: Bool
+        let sensorOnly: Bool?
         let sampleRateHz: Int
         let parameters: BinaryLogParameters
         let columns: [String]
@@ -63,7 +63,7 @@ final class SessionLogger {
 
     /// Start a new log file for this session.
     /// Call once when the session starts.
-    func start(sessionId: String, mode: DetectionMode, devMode: Bool) {
+    func start(sessionId: String, mode: DetectionMode, sensorOnly: Bool) {
         stop() // close any previous log
 
         ioQueue.sync {
@@ -90,7 +90,7 @@ final class SessionLogger {
             buffer.removeAll(keepingCapacity: true)
             isActive = true
 
-            write(Self.makeHeaderData(sessionId: sessionId, dateStr: dateStr, mode: mode, devMode: devMode))
+            write(Self.makeHeaderData(sessionId: sessionId, dateStr: dateStr, mode: mode, sensorOnly: sensorOnly))
 
             print("📝 SessionLogger started → \(filename)")
         }
@@ -268,7 +268,7 @@ final class SessionLogger {
     private static let sampleRecordMinimumSize = 1 + sampleRecordBodySize
     private static let csvColumns = "idx,t,ax,ay,az,aM,gx,gy,gz,gM,gvX,gvY,gvZ,baro,baseBaro,spd,lowG,state,evt"
 
-    private static func makeHeaderData(sessionId: String, dateStr: String, mode: DetectionMode, devMode: Bool) -> Data {
+    private static func makeHeaderData(sessionId: String, dateStr: String, mode: DetectionMode, sensorOnly: Bool) -> Data {
         let header = BinaryLogHeader(
             app: "Kiters",
             format: "kslog",
@@ -276,7 +276,7 @@ final class SessionLogger {
             session: sessionId,
             date: dateStr,
             mode: mode.displayName,
-            devMode: devMode,
+            sensorOnly: sensorOnly,
             sampleRateHz: 50,
             parameters: BinaryLogParameters(
                 minSpeed: mode.minSpeed,
@@ -432,7 +432,7 @@ final class SessionLogger {
         text += "session: \(header.session)\n"
         text += "date: \(header.date)\n"
         text += "mode: \(header.mode)\n"
-        text += "devMode: \(header.devMode)\n"
+        text += "sensorOnly: \(header.sensorOnly ?? true)\n"
         text += "sampleRate: \(header.sampleRateHz) Hz\n"
         text += "minSpeed(m/s): \(String(format: "%.2f", header.parameters.minSpeed))\n"
         text += "takeoffG(g): \(String(format: "%.2f", header.parameters.takeoffG))\n"
@@ -548,7 +548,7 @@ final class SessionLogger {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             if trimmed.hasPrefix("#") {
                 if trimmed.hasPrefix("# session:") || trimmed.hasPrefix("# date:") ||
-                   trimmed.hasPrefix("# mode:") || trimmed.hasPrefix("# devMode:") ||
+                   trimmed.hasPrefix("# mode:") || trimmed.hasPrefix("# sensorOnly:") ||
                    trimmed.hasPrefix("# sampleRate:") || trimmed.hasPrefix("# minSpeed") ||
                    trimmed.hasPrefix("# takeoffG") || trimmed.hasPrefix("# landingG") ||
                    trimmed.hasPrefix("# minAirtime") || trimmed.hasPrefix("# maxAirtime") ||

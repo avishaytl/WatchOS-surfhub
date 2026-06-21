@@ -13,7 +13,7 @@ android {
         applicationId = "com.kiters.wear"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1
+        versionCode = 3
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +42,7 @@ android {
 
 dependencies {
     implementation(libs.core.ktx)
+    implementation(libs.fragment.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)

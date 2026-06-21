@@ -49,7 +49,9 @@ fun SettingsScreen(vm: SessionManager, nav: NavController) {
         // Account
         item { SectionTitle(context.getString(R.string.account_section_title)) }
         item {
-            val accountLabel = settings.authEmail.ifBlank { settings.authUserId }
+            val accountLabel = settings.authEmail.ifBlank {
+                if (settings.authAccessToken.isNotBlank()) context.getString(R.string.account_connected_title) else ""
+            }
             ChipRow(
                 if (accountLabel.isNotBlank()) accountLabel else context.getString(R.string.account_sign_in),
                 ChipDefaults.secondaryChipColors(),

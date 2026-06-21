@@ -31,8 +31,21 @@ object ReplayLoader {
     }
 
     fun loadFile(path: String): Loaded {
-        val text = File(path).readText()
-        return if (path.endsWith(".json")) parseJsonEnvelope(text) else parseCsv(text)
+        val file = resolveFixtureFile(path)
+        val text = file.readText()
+        return if (file.name.endsWith(".json")) parseJsonEnvelope(text) else parseCsv(text)
+    }
+
+    private fun resolveFixtureFile(path: String): File {
+        val requested = File(path)
+        if (requested.exists()) return requested
+
+        val fixtureName = requested.name
+        return listOf(
+            File("docs", fixtureName),
+            File("../docs", fixtureName),
+            File("../../docs", fixtureName),
+        ).firstOrNull { it.exists() } ?: requested
     }
 
     private fun parseJsonEnvelope(text: String): Loaded {

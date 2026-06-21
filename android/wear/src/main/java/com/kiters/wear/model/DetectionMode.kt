@@ -95,7 +95,7 @@ enum class DetectionMode {
 // Faithful port of the Swift JumpDetectionConfig (UserDefaults-backed).
 
 class JumpDetectionConfig(private var store: KeyValueStore) {
-    private val currentStandardCalibrationVersion = "surfr-v7-20260615-gpsfree-toss"
+    private val currentStandardCalibrationVersion = "surfr-v7-20260619-strict-gpsfree"
 
     init {
         installStandardCalibrationIfNeeded()
@@ -168,11 +168,11 @@ class JumpDetectionConfig(private var store: KeyValueStore) {
         set(v) = store.setDouble(Key.kinematicCalibration, v)
 
     /**
-     * Toss / GPS-independent detection is on by default in the app. It lets the
-     * detector accept the IMU jump pattern without depending on GPS speed.
+     * Deprecated compatibility flag. The V7 detector now has one production
+     * flow: IMU-first and GPS-independent, without a relaxed toss-test branch.
      */
     var devMode: Boolean
-        get() = if (store.contains(Key.devMode)) store.getBool(Key.devMode, true) else true
+        get() = if (store.contains(Key.devMode)) store.getBool(Key.devMode, false) else false
         set(v) = store.setBool(Key.devMode, v)
 
     fun resetToDefaults() {
@@ -183,7 +183,7 @@ class JumpDetectionConfig(private var store: KeyValueStore) {
         maxAirtime = 8.0
         cooldown = 1.5
         kinematicCalibration = 1.12
-        devMode = true
+        devMode = false
     }
 
     private fun installStandardCalibrationIfNeeded() {
@@ -195,7 +195,7 @@ class JumpDetectionConfig(private var store: KeyValueStore) {
         standardMaxAirtime = 6.5
         standardCooldown = 1.0
         standardKinematicCalibration = 1.0
-        devMode = true
+        devMode = false
         standardCalibrationVersion = currentStandardCalibrationVersion
     }
 

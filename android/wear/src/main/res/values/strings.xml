@@ -27,6 +27,7 @@
     <string name="session_end_message">Are you sure you want to end this session?</string>
     <string name="session_upload_prompt_title">Upload Session?</string>
     <string name="session_upload_prompt_message">This session is saved on your watch. Upload it to SurfHub cloud too?</string>
+    <string name="session_upload_offline_message">No internet connection was detected. Keep this session on your watch and upload it when the connection is back, or discard it.</string>
     <string name="session_upload_now">Upload</string>
     <string name="session_keep_local">Keep Local</string>
     <string name="session_discard">Discard</string>

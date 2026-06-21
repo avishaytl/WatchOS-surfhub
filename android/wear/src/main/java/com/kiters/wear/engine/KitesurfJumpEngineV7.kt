@@ -30,14 +30,24 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
         var landingSpikeG: Double = 1.40,
         var landingSpikeGyro: Double = 1.0,
         var settleTolG: Double = 0.35,
-        var settleSamplesNeeded: Int = 6,
+        var settleSamplesNeeded: Int = 12,
         var minAirTimeSec: Double = 2.0,
         var hardLandingMinAirTimeSec: Double = 2.0,
+        var settleMinAirTimeSec: Double = 3.80,
+        var settleMinBaroDropHPa: Double = 0.06,
         var maxAirTimeSec: Double = 6.5,
-        var minJumpHeightMeters: Double = 1.5,
+        var minJumpHeightMeters: Double = 1.0,
+        var timeoutRecoveryMinBaroDropHPa: Double = 0.35,
+        var timeoutRecoveryMinPeakGyro: Double = 4.0,
+        var timeoutRecoveryMinTakeoffG: Double = 2.0,
+        var timeoutRecoveryMinHeightMeters: Double = 3.0,
+        var timeoutRecoveryMinBurstSamples: Int = 14,
         // Gyro
         var gyroQualityThreshold: Double = 8.0,
         var gyroIsDegPerSec: Boolean? = false,
+        // Live sensor-only behaviour
+        var requireBaroBaselineBeforeTakeoff: Boolean = true,
+        var baselineWarmupSec: Double = 8.0,
         // Kinematic calibration
         var kinematicCalibration: Double = 1.0,
         var enableIMUBiasCorrection: Boolean = true,
@@ -52,10 +62,15 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
     fun process(
         rawSamples: List<SensorSample>,
         takeoffHint: Int? = null,
+        landingHint: Int? = null,
+        landingKindHint: JumpResult.LandingKind? = null,
         maxSessionSpeedMS: Double,
     ): JumpResult? {
         val (samples, indexMap) = dedupeByTime(rawSamples)
         val t0Hint: Int? = takeoffHint?.let {
+            if (it >= 0 && it < indexMap.size) indexMap[it].takeIf { v -> v >= 0 } else null
+        }
+        val tlHint: Int? = landingHint?.let {
             if (it >= 0 && it < indexMap.size) indexMap[it].takeIf { v -> v >= 0 } else null
         }
         val n = samples.size
@@ -106,33 +121,75 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
         }
         if (t0 == -1) return null
 
-        // LANDING: impact spike OR baro recovery OR settle OR watchdog
+        // LANDING: contact OR hard impact OR baro recovery OR settle
+        val minAS = (cfg.minAirTimeSec / dt).toInt()
         val maxAS = (cfg.maxAirTimeSec / dt).toInt()
-        val hardMinAS = maxOf((cfg.minAirTimeSec / dt).toInt(), (cfg.hardLandingMinAirTimeSec / dt).toInt())
+        val hardMinAS = maxOf(minAS, (cfg.hardLandingMinAirTimeSec / dt).toInt())
+        val settleMinAS = maxOf(minAS, (cfg.settleMinAirTimeSec / dt).toInt())
         var tl = -1
         var landingKind = JumpResult.LandingKind.TIMEOUT
         var jumpMinP = if (haveBaro) baselineP else 0.0
 
-        var i = t0 + 1
-        while (i < n && (i - t0) <= maxAS) {
-            if (haveBaro) jumpMinP = minOf(jumpMinP, baroSmooth[i])
-            val air = (i - t0).toDouble() * dt
-
-            if (air >= cfg.minAirTimeSec) {
-                // (a) first water/board contact
-                if (accMag[i] >= cfg.landingContactG && gyroMag[i] >= cfg.landingContactGyro) {
-                    tl = i; landingKind = JumpResult.LandingKind.CONTACT; break
-                }
-                // (b) hard impact
-                if ((i - t0) >= hardMinAS && accMag[i] >= cfg.landingSpikeG && gyroMag[i] >= cfg.landingSpikeGyro) {
-                    tl = i; landingKind = JumpResult.LandingKind.HARD_IMPACT; break
-                }
+        if (tlHint != null && tlHint > t0 && tlHint < n && (tlHint - t0) >= minAS && (tlHint - t0) <= maxAS) {
+            tl = tlHint
+            landingKind = landingKindHint ?: JumpResult.LandingKind.CONTACT
+            if (haveBaro) {
+                for (k in (t0 + 1)..tl) jumpMinP = minOf(jumpMinP, baroSmooth[k])
             }
-            i++
+        } else {
+            var softLandingIndex = -1
+            var softLandingKind = JumpResult.LandingKind.TIMEOUT
+            var settleRun = 0
+            var i = t0 + 1
+            while (i < n && (i - t0) <= maxAS) {
+                if (haveBaro) jumpMinP = minOf(jumpMinP, baroSmooth[i])
+                val air = (i - t0).toDouble() * dt
+
+                if (air >= cfg.minAirTimeSec) {
+                    // (a) first water/board contact
+                    if (accMag[i] >= cfg.landingContactG && gyroMag[i] >= cfg.landingContactGyro) {
+                        tl = i; landingKind = JumpResult.LandingKind.CONTACT; break
+                    }
+                    // (b) hard impact
+                    if ((i - t0) >= hardMinAS && accMag[i] >= cfg.landingSpikeG && gyroMag[i] >= cfg.landingSpikeGyro) {
+                        tl = i; landingKind = JumpResult.LandingKind.HARD_IMPACT; break
+                    }
+                    // (c) baro recovery
+                    if ((i - t0) >= hardMinAS && haveBaro) {
+                        val drop = baselineP - jumpMinP
+                        if (drop > cfg.baroNoiseFloorHPa) {
+                            val recover = maxOf(drop * 0.08, cfg.baroNoiseFloorHPa)
+                            if (baroSmooth[i] >= baselineP - recover && softLandingIndex == -1) {
+                                softLandingIndex = i
+                                softLandingKind = JumpResult.LandingKind.BARO_RECOVERY
+                            }
+                        }
+                    }
+                    // (d) settle after a real pressure dip
+                    val settleBaroOK = haveBaro && (baselineP - jumpMinP) >= cfg.settleMinBaroDropHPa
+                    if (settleBaroOK &&
+                        (i - t0) >= settleMinAS &&
+                        abs(accMag[i] - rideMeanA) < cfg.settleTolG &&
+                        gyroMag[i] < cfg.gyroQualityThreshold
+                    ) {
+                        settleRun += 1
+                        if (settleRun >= cfg.settleSamplesNeeded && (i - t0) > minAS && softLandingIndex == -1) {
+                            softLandingIndex = i
+                            softLandingKind = JumpResult.LandingKind.SETTLE
+                        }
+                    } else {
+                        settleRun = 0
+                    }
+                }
+                i++
+            }
+            if (tl == -1 && softLandingIndex != -1) {
+                tl = softLandingIndex
+                landingKind = softLandingKind
+            }
         }
         if (tl == -1) { tl = minOf(n - 1, t0 + maxAS); landingKind = JumpResult.LandingKind.TIMEOUT }
         if (tl <= t0) return null
-        if (landingKind == JumpResult.LandingKind.TIMEOUT) return null
 
         val airTimeSec = (tl - t0).toDouble() * dt
 
@@ -196,12 +253,37 @@ class KitesurfJumpEngineV7(private val cfg: Config = Config()) {
         val avgGyroQ = DSP.mean(gyroQ.subList(t0, tl + 1))
         val peakGyro = gyroMag.subList(t0, tl + 1).maxOrNull() ?: 0.0
         val peakTakeoffG = accMag.subList(maxOf(0, t0 - 2), minOf(n - 1, t0 + 4) + 1).maxOrNull() ?: 0.0
+        var timeoutBurstRun = 0
+        var timeoutMaxBurstRun = 0
+        for (k in t0..tl) {
+            if (accMag[k] >= releaseThr && gyroMag[k] >= cfg.releaseGyroMinRad) {
+                timeoutBurstRun += 1
+                timeoutMaxBurstRun = maxOf(timeoutMaxBurstRun, timeoutBurstRun)
+            } else {
+                timeoutBurstRun = 0
+            }
+        }
+
+        if (landingKind == JumpResult.LandingKind.TIMEOUT) {
+            val baroTimeoutRecovered =
+                dP >= cfg.timeoutRecoveryMinBaroDropHPa &&
+                    fusedH >= cfg.timeoutRecoveryMinHeightMeters &&
+                    peakGyro >= cfg.timeoutRecoveryMinPeakGyro &&
+                    peakTakeoffG >= cfg.timeoutRecoveryMinTakeoffG
+            val inertialTimeoutRecovered =
+                dP < cfg.baroNoiseFloorHPa &&
+                    fusedH >= cfg.timeoutRecoveryMinHeightMeters &&
+                    peakGyro >= cfg.timeoutRecoveryMinPeakGyro &&
+                    peakTakeoffG >= cfg.timeoutRecoveryMinTakeoffG &&
+                    timeoutMaxBurstRun >= cfg.timeoutRecoveryMinBurstSamples
+            if (!baroTimeoutRecovered && !inertialTimeoutRecovered) return null
+        }
 
         // CONFIDENCE (physics-linked)
         var conf = 0.55
         if (baroConsistent && abs(baroH - riseH) / maxOf(baroH, riseH, 0.1) < 0.4) conf += 0.20
         if (peakTakeoffG >= releaseThr * 1.3) conf += 0.15 else if (peakTakeoffG >= releaseThr) conf += 0.08
-        if (maxSessionSpeedMS >= 2.0) conf += 0.10
+        conf += 0.10 // Sensor-only path; GPS never gates confidence.
         if (airTimeSec >= 1.0) conf += 0.05
         if (landingKind == JumpResult.LandingKind.TIMEOUT) conf -= 0.20
         if (peakGyro > cfg.gyroQualityThreshold * 2.5) conf -= 0.15

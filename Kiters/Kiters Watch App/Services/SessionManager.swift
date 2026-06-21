@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import CoreLocation
+import Network
 import WatchKit
 
 // MARK: - GPS Signal Quality
@@ -92,6 +93,8 @@ class SessionManager: ObservableObject {
     @Published var activeCalories: Double = 0
     @Published var pendingCloudUpload: PendingSessionCloudUpload?
     @Published var sessionNotice: SessionUserNotice?
+    @Published var canUploadPendingSession = false
+    @Published var newBestJumpPresentation: Jump?
     
     // GPS tracking state
     @Published var gpsPointCount: Int = 0
@@ -126,6 +129,7 @@ class SessionManager: ObservableObject {
     /// from the full GPS array every time (which is O(n) and increasingly slow).
     private var runningDistance: Double = 0
     private var lastGPSPoint: GPSPoint?
+    private var latestLiveGPSPoint: GPSPoint?
 
     /// Rolling buffer of the last N raw GPS speeds (m/s).
     /// We feed the *smoothed* mean to the jump detector to suppress noise
@@ -141,9 +145,16 @@ class SessionManager: ObservableObject {
     /// ≈ 5.4 km/h — far below any real kitesurf riding speed, so genuine motion
     /// is never clipped.
     private let stationarySpeedThreshold = 1.5
+    private let liveFallbackCoordinate = (lat: 0.0, lng: 0.0)
 
     // MARK: - Watch Ingest upload state (all accessed on main thread only)
     private let uploadState = LiveSessionUploadState()
+    private var liveEndInFlightSessionIds = Set<String>()
+    private var finalizedLiveSessionIds = Set<String>()
+    private var liveEndRetryCounts: [String: Int] = [:]
+    private var recordingPipelineStarted = false
+    private let networkMonitor = NWPathMonitor()
+    private let networkMonitorQueue = DispatchQueue(label: "com.kiters.network-monitor")
 
     /// Read from UserDefaults so the user's Settings selection takes effect
     /// at the next session start (no need to restart the app).
@@ -155,6 +166,8 @@ class SessionManager: ObservableObject {
     init() {
         setupCallbacks()
         observeManagers()
+        startNetworkMonitoring()
+        restorePendingCloudUploadIfNeeded()
     }
     
     // MARK: - Launch Permissions
@@ -319,11 +332,28 @@ class SessionManager: ObservableObject {
         gpsSignalQuality = .none
         pendingCloudUpload = nil
         sessionNotice = nil
+        newBestJumpPresentation = nil
         runningDistance = 0
         lastGPSPoint = nil
         speedSmoothingBuffer.removeAll(keepingCapacity: true)
+        recordingPipelineStarted = false
         
-        // Start all services AFTER session is published
+        // Reset jump detector before sensors start streaming so the first IMU
+        // samples belong to the new live session.
+        let mode = detectionMode
+        jumpDetector.sessionId = newSession.id
+        jumpDetector.reset(mode: mode)
+        print("🦘 Jump detector reset — mode: \(mode.displayName)")
+
+        // Open diagnostics immediately. Jump detection is sensor-only, so short
+        // no-GPS live sessions must still produce a .kslog trail.
+        startRecordingPipelineIfReady(session: newSession)
+
+        // Reset cloud upload state for the new session
+        uploadState.reset(sessionId: newSession.id)
+        startLiveSessionIfNeeded(session: newSession, coordinate: liveStartCoordinate(for: newSession), reason: "session-start")
+
+        // Start all services AFTER session and detector state are ready.
         print("📍 Starting location tracking...")
         locationManager.startTracking()
         
@@ -332,21 +362,6 @@ class SessionManager: ObservableObject {
         
         print("💪 Starting workout (if available)...")
         workoutManager.startWorkout(sport: sport)
-        
-        // Reset jump detector with user-selected detection mode
-        let mode = detectionMode
-        jumpDetector.reset(mode: mode)
-        print("🦘 Jump detector reset — mode: \(mode.displayName)")
-
-        // Reset cloud upload state for the new session
-        uploadState.reset(sessionId: newSession.id)
-        
-        // Start session logger (CSV file for diagnostics)
-        sessionLogger.start(
-            sessionId: newSession.id,
-            mode: mode,
-            devMode: JumpDetectionConfig.shared.devMode
-        )
         
         // Start UI timer
         startTimer()
@@ -417,34 +432,42 @@ class SessionManager: ObservableObject {
     
     func endSession() {
         guard var session = currentSession else { return }
+
+        // Live lifecycle is independent of workout/log/local-save handling.
+        // Close the server session first so a delayed HealthKit callback cannot
+        // leave the backend showing this session as active.
+        session.endTime = Date()
+        session.status = .completed
+        currentSession = session
+        finishLiveSessionOnServer(session: session, showPendingPrompt: session.duration >= 60)
         
         // Stop all services
         locationManager.stopTracking()
         motionManager.stopTracking()
         
-        // Stop session logger
-        sessionLogger.stop()
-        let completedLogURL = sessionLogger.mostRecentLogURL()
+        // Stop session logger only if the one-minute recording gate opened.
+        let completedLogURL = recordingPipelineStarted ? sessionLogger.mostRecentLogURL() : nil
+        if recordingPipelineStarted {
+            sessionLogger.stop()
+        }
         
         // Stop timer
         timer?.invalidate()
         timer = nil
+
+        // The visible recording state should not wait for HealthKit's end
+        // callback. The completed Session value is captured below for save/upload.
+        resetFinishedSessionState()
         
         // End workout and save
         workoutManager.endWorkout { [weak self] workout in
             guard let self = self else { return }
-            
-            // Update session
-            session.endTime = Date()
-            session.status = .completed
 
             if session.duration < 60 {
                 self.deleteLogFile(completedLogURL)
                 print("⌚️ Session discarded — shorter than 60 seconds")
                 DispatchQueue.main.async {
-                    self.resetFinishedSessionState()
                     self.pendingCloudUpload = nil
-                    self.uploadState.reset(sessionId: nil)
                     self.sessionNotice = SessionUserNotice(
                         titleKey: "session.too_short_title",
                         messageKey: "session.too_short_message"
@@ -455,21 +478,16 @@ class SessionManager: ObservableObject {
             
             // Save session locally
             self.storageManager.saveSession(session)
+            self.storageManager.markPendingCloudUpload(sessionId: session.id)
             print("✅ Session saved: \(session.jumps.count) jumps, \(String(format: "%.2f", session.distance/1000))km")
             
             // Reset state on main thread
             DispatchQueue.main.async {
-                self.resetFinishedSessionState()
-                if session.gpsPoints.isEmpty {
-                    self.pendingCloudUpload = nil
-                    self.uploadState.reset(sessionId: nil)
-                    self.sessionNotice = SessionUserNotice(
-                        titleKey: "session.upload_failed_title",
-                        messageKey: "session.upload_no_gps_message"
-                    )
-                    return
+                if self.finalizedLiveSessionIds.contains(session.id) {
+                    self.storageManager.clearPendingCloudUpload(sessionId: session.id)
+                } else {
+                    self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: completedLogURL)
                 }
-                self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: completedLogURL)
             }
         }
     }
@@ -477,30 +495,26 @@ class SessionManager: ObservableObject {
     func keepPendingSessionLocal() {
         guard let pending = pendingCloudUpload else { return }
         pendingCloudUpload = nil
-        if uploadState.activeSessionId == pending.session.id {
-            uploadState.reset(sessionId: nil)
-        }
         print("⌚️ Session kept local only: \(pending.session.id)")
     }
 
     func uploadPendingSessionToCloud() {
         guard let pending = pendingCloudUpload else { return }
+        guard canUploadPendingSession else { return }
         pendingCloudUpload = nil
-        uploadCompletedSessionToCloud(session: pending.session, logURL: pending.logURL)
+        finishLiveSessionOnServer(session: pending.session)
+        uploadLogToCloud(pending.logURL)
     }
 
-    /// Discard the just-finished session entirely: neither keep it locally nor
-    /// upload it. The session was already persisted in `endSession`, so this
-    /// deletes the stored session and its diagnostic log.
+    /// Discard the just-finished local copy. The live server session is still
+    /// finalized automatically by `endSession`; this only removes local storage
+    /// and the diagnostic log.
     func discardPendingSession() {
         guard let pending = pendingCloudUpload else { return }
         pendingCloudUpload = nil
-        if uploadState.activeSessionId == pending.session.id {
-            uploadState.reset(sessionId: nil)
-        }
         storageManager.deleteSession(id: pending.session.id)
         deleteLogFile(pending.logURL)
-        print("🗑️ Session discarded (not saved, not uploaded): \(pending.session.id)")
+        print("🗑️ Local session copy discarded: \(pending.session.id)")
     }
 
     private func uploadLogToCloud(_ logURL: URL?) {
@@ -526,6 +540,7 @@ class SessionManager: ObservableObject {
         jumpCount = 0
         isGPSActive = false
         gpsSignalQuality = .none
+        newBestJumpPresentation = nil
     }
 
     private func deleteLogFile(_ url: URL?) {
@@ -537,10 +552,32 @@ class SessionManager: ObservableObject {
             print("⚠️ Failed to delete short-session log: \(error.localizedDescription)")
         }
     }
+
+    private func startNetworkMonitoring() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.canUploadPendingSession = path.status == .satisfied
+                if self.canUploadPendingSession {
+                    self.restorePendingCloudUploadIfNeeded()
+                }
+            }
+        }
+        networkMonitor.start(queue: networkMonitorQueue)
+    }
+
+    private func restorePendingCloudUploadIfNeeded() {
+        guard pendingCloudUpload == nil,
+              !isRecording,
+              let session = storageManager.loadMostRecentPendingCloudSession() else { return }
+        pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: nil)
+    }
     
     // MARK: - Data Handling
     
     private func handleGPSPoint(_ point: GPSPoint) {
+        latestLiveGPSPoint = point
+
         // Always reflect GPS signal quality so the Home screen can show a live
         // indicator while GPS warms up — even before a session has started.
         DispatchQueue.main.async { [weak self] in
@@ -573,6 +610,7 @@ class SessionManager: ObservableObject {
             latitude: point.latitude,
             longitude: point.longitude,
             course: point.course,
+            horizontalAccuracy: point.horizontalAccuracy,
             timestamp: point.timestamp
         )
 
@@ -607,6 +645,9 @@ class SessionManager: ObservableObject {
             // GPS point count is session-scoped (signal quality / accuracy are
             // already updated unconditionally at the top of this method).
             self.gpsPointCount = session.gpsPoints.count
+
+            self.startRecordingPipelineIfReady(session: session)
+            self.handleUploadOnGPS(point, session: session)
         }
     }
     
@@ -641,16 +682,38 @@ class SessionManager: ObservableObject {
             
             var detectedJump = jump
             detectedJump.sessionId = session.id
+            let previousBest = session.jumps.map(\.height).max() ?? 0
             session.jumps.append(detectedJump)
             
             self.currentSession = session
             self.jumpCount = session.jumps.count
+            if detectedJump.height > previousBest {
+                self.newBestJumpPresentation = detectedJump
+            }
 
             print("🎉 JUMP DETECTED! Height: \(String(format: "%.2f", jump.height))m, Airtime: \(String(format: "%.2f", jump.airtime))s")
+            self.handleUploadOnJump(detectedJump)
         }
+    }
+
+    func dismissNewBestJumpPresentation() {
+        newBestJumpPresentation = nil
     }
     
     // MARK: - Watch Ingest Upload
+
+    private func startRecordingPipelineIfReady(session: Session) {
+        guard !recordingPipelineStarted else { return }
+
+        recordingPipelineStarted = true
+        let mode = detectionMode
+        sessionLogger.start(
+            sessionId: session.id,
+            mode: mode,
+            sensorOnly: true
+        )
+        print("🟢 Recording diagnostics opened")
+    }
 
     /// Called on the main thread from handleGPSPoint.
     private func handleUploadOnGPS(_ point: GPSPoint, session: Session) {
@@ -658,33 +721,7 @@ class SessionManager: ObservableObject {
         //    Guard prevents flooding the server when GPS fires 1 Hz and the first
         //    request hasn't returned yet (the original bug: N concurrent start calls).
         if uploadState.currentServerSessId == nil {
-            let now = Date()
-            guard uploadState.beginStartAttempt(
-                sessionId: session.id,
-                now: now,
-                lat: point.latitude,
-                lng: point.longitude
-            ) else { return }
-            let lat = point.latitude, lng = point.longitude, startedAt = session.startTime
-            let localSessionId = session.id
-            Task {
-                do {
-                    let resp = try await WatchSessionUploader.shared.start(
-                        lat: lat, lng: lng, startedAt: startedAt
-                    )
-                    let accepted = await MainActor.run { () -> Bool in
-                        self.uploadState.acceptStart(sessionId: localSessionId, sessId: resp.sessId)
-                    }
-                    guard accepted else { return }
-                    print("☁️ Session live on server — sessId=\(resp.sessId) spot=\(resp.spot)")
-                    await self.flushPendingRecordsIfNeeded(sessId: resp.sessId, localSessionId: localSessionId)
-                } catch {
-                    await MainActor.run {
-                        self.uploadState.failStart(sessionId: localSessionId)
-                    }
-                    print("☁️ Session start failed (will retry): \(error.localizedDescription)")
-                }
-            }
+            startLiveSessionIfNeeded(session: session, coordinate: (lat: point.latitude, lng: point.longitude), reason: "gps")
             return
         }
         guard let sessId = uploadState.currentServerSessId else { return }
@@ -718,6 +755,56 @@ class SessionManager: ObservableObject {
         let distKm = self.runningDistance / 1000
         if let distKm = uploadState.distanceRecordIfImproved(distKm: distKm) {
             postRecord(sessId: sessId, localSessionId: session.id, distKm: distKm, reason: "distance")
+        }
+    }
+
+    private func liveStartCoordinate(for session: Session) -> (lat: Double, lng: Double) {
+        if let firstPoint = session.gpsPoints.first {
+            return (firstPoint.latitude, firstPoint.longitude)
+        }
+        if let latestLiveGPSPoint {
+            return (latestLiveGPSPoint.latitude, latestLiveGPSPoint.longitude)
+        }
+        return liveFallbackCoordinate
+    }
+
+    private func startLiveSessionIfNeeded(
+        session: Session,
+        coordinate: (lat: Double, lng: Double),
+        reason: String
+    ) {
+        guard uploadState.currentServerSessId == nil else { return }
+        let now = Date()
+        guard uploadState.beginStartAttempt(
+            sessionId: session.id,
+            now: now,
+            lat: coordinate.lat,
+            lng: coordinate.lng
+        ) else { return }
+
+        let lat = coordinate.lat
+        let lng = coordinate.lng
+        let startedAt = session.startTime
+        let localSessionId = session.id
+        Task {
+            do {
+                let resp = try await WatchSessionUploader.shared.start(
+                    lat: lat,
+                    lng: lng,
+                    startedAt: startedAt
+                )
+                let accepted = await MainActor.run { () -> Bool in
+                    self.uploadState.acceptStart(sessionId: localSessionId, sessId: resp.sessId)
+                }
+                guard accepted else { return }
+                print("☁️ Session live on server — sessId=\(resp.sessId) spot=\(resp.spot) reason=\(reason)")
+                await self.flushPendingRecordsIfNeeded(sessId: resp.sessId, localSessionId: localSessionId)
+            } catch {
+                await MainActor.run {
+                    self.uploadState.failStart(sessionId: localSessionId)
+                }
+                print("☁️ Session start failed (will retry): \(error.localizedDescription) reason=\(reason)")
+            }
         }
     }
 
@@ -787,8 +874,19 @@ class SessionManager: ObservableObject {
                    jumpM: record.jumpM, airS: record.airS, reason: "jump")
     }
 
-    /// Called only after the rider explicitly approves the cloud prompt.
-    private func uploadCompletedSessionToCloud(session: Session, logURL: URL?) {
+    private struct CompletedSessionUploadPayload {
+        let durMin: Int
+        let jmax: Double
+        let jcnt: Int
+        let airS: Double
+        let spdKmh: Int
+        let distKm: Double
+        let avgKmh: Double
+        let track: [[Int]]
+        let jData: [[String: Int]]
+    }
+
+    private func completedSessionUploadPayload(for session: Session) -> CompletedSessionUploadPayload {
         let durMin  = max(1, Int(session.duration / 60))
         let jmax    = session.jumps.map(\.height).max() ?? 0
         let jcnt    = session.jumps.count
@@ -800,17 +898,21 @@ class SessionManager: ObservableObject {
         // Compact jData — one entry per jump
         let startTime = session.startTime
         let jData: [[String: Int]] = session.jumps.map { j in
-            let nearest = session.gpsPoints.min {
+            let nearestToTakeoff = session.gpsPoints.min {
                 abs($0.timestamp.timeIntervalSince(j.startTime)) < abs($1.timestamp.timeIntervalSince(j.startTime))
             }
+            let jumpGpsPoints = session.gpsPoints.filter {
+                $0.timestamp >= j.startTime && $0.timestamp <= j.endTime
+            }
+            let jumpTopSpeed = jumpGpsPoints.map(\.speed).max() ?? nearestToTakeoff?.speed ?? 0
             return [
                 "t": Int(j.startTime.timeIntervalSince(startTime)),
                 "h": Int(j.height * 100),        // cm
                 "a": Int(j.airtime * 10),         // tenths-sec
-                "s": Int((nearest?.speed ?? 0) * 3.6), // km/h
+                "s": Int(jumpTopSpeed * 3.6),     // km/h
                 "d": Int(j.jumpDistance * 10),    // dm
-                "y": Int((nearest?.latitude  ?? 0) * 1e4),
-                "x": Int((nearest?.longitude ?? 0) * 1e4),
+                "y": Int(((nearestToTakeoff?.latitude  ?? 0) * 1e4).rounded()),
+                "x": Int(((nearestToTakeoff?.longitude ?? 0) * 1e4).rounded()),
             ]
         }
 
@@ -826,56 +928,121 @@ class SessionManager: ObservableObject {
             }
         }
 
-        Task {
-            guard let firstPoint = session.gpsPoints.first else {
-                print("☁️ Session cloud upload skipped — no GPS fix was recorded")
-                await MainActor.run {
-                    if self.uploadState.activeSessionId == session.id {
-                        self.uploadState.reset(sessionId: nil)
-                    }
-                    self.sessionNotice = SessionUserNotice(
-                        titleKey: "session.upload_failed_title",
-                        messageKey: "session.upload_no_gps_message"
-                    )
-                }
-                return
-            }
+        return CompletedSessionUploadPayload(
+            durMin: durMin,
+            jmax: jmax,
+            jcnt: jcnt,
+            airS: airS,
+            spdKmh: spdKmh,
+            distKm: distKm,
+            avgKmh: avgKmh,
+            track: track,
+            jData: jData
+        )
+    }
 
+    private func finishLiveSessionOnServer(session: Session, showPendingPrompt: Bool = true) {
+        let beginFinish = {
+            guard !self.finalizedLiveSessionIds.contains(session.id),
+                  !self.liveEndInFlightSessionIds.contains(session.id) else { return }
+            self.liveEndInFlightSessionIds.insert(session.id)
+            print("☁️ Live session end requested — localSessionId=\(session.id)")
+
+            Task {
+                let finished = await self.finalizeLiveSessionOnServer(session: session)
+                await MainActor.run {
+                    self.liveEndInFlightSessionIds.remove(session.id)
+                    if finished {
+                        self.finalizedLiveSessionIds.insert(session.id)
+                        self.liveEndRetryCounts.removeValue(forKey: session.id)
+                        self.storageManager.clearPendingCloudUpload(sessionId: session.id)
+                        if self.pendingCloudUpload?.session.id == session.id {
+                            self.pendingCloudUpload = nil
+                        }
+                        if self.uploadState.activeSessionId == session.id {
+                            self.uploadState.reset(sessionId: nil)
+                        }
+                    } else {
+                        if showPendingPrompt {
+                            self.storageManager.markPendingCloudUpload(sessionId: session.id)
+                        }
+                        if showPendingPrompt, self.pendingCloudUpload == nil {
+                            self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: nil)
+                        }
+                        let retryCount = (self.liveEndRetryCounts[session.id] ?? 0) + 1
+                        self.liveEndRetryCounts[session.id] = retryCount
+                        if retryCount <= 3 {
+                            let delay = min(30.0, Double(retryCount) * 5.0)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                                self?.finishLiveSessionOnServer(session: session, showPendingPrompt: showPendingPrompt)
+                            }
+                            print("☁️ Live session end retry scheduled — localSessionId=\(session.id) attempt=\(retryCount + 1)")
+                        }
+                    }
+                }
+            }
+        }
+
+        if Thread.isMainThread {
+            beginFinish()
+        } else {
+            DispatchQueue.main.async {
+                beginFinish()
+            }
+        }
+    }
+
+    private func finalizeLiveSessionOnServer(session: Session) async -> Bool {
+        let payload = completedSessionUploadPayload(for: session)
+        let localSessionId = session.id
+        let startCoordinate = await MainActor.run { self.liveStartCoordinate(for: session) }
+        let sessId: Int
+
+        if let current = await MainActor.run { self.uploadState.currentServerSessId } {
+            sessId = current
+        } else if let current = await waitForServerSessionId(localSessionId: localSessionId) {
+            sessId = current
+        } else {
             do {
                 let started = try await WatchSessionUploader.shared.start(
-                    lat: firstPoint.latitude,
-                    lng: firstPoint.longitude,
+                    lat: startCoordinate.lat,
+                    lng: startCoordinate.lng,
                     startedAt: session.startTime
                 )
-                let r = try await WatchSessionUploader.shared.end(
-                    sessId: started.sessId, durMin: durMin,
-                    jmax: jmax, jcnt: jcnt, airS: airS,
-                    spdKmh: spdKmh, distKm: distKm, avgKmh: avgKmh,
-                    track: track.isEmpty ? [[Int(firstPoint.latitude * 1e4), Int(firstPoint.longitude * 1e4)]] : track,
-                    jData: jData
-                )
-                print("☁️ Session uploaded — sessId=\(started.sessId) finalPBs=\(r.broken)")
-                self.uploadLogToCloud(logURL)
                 await MainActor.run {
-                    self.sessionNotice = SessionUserNotice(
-                        titleKey: "session.upload_success_title",
-                        messageKey: "session.upload_success_message"
-                    )
+                    _ = self.uploadState.acceptStart(sessionId: localSessionId, sessId: started.sessId)
                 }
+                sessId = started.sessId
+                print("☁️ Session started during finalization — sessId=\(started.sessId) spot=\(started.spot)")
             } catch {
-                print("☁️ Session cloud upload failed: \(error.localizedDescription)")
-                await MainActor.run {
-                    self.sessionNotice = SessionUserNotice(
-                        titleKey: "session.upload_failed_title",
-                        messageKey: "session.upload_failed_message"
-                    )
-                }
+                print("☁️ Live session final start failed: \(error.localizedDescription)")
+                return false
             }
-            await MainActor.run {
-                if self.uploadState.activeSessionId == session.id {
-                    self.uploadState.reset(sessionId: nil)
-                }
-            }
+        }
+
+        await flushPendingRecordsIfNeeded(sessId: sessId, localSessionId: localSessionId)
+
+        do {
+            let finalTrack = payload.track.isEmpty
+                ? [[Int(startCoordinate.lat * 1e4), Int(startCoordinate.lng * 1e4)]]
+                : payload.track
+            let r = try await WatchSessionUploader.shared.end(
+                sessId: sessId,
+                durMin: payload.durMin,
+                jmax: payload.jmax,
+                jcnt: payload.jcnt,
+                airS: payload.airS,
+                spdKmh: payload.spdKmh,
+                distKm: payload.distKm,
+                avgKmh: payload.avgKmh,
+                track: finalTrack,
+                jData: payload.jData
+            )
+            print("☁️ Live session ended — sessId=\(sessId) finalPBs=\(r.broken)")
+            return true
+        } catch {
+            print("☁️ Live session end failed: \(error.localizedDescription)")
+            return false
         }
     }
 

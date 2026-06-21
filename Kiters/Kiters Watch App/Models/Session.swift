@@ -263,8 +263,9 @@ enum DetectionMode: String, Codable, CaseIterable {
         }
     }
 
-    /// Kinematic-height calibration factor (multiplies h = g·t²/8).
-    /// Default 1.12 compensates for ~12% underestimation in asymmetric arcs
+    /// Kinematic-height calibration factor (multiplies the V7 rise-time height).
+    /// Standard uses a stronger production calibration because labelled watch
+    /// logs showed roughly metre-level under-reading on rider jumps.
     /// (boosted kiteboarding jumps).
     var kinematicCalibration: Double {
         switch self {
@@ -281,8 +282,7 @@ class JumpDetectionConfig {
     static let shared = JumpDetectionConfig()
 
     private let defaults = UserDefaults.standard
-    private let currentStandardCalibrationVersion = "surfr-v7-20260615-gpsfree-toss"
-    private var runtimeDevModeOverride: Bool?
+    private let currentStandardCalibrationVersion = "surfr-v7-20260621-height125"
 
     private init() {
         installStandardCalibrationIfNeeded()
@@ -295,7 +295,6 @@ class JumpDetectionConfig {
         case minAirtime            = "jd_minAirtime"
         case maxAirtime            = "jd_maxAirtime"
         case cooldown              = "jd_cooldown"
-        case devMode               = "jd_devMode"
         case kinematicCalibration  = "jd_kinematicCalibration"
         case standardMinSpeed      = "jd_standard_minSpeed"
         case standardTakeoffG      = "jd_standard_takeoffG"
@@ -338,7 +337,7 @@ class JumpDetectionConfig {
     }
 
     var standardKinematicCalibration: Double {
-        get { val(.standardKinematicCalibration, default: 1.0) }
+        get { val(.standardKinematicCalibration, default: 1.25) }
         set { defaults.set(newValue, forKey: Key.standardKinematicCalibration.rawValue) }
     }
 
@@ -383,23 +382,6 @@ class JumpDetectionConfig {
         set { defaults.set(newValue, forKey: Key.kinematicCalibration.rawValue) }
     }
 
-    /// Toss / GPS-independent detection. Now ON by default (no Settings toggle):
-    /// a jump is detected from the IMU pattern alone — tossing the watch
-    /// registers a jump with no dependency on GPS speed, matching Surfr.
-    /// Bypasses the GPS speed gate and relaxes the airtime/height gates.
-    var devMode: Bool {
-        get {
-            if let runtimeDevModeOverride { return runtimeDevModeOverride }
-            guard defaults.object(forKey: Key.devMode.rawValue) != nil else { return true }
-            return defaults.bool(forKey: Key.devMode.rawValue)
-        }
-        set { defaults.set(newValue, forKey: Key.devMode.rawValue) }
-    }
-
-    func setRuntimeDevModeOverride(_ value: Bool?) {
-        runtimeDevModeOverride = value
-    }
-
     func resetToDefaults() {
         minSpeed              = 15.0 / 3.6
         takeoffG              = 1.5
@@ -408,7 +390,6 @@ class JumpDetectionConfig {
         maxAirtime            = 8.0
         cooldown              = 1.5
         kinematicCalibration  = 1.12
-        devMode               = true
     }
 
     func applyStandardCalibration(_ schema: CloudCalibrationSchema) {
@@ -430,8 +411,7 @@ class JumpDetectionConfig {
         standardMinAirtime = 2.0
         standardMaxAirtime = 6.5
         standardCooldown = 1.0
-        standardKinematicCalibration = 1.0
-        devMode = true   // toss / GPS-independent detection on by default
+        standardKinematicCalibration = 1.25
         standardCalibrationVersion = currentStandardCalibrationVersion
     }
 

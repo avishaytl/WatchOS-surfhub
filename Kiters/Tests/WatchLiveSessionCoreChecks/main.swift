@@ -36,6 +36,18 @@ func testStartIsDedupedAndRetriesAfterFailureWindow() {
     expect(!state.isStartUploadInFlight, "accepted start should clear in-flight flag")
 }
 
+func testFallbackStartUsesZeroCoordinateAndAcceptsLateServerId() {
+    let state = LiveSessionUploadState()
+    state.reset(sessionId: "gpsless-1")
+    let start = Date(timeIntervalSince1970: 3_000)
+
+    expect(state.beginStartAttemptWithFallback(sessionId: "gpsless-1", now: start), "fallback start should fire")
+    expectEqual(state.trackPoints, [[0, 0]], "fallback start should append zero coordinate")
+    expect(!state.beginStartAttemptWithFallback(sessionId: "gpsless-1", now: start.addingTimeInterval(1)), "fallback start should dedupe in-flight retry")
+    expect(state.acceptStart(sessionId: "gpsless-1", sessId: 777), "late server id should be accepted for fallback start")
+    expectEqual(state.currentServerSessId, 777, "fallback server session id should be stored")
+}
+
 func testPingTrackAndRecordGatingMatchLiveSessionContract() {
     let state = LiveSessionUploadState()
     state.reset(sessionId: "local-1")
@@ -82,7 +94,60 @@ func testJumpRecordsQueueAndFlushOnlySessionBests() {
     expectEqual(state.claimPendingRecord(sessionId: "other"), nil, "wrong session should not claim pending records")
 }
 
+func testGPSStationaryGateOnlyAppliesWhenReliableGPSExists() {
+    expect(
+        !V7GPSStationaryGate.accepts(heightMeters: 1.3, movementDistanceMeters: 0.6, hasReliableGPS: true),
+        "reliable GPS stationary jump under 1.5m should be rejected"
+    )
+    expect(
+        V7GPSStationaryGate.accepts(heightMeters: 1.6, movementDistanceMeters: 0.6, hasReliableGPS: true),
+        "reliable GPS stationary jump at/above 1.5m should be accepted"
+    )
+    expect(
+        V7GPSStationaryGate.accepts(heightMeters: 1.1, movementDistanceMeters: 1.2, hasReliableGPS: true),
+        "reliable GPS moving jump above 1m should be accepted"
+    )
+    expect(
+        V7GPSStationaryGate.accepts(heightMeters: 1.3, movementDistanceMeters: nil, hasReliableGPS: false),
+        "no-GPS sensor-only jump should not be rejected by the GPS stationary gate"
+    )
+    expect(
+        !V7GPSStationaryGate.accepts(heightMeters: 0.9, movementDistanceMeters: nil, hasReliableGPS: false),
+        "sensor-only sub-metre jump should still be rejected by the base height gate"
+    )
+}
+
+func testBackgroundNoiseGateRequiresAllNoiseSignals() {
+    expect(
+        !V7BackgroundNoiseGate.accepts(heightMeters: 1.5, displayedAirTimeSeconds: 2.8, rotations: 0, regularDistanceMeters: 29.9),
+        "short low non-rotating jump with regular distance under 30m should be rejected as background noise"
+    )
+    expect(
+        V7BackgroundNoiseGate.accepts(heightMeters: 1.5, displayedAirTimeSeconds: 2.8, rotations: 0, regularDistanceMeters: nil),
+        "no-GPS sensor-only jump should not be rejected by the regular-distance noise gate"
+    )
+    expect(
+        V7BackgroundNoiseGate.accepts(heightMeters: 1.5, displayedAirTimeSeconds: 2.8, rotations: 1, regularDistanceMeters: 29.9),
+        "rotation should keep the jump accepted"
+    )
+    expect(
+        V7BackgroundNoiseGate.accepts(heightMeters: 1.5, displayedAirTimeSeconds: 3.0, rotations: 0, regularDistanceMeters: 29.9),
+        "airtime at 3 seconds should keep the jump accepted"
+    )
+    expect(
+        V7BackgroundNoiseGate.accepts(heightMeters: 2.0, displayedAirTimeSeconds: 2.8, rotations: 0, regularDistanceMeters: 29.9),
+        "height at 2m should keep the jump accepted"
+    )
+    expect(
+        V7BackgroundNoiseGate.accepts(heightMeters: 1.5, displayedAirTimeSeconds: 2.8, rotations: 0, regularDistanceMeters: 30.0),
+        "distance at 30m should keep the jump accepted"
+    )
+}
+
 testStartIsDedupedAndRetriesAfterFailureWindow()
+testFallbackStartUsesZeroCoordinateAndAcceptsLateServerId()
 testPingTrackAndRecordGatingMatchLiveSessionContract()
 testJumpRecordsQueueAndFlushOnlySessionBests()
+testGPSStationaryGateOnlyAppliesWhenReliableGPSExists()
+testBackgroundNoiseGateRequiresAllNoiseSignals()
 print("WatchLiveSessionCoreChecks passed")

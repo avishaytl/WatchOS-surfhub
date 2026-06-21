@@ -137,7 +137,7 @@ struct WatchPairQRView: View {
                 }
 
                 switch await WatchAuth.pollPairing(code: code) {
-                case .approved(let uid):
+                case .approved(let uid, _):
                     await MainActor.run { onPaired(uid) }
                     return
                 case .expired:

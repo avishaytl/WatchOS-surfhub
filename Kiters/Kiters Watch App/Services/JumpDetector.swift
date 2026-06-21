@@ -30,8 +30,7 @@
 // //      +15 clean takeoff spike
 // //      +10 ride-away (speed still > 2 m/s after landing)
 // //      +5  airtime > 1s
-// //      −20 no speed (stationary)
-// //      −15 chaotic gyro (possible toss)
+// //      GPS speed enriches metrics only; it does not gate detection
 // //
 // //  Only 6 user-tunable parameters:
 // //    minSpeed, takeoffG, landingG, minAirtime, maxAirtime, cooldown
@@ -98,9 +97,6 @@
 //     // MARK: - Thresholds (from DetectionMode)
 
 //     private var mode: DetectionMode = .standard
-
-//     /// Dev mode: skip GPS speed gate for toss-testing
-//     private var devMode: Bool { JumpDetectionConfig.shared.devMode }
 
 //     /// Session logger reference for per-sample logging
 //     private let logger = SessionLogger.shared
@@ -218,7 +214,7 @@
 //         _speed = 0; _lat = 0; _lon = 0
 //         os_unfair_lock_unlock(&gpsLock)
 
-//         print("🦘 JumpDetector v4 reset — \(mode.displayName)  minSpd=\(Int(mode.minSpeed * 3.6))km/h  tkoff=\(mode.takeoffG)g  land=\(mode.landingG)g  air=\(mode.minAirtime)-\(mode.maxAirtime)s  cd=\(mode.cooldown)s  dev=\(devMode)")
+//         print("🦘 JumpDetector v4 reset — \(mode.displayName)  sensor-only tkoff=\(mode.takeoffG)g  land=\(mode.landingG)g  air=\(mode.minAirtime)-\(mode.maxAirtime)s  cd=\(mode.cooldown)s")
 //     }
 
 //     func updateGPS(speed: Double, altitude: Double, latitude: Double, longitude: Double, course: Double = -1, timestamp: Date) {
@@ -303,10 +299,8 @@
 //     // ═══════════════════════════════════════════════════════════════
 
 //     private func handleIdle(sample: IMUSample, accel: Double) {
-//         if devMode || speed >= mode.minSpeed {
-//             logger.logEvent("IDLE→RIDING (dev=\(devMode) spd=\(String(format:"%.1f",speed*3.6))km/h)", state: "IDLE", speed: speed)
-//             transitionTo(.riding)
-//         }
+//         logger.logEvent("IDLE→RIDING (sensor-only spd=\(String(format:"%.1f",speed*3.6))km/h)", state: "IDLE", speed: speed)
+//         transitionTo(.riding)
 //     }
 
 //     // ═══════════════════════════════════════════════════════════════
@@ -314,12 +308,7 @@
 //     // ═══════════════════════════════════════════════════════════════
 
 //     private func handleRiding(sample: IMUSample, accel: Double) {
-//         // Drop back to idle if we slow down (skip in dev mode)
-//         if !devMode && speed < stationarySpeed {
-//             logger.logEvent("RIDING→IDLE (slow spd=\(String(format:"%.1f",speed*3.6)))", state: "RIDING", speed: speed)
-//             transitionTo(.idle)
-//             return
-//         }
+//         // GPS speed is not used to drop out of RIDING.
 
 //         // ── Sustained-spike takeoff detection ──
 //         // A real kitesurf takeoff produces accel ≥ takeoffG sustained over
@@ -681,19 +670,14 @@
 //             conf += 5
 //         }
 
-//         // −20: was stationary at takeoff (skip in dev mode)
-//         if !devMode && takeoffSpeed < stationarySpeed {
-//             conf -= 20
-//         }
-
-//         // −15: chaotic gyro (possible watch toss) — skip in dev mode
-//         if !devMode && jumpSamples.count >= 10 {
+//         // Chaotic gyro diagnostic only; do not reject sensor-only jumps here.
+//         if jumpSamples.count >= 10 {
 //             let gyros = jumpSamples.map { $0.rotationMagnitude }
 //             let avgGyro = gyros.reduce(0, +) / Double(gyros.count)
 //             let maxGyro = gyros.max() ?? 0
-//             // A tossed watch spins wildly with high average AND high max
+//             // High average AND max gyro can be useful diagnostic context.
 //             if avgGyro > 8.0 && maxGyro > 15.0 {
-//                 conf -= 15
+//                 // keep as diagnostic context only
 //             }
 //         }
 
@@ -873,16 +857,9 @@ final class JumpDetector {
     /// Keep true to preserve behaviour; set false if your UI wants 0…1.
     private let CONFIDENCE_AS_PERCENT = true
 
-    /// v7 already gates internally on confidence ≥ 0.40 before firing.
-    /// This is an ADDITIONAL gate the adapter applies, matching the old
-    /// "accept ≥ 50/100" rule. Set to 0 to defer entirely to v7.
-    /// In dev/Toss-Test mode it is relaxed so a hand-toss still registers.
-    private var acceptConfidence01: Double { devMode ? 0.20 : 0.40 }
-
-    /// IMU fallback when the GPS speed gate fails (no/weak GPS): accept a jump
-    /// anyway if it has a clearly real airtime AND a rotation or high confidence.
-    private let fallbackMinAirtimeSec: Double = 1.5
-    private let fallbackMinConfidence: Double = 0.75
+    /// Unified production gate. Jump detection is IMU-first; GPS never decides
+    /// whether a candidate is a jump.
+    private let acceptConfidence01: Double = 0.40
 
     // MARK: - Public State Machine (UNCHANGED surface)
 
@@ -925,13 +902,6 @@ final class JumpDetector {
     /// callbacks synchronously. Used by the offline JumpReplay harness; the
     /// live app keeps this false. MUST be set before `reset(mode:)`.
     var synchronousAnalysis = false
-
-    /// Dev mode mirrors the old detector: skips the GPS speed (arming) gate so
-    /// jumps can be toss-tested without riding.
-    private var devMode: Bool { JumpDetectionConfig.shared.devMode }
-
-    /// Speed below which the rider is considered stopped (disarm hysteresis).
-    private let stationarySpeed: Double = 1.0   // m/s
 
     // MARK: - GPS context (one-shot, mirrors old updateGPS behaviour)
     // The old detector kept the latest GPS fix and read it lazily. v7
@@ -983,14 +953,11 @@ final class JumpDetector {
         sampleCount = 0
 
         setState(.idle)
-        session.start()       // v7 starts in its own .riding; we surface .idle
-                              // until first movement keeps the old UX, see setState mapping.
-        // Immediately reflect "ready/riding" if you prefer the old behaviour
-        // of showing RIDING only after minSpeed. We keep IDLE here and let
-        // GPS/first spike drive transitions, matching old semantics.
+        session.start()
+        setState(.riding)
 
         Log.event("JumpDetector(v7) reset — \(mode.displayNameSafe) "
-            + "minSpd=\(Int(mode.minSpeedSafe * 3.6))km/h tkoff=\(mode.takeoffGSafe)g "
+            + "sensor-only tkoff=\(mode.takeoffGSafe)g "
             + "land=\(mode.landingGSafe)g air=\(mode.minAirtimeSafe)-\(mode.maxAirtimeSafe)s "
             + "cd=\(mode.cooldownSafe)s")
     }
@@ -1000,26 +967,21 @@ final class JumpDetector {
                    latitude: Double,
                    longitude: Double,
                    course: Double = -1,
+                   horizontalAccuracy: Double? = nil,
                    timestamp: Date) {
         let v = max(0, speed)
         os_unfair_lock_lock(&gpsLock)
         pendingSpeedMS = v
         pendingLat = latitude
         pendingLon = longitude
-        pendingAccM = nil   // ASSUMPTION: old code had no horizontalAccuracy here.
+        pendingAccM = horizontalAccuracy
         latestSpeedMS = v
         os_unfair_lock_unlock(&gpsLock)
 
-        // ── Arming gate (mirrors the old IDLE↔RIDING speed gate) ──
-        // v7's FSM is always "riding"; the adapter surfaces IDLE until the
-        // rider is moving ≥ minSpeed, and drops back to IDLE when stopped.
-        // Only applies while not airborne/analysing (state .idle/.riding).
+        // GPS enriches later samples with speed/location. It does not arm or
+        // disarm jump detection.
         if state == .idle || state == .riding {
-            if devMode || v >= mode.minSpeedSafe {
-                setState(.riding)
-            } else if v < stationarySpeed {
-                setState(.idle)
-            }
+            setState(.riding)
         }
     }
 
@@ -1060,23 +1022,24 @@ final class JumpDetector {
         cfg.minAirTimeSec       = mode.minAirtimeSafe
         cfg.maxAirTimeSec       = mode.maxAirtimeSafe
         cfg.kinematicCalibration = mode.kinematicCalibrationSafe
-        // minSpeed → handled by the adapter's arming gate (updateGPS).
+        // minSpeed is retained for legacy settings/display only. GPS speed never
+        // gates jump analysis.
         // cooldown → v7 refractory window between consecutive jumps.
 
-        // ── Toss-Test (dev) mode ───────────────────────────────────
-        // When enabled, relax the gates so tossing the watch in your hand
-        // registers as a jump (short airtime, low height, gentle launch and
-        // catch with little wrist spin). The GPS speed gate is already
-        // bypassed for devMode in the adapter's arming logic. Testing only —
-        // the help text tells users to turn it off for real sessions.
-        if JumpDetectionConfig.shared.devMode {
-            cfg.releaseFloorG            = 1.30
-            cfg.minAirTimeSec            = 0.25
-            cfg.hardLandingMinAirTimeSec = 0.25
-            cfg.minJumpHeightMeters      = 0.20
-            cfg.landingContactGyro       = 0.8
-            cfg.landingSpikeGyro         = 0.5
-        }
+        cfg.releaseSigmaK            = 1.50
+        cfg.releaseFloorG            = 1.70
+        cfg.releaseGyroMinRad        = 2.00
+        cfg.minAirTimeSec            = 2.00
+        cfg.hardLandingMinAirTimeSec = 2.00
+        cfg.maxAirTimeSec            = 6.50
+        cfg.minJumpHeightMeters      = 1.00
+        cfg.minResultConfidence      = 0.40
+        cfg.landingContactGyro       = 2.00
+        cfg.landingSpikeGyro         = 1.00
+        cfg.symmetricAscentFraction  = 0.143
+        cfg.displayedAirtimeScale    = 0.73
+        cfg.requireBaroBaselineBeforeTakeoff = true
+        cfg.baselineWarmupSec        = 8
 
         session = KitesurfSession(detectorConfig: cfg,
                                   refractorySec: mode.cooldownSafe,
@@ -1101,8 +1064,7 @@ final class JumpDetector {
         case .idle:
             setState(.idle)
         case .riding:
-            // Respect the arming gate: show IDLE when the rider is not moving.
-            setState((devMode || latestSpeedMS >= mode.minSpeedSafe) ? .riding : .idle)
+            setState(.riding)
         case .airborne:
             setState(.airborne)
         case .analyzing:
@@ -1157,32 +1119,11 @@ final class JumpDetector {
     // MARK: - v7 JumpResult → your Jump model
 
     private func emitJump(from r: JumpResult) {
-        // Adapter-level accept gate (mirrors old conf≥50 rule). v7 already
-        // gated at 0.40 before calling us, so this is usually a no-op.
+        // Adapter-level accept gate. GPS speed is deliberately not part of this
+        // decision; it only enriches the result when available.
         guard r.confidence >= acceptConfidence01 else {
             Log.event("JUMP rejected by adapter (conf=\(String(format: "%.2f", r.confidence)))")
             return
-        }
-
-        // Arming gate: reject stationary "jumps" (watch handling / toss) unless
-        // dev mode. v7 reports the robust session max speed in knots.
-        if !devMode {
-            let minKnots = mode.minSpeedSafe * 1.94384   // m/s → knots
-            if r.maxSessionSpeedKnots < minKnots {
-                // GPS speed gate failed — either GPS is unavailable/weak or the
-                // rider wasn't moving fast enough. FALLBACK: still accept if the
-                // IMU shows a clearly real jump (a genuine airtime AND either a
-                // rotation or high confidence). This rescues jumps when GPS has
-                // no fix, while bumps/handling (short airtime, no spin, low
-                // confidence) are still rejected.
-                let clearImuJump = r.airTimeSeconds >= fallbackMinAirtimeSec
-                    && (r.rotations >= 1 || r.confidence >= fallbackMinConfidence)
-                if !clearImuJump {
-                    Log.event("JUMP rejected: maxSpeed \(r.maxSessionSpeedKnots)kn < minSpeed \(String(format: "%.1f", minKnots))kn (no clear IMU fallback)")
-                    return
-                }
-                Log.event("JUMP accepted via IMU fallback (low/no GPS speed): air=\(String(format: "%.1f", r.airTimeSeconds))s rot=\(r.rotations) conf=\(String(format: "%.2f", r.confidence))")
-            }
         }
 
         // Reconstruct the wall-clock window from the detector's monotonic
@@ -1217,7 +1158,8 @@ final class JumpDetector {
         Log.event("JUMP ACCEPTED h=\(r.jumpHeightMeters)m air=\(r.displayedAirTimeSeconds)s "
             + "physAir=\(r.airTimeSeconds)s "
             + "rot=\(r.rotations) conf=\(jump.confidence) src=\(r.heightSource.rawValue) "
-            + "land=\(r.landingKind.rawValue)")
+            + "land=\(r.landingKind.rawValue) move=\(r.movementDistanceMeters.map { String(format: "%.1f", $0) } ?? "-")m "
+            + "moveSrc=\(r.movementSource.rawValue) gpsReliable=\(r.hasReliableGPSForJump)")
 
         onJumpDetected?(jump)
     }

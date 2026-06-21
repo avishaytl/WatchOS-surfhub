@@ -11,6 +11,7 @@ class StorageManager {
     private let fileManager = FileManager.default
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let pendingCloudUploadKey = "pendingCloudUploadSessionIds"
     
     // Storage paths
     private var documentsDirectory: URL {
@@ -106,10 +107,30 @@ class StorageManager {
         
         do {
             try fileManager.removeItem(at: fileURL)
+            clearPendingCloudUpload(sessionId: id)
             print("🗑️ Session deleted: \(filename)")
         } catch {
             print("❌ Failed to delete session: \(error.localizedDescription)")
         }
+    }
+
+    func markPendingCloudUpload(sessionId: String) {
+        var ids = pendingCloudUploadSessionIds()
+        if !ids.contains(sessionId) {
+            ids.append(sessionId)
+            UserDefaults.standard.set(ids, forKey: pendingCloudUploadKey)
+        }
+    }
+
+    func clearPendingCloudUpload(sessionId: String) {
+        let ids = pendingCloudUploadSessionIds().filter { $0 != sessionId }
+        UserDefaults.standard.set(ids, forKey: pendingCloudUploadKey)
+    }
+
+    func loadMostRecentPendingCloudSession() -> Session? {
+        let pendingIds = Set(pendingCloudUploadSessionIds())
+        guard !pendingIds.isEmpty else { return nil }
+        return loadAllSessions().first { pendingIds.contains($0.id) }
     }
     
     // MARK: - Sync to Phone
@@ -159,8 +180,13 @@ class StorageManager {
             }
             
             print("🗑️ All sessions cleared")
+            UserDefaults.standard.removeObject(forKey: pendingCloudUploadKey)
         } catch {
             print("❌ Failed to clear sessions: \(error.localizedDescription)")
         }
+    }
+
+    private func pendingCloudUploadSessionIds() -> [String] {
+        UserDefaults.standard.stringArray(forKey: pendingCloudUploadKey) ?? []
     }
 }

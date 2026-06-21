@@ -33,14 +33,15 @@
 "session.end_message" = "האם אתה בטוח שברצונך לסיים את האימון?";
 "session.upload_prompt_title" = "להעלות לענן?";
 "session.upload_prompt_message" = "האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?";
+"session.upload_offline_message" = "לא זוהה חיבור לאינטרנט. אפשר לשמור את האימון בשעון ולהעלות אותו כשהחיבור יחזור, או למחוק אותו.";
 "session.upload_now" = "העלה לענן";
 "session.keep_local" = "השאר מקומי";
 "session.discard" = "מחק סשן";
 "session.too_short_title" = "האימון לא נשמר";
 "session.too_short_message" = "אימונים קצרים מדקה נמחקים ולא נשמרים.";
 "session.upload_failed_title" = "לא ניתן להעלות";
-"session.upload_no_gps_message" = "לא נרשמה נקודת GPS, לכן אי אפשר להתחיל את האימון בשרת. האימון נשאר בשעון.";
-"session.upload_failed_message" = "האימון נשאר בשעון. בדוק GPS, התחברות ורשת, ונסה שוב מאוחר יותר.";
+"session.upload_no_gps_message" = "לא נרשמה נקודת GPS, לכן SurfHub השתמש בנקודת התחלה חלופית להעלאה.";
+"session.upload_failed_message" = "האימון נשאר בשעון. בדוק התחברות ורשת, ונסה שוב מאוחר יותר.";
 "session.upload_success_title" = "האימון הועלה";
 "session.upload_success_message" = "האימון הועלה בהצלחה לענן SurfHub.";
 "session.cancel" = "ביטול";

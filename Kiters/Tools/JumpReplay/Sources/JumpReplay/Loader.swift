@@ -9,9 +9,15 @@ enum SensorFormat: String {
 struct LoadedLog {
     var samples: [IMUSample]
     var speeds: [Double?]
+    var events: [LoadedLogEvent]
     var format: SensorFormat
     var detectedRate: Double  // Hz
     var sourceURL: URL
+}
+
+struct LoadedLogEvent {
+    let timestamp: Date
+    let message: String
 }
 
 enum Loader {
@@ -25,8 +31,13 @@ enum Loader {
         let format = forceFormat ?? hint ?? FormatDetector.detect(raw)
         let samples = raw.map { $0.toIMUSample(format: format) }
         let speeds = raw.map { $0.speed }
+        let events = raw.compactMap { row -> LoadedLogEvent? in
+            guard let event = row.event?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !event.isEmpty else { return nil }
+            return LoadedLogEvent(timestamp: Date(timeIntervalSince1970: row.t), message: event)
+        }
         let rate = estimateRate(samples)
-        return LoadedLog(samples: samples, speeds: speeds, format: format, detectedRate: rate, sourceURL: url)
+        return LoadedLog(samples: samples, speeds: speeds, events: events, format: format, detectedRate: rate, sourceURL: url)
     }
 
     private static func loadRaw(_ url: URL) throws -> ([RawRow], SensorFormat?) {
@@ -36,6 +47,8 @@ enum Loader {
             return try parseJSONLog(data)
         } else if ext == "csv" {
             return try parseCSV(data)
+        } else if ext == "kslog" {
+            return try parseKSLog(data)
         }
         throw LoaderError.unsupportedExtension(ext)
     }
@@ -94,18 +107,36 @@ enum Loader {
                 let baro = scaled(readInt32(b, i + 31), 100)
                 let speed = Double(readUInt16(b, i + 39)) / 100.0
                 let eventLength = Int(readUInt16(b, i + 44))
+                let event = eventLength > 0
+                    ? String(bytes: b[(i + 46)..<(i + 46 + eventLength)], encoding: .utf8)
+                    : nil
                 rows.append(RawRow(
                     timestamp: Double(tMillis) / 1000.0,
                     accX: ax ?? 0, accY: ay ?? 0, accZ: az ?? 0,
                     gravX: gvX ?? 0, gravY: gvY ?? 0, gravZ: gvZ ?? 0,
                     baro: baro ?? 0,
                     speed: speed,
-                    gyrX: gx ?? 0, gyrY: gy ?? 0, gyrZ: gz ?? 0
+                    gyrX: gx ?? 0, gyrY: gy ?? 0, gyrZ: gz ?? 0,
+                    event: event
                 ))
                 i += 46 + eventLength
             } else if type == 2 {
                 guard i + 14 <= b.count else { break }
+                let tMillis = readUInt32(b, i + 5)
+                let speed = Double(readUInt16(b, i + 9)) / 100.0
                 let eventLength = Int(readUInt16(b, i + 12))
+                let event = eventLength > 0
+                    ? String(bytes: b[(i + 14)..<(i + 14 + eventLength)], encoding: .utf8)
+                    : nil
+                rows.append(RawRow(
+                    timestamp: Double(tMillis) / 1000.0,
+                    accX: 0, accY: 0, accZ: 0,
+                    gravX: 0, gravY: 0, gravZ: -1,
+                    baro: 0,
+                    speed: speed,
+                    gyrX: 0, gyrY: 0, gyrZ: 0,
+                    event: event
+                ))
                 i += 14 + eventLength
             } else {
                 break
@@ -179,7 +210,8 @@ enum Loader {
             spd:  idx("spd"),
             wx:   idx("gyrX"),
             wy:   idx("gyrY"),
-            wz:   idx("gyrZ")
+            wz:   idx("gyrZ"),
+            evt:  idx("evt")
         )
         guard let ti = map.t, let axi = map.ax else {
             throw LoaderError.missingColumns
@@ -203,7 +235,8 @@ enum Loader {
                 speed: map.spd.flatMap { Double(f[$0]) },
                 gyrX: map.wx.flatMap { Double(f[$0]) } ?? 0,
                 gyrY: map.wy.flatMap { Double(f[$0]) } ?? 0,
-                gyrZ: map.wz.flatMap { Double(f[$0]) } ?? 0
+                gyrZ: map.wz.flatMap { Double(f[$0]) } ?? 0,
+                event: map.evt.flatMap { f[$0] }
             )
             rows.append(row)
         }
@@ -265,17 +298,20 @@ struct RawRow: Decodable {
     let gyrX: Double
     let gyrY: Double
     let gyrZ: Double
+    let event: String?
 
     init(timestamp: Double, accX: Double, accY: Double, accZ: Double,
          gravX: Double, gravY: Double, gravZ: Double, baro: Double,
          speed: Double? = nil,
-         gyrX: Double, gyrY: Double, gyrZ: Double) {
+         gyrX: Double, gyrY: Double, gyrZ: Double,
+         event: String? = nil) {
         self.timestamp = TimestampValue(value: timestamp)
         self.accX = accX; self.accY = accY; self.accZ = accZ
         self.gravX = gravX; self.gravY = gravY; self.gravZ = gravZ
         self.baro = baro
         self.speed = speed
         self.gyrX = gyrX; self.gyrY = gyrY; self.gyrZ = gyrZ
+        self.event = event
     }
 
     var t: Double { timestamp.value }

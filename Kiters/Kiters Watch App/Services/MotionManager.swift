@@ -14,6 +14,7 @@ class MotionManager: ObservableObject {
     private let motionManager = CMMotionManager()
     private let altimeter = CMAltimeter()
     private let queue = OperationQueue()
+    private let altimeterQueue = OperationQueue()
     
     @Published var isTracking = false
     @Published var currentAcceleration: CMAcceleration?
@@ -29,7 +30,8 @@ class MotionManager: ObservableObject {
     private var sampleBuffer: [IMUSample] = []
     private let bufferSize = 250 // Send every 250 samples (~5 seconds at 50Hz)
     
-    // Barometer state — updated at ~1Hz by CMAltimeter
+    // Barometer state — updated by CMAltimeter on its own queue and ZOH-held
+    // onto the 50Hz IMU stream. watchOS does not expose a barometer interval.
     private let baroLock = NSLock()
     private var _currentPressure: Double? = nil
     
@@ -45,6 +47,8 @@ class MotionManager: ObservableObject {
     init() {
         queue.maxConcurrentOperationCount = 1
         queue.qualityOfService = .userInitiated
+        altimeterQueue.maxConcurrentOperationCount = 1
+        altimeterQueue.qualityOfService = .userInitiated
     }
     
     func startTracking() {
@@ -70,7 +74,7 @@ class MotionManager: ObservableObject {
         
         // Start barometer if available
         if CMAltimeter.isRelativeAltitudeAvailable() {
-            altimeter.startRelativeAltitudeUpdates(to: queue) { [weak self] data, error in
+            altimeter.startRelativeAltitudeUpdates(to: altimeterQueue) { [weak self] data, error in
                 guard let self = self, let data = data else {
                     if let error = error {
                         print("❌ Altimeter error: \(error.localizedDescription)")

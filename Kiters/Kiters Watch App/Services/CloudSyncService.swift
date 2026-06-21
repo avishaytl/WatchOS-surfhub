@@ -74,22 +74,12 @@ final class CloudSyncService {
             throw CloudSyncError.missingFileData
         }
 
-        let isBinaryLog = fileURL.pathExtension.lowercased() == "kslog"
-        let content: String
-        let contentType: String
-        let contentEncoding: String?
-        if isBinaryLog {
-            content = fileData.base64EncodedString()
-            contentType = "application/x-kiters-session-log"
-            contentEncoding = "base64"
-        } else {
-            guard let text = String(data: fileData, encoding: .utf8) else {
-                throw CloudSyncError.invalidFileText
-            }
-            content = text
-            contentType = "text/csv"
-            contentEncoding = nil
-        }
+        // Every log leaves the watch as a binary envelope (KLOG). The raw log
+        // bytes are embedded as-is — no base64, no CSV/text branch — while the
+        // surrounding metadata keeps the exact same schema/fields as before.
+        let logContentType = fileURL.pathExtension.lowercased() == "kslog"
+            ? "application/x-kiters-session-log"
+            : "application/octet-stream"
 
         let sessionName = fileURL.deletingPathExtension().lastPathComponent
         var request = try makeRequest(
@@ -99,19 +89,19 @@ final class CloudSyncService {
                 URLQueryItem(name: "session", value: sessionName)
             ]
         )
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
 
-        let payload = CloudLogPayload(
-            type: "session_log",
-            filename: fileURL.lastPathComponent,
-            contentType: contentType,
-            contentEncoding: contentEncoding,
-            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-            build: Bundle.main.infoDictionary?["CFBundleVersion"] as? String,
-            uploadedAt: ISO8601DateFormatter().string(from: Date()),
-            content: content
-        )
-        let body = try JSONEncoder().encode(payload)
+        let envelope = BinaryLogEnvelope(fields: [
+            .string("type", "session_log"),
+            .string("filename", fileURL.lastPathComponent),
+            .string("contentType", logContentType),
+            .string("contentEncoding", "binary"),
+            .string("appVersion", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""),
+            .string("build", Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""),
+            .string("uploadedAt", ISO8601DateFormatter().string(from: Date())),
+            .blob("content", fileData)
+        ])
+        let body = envelope.encoded()
 
         let (data, response) = try await session.upload(for: request, from: body)
         try validate(response)
@@ -223,15 +213,4 @@ final class CloudSyncService {
             throw CloudSyncError.serverStatus(httpResponse.statusCode)
         }
     }
-}
-
-private struct CloudLogPayload: Encodable {
-    let type: String
-    let filename: String
-    let contentType: String
-    let contentEncoding: String?
-    let appVersion: String?
-    let build: String?
-    let uploadedAt: String
-    let content: String
 }

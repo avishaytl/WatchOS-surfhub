@@ -44,8 +44,10 @@ import com.kiters.wear.auth.PairingRequest
 import com.kiters.wear.session.SessionManager
 import com.kiters.wear.ui.components.ListScaffold
 import com.kiters.wear.ui.theme.themeColor
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 private sealed class AccountUiState {
     object SignedOut : AccountUiState()
@@ -63,7 +65,9 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
     val authRepo = remember { AuthRepository() }
     val accent = themeColor(settings.appTheme)
 
-    val initialLabel = settings.authEmail.ifBlank { settings.authUserId }
+    val initialLabel = settings.authEmail.ifBlank {
+        if (settings.authAccessToken.isNotBlank()) context.getString(R.string.account_connected_title) else ""
+    }
     val initial: AccountUiState =
         if (initialLabel.isNotBlank() && settings.authAccessToken.isNotBlank()) {
             AccountUiState.SignedIn(initialLabel)
@@ -72,8 +76,10 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
         }
 
     var uiState by remember { mutableStateOf<AccountUiState>(initial) }
+    var pairingStartNonce by remember { mutableStateOf(0) }
 
-    fun sessionLabel(session: AuthSession): String = session.email.ifBlank { session.userId }
+    fun sessionLabel(session: AuthSession): String =
+        session.email.ifBlank { context.getString(R.string.account_connected_title) }
 
     fun applySession(session: AuthSession) {
         settings.authAccessToken = session.accessToken
@@ -86,20 +92,28 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
 
     suspend fun startPairing() {
         uiState = AccountUiState.Loading
-        authRepo.requestPairing(
-            deviceName = Build.MANUFACTURER,
-            deviceModel = Build.MODEL,
-        ).onSuccess { request ->
+        runCatching {
+            withTimeout(15_000) {
+                authRepo.requestPairing(
+                    deviceName = Build.MANUFACTURER,
+                    deviceModel = Build.MODEL,
+                ).getOrThrow()
+            }
+        }.onSuccess { request ->
             uiState = AccountUiState.Pairing(request)
         }.onFailure { err ->
             uiState = AccountUiState.Error(
-                err.message ?: context.getString(R.string.account_pair_start_failed),
+                if (err is TimeoutCancellationException) {
+                    context.getString(R.string.account_pair_start_failed)
+                } else {
+                    err.message ?: context.getString(R.string.account_pair_start_failed)
+                },
             )
         }
     }
 
-    LaunchedEffect(uiState) {
-        if (uiState is AccountUiState.SignedOut) {
+    LaunchedEffect(pairingStartNonce) {
+        if (uiState !is AccountUiState.SignedIn) {
             startPairing()
         }
     }
@@ -214,6 +228,7 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
                                 settings.authExpiresAt = 0L
                                 if (token.isNotBlank()) authRepo.signOut(token)
                                 uiState = AccountUiState.SignedOut
+                                pairingStartNonce += 1
                             }
                         }
                     }
@@ -234,7 +249,7 @@ fun AccountScreen(vm: SessionManager, nav: NavController) {
                             context.getString(R.string.account_pair_new_code),
                             ChipDefaults.primaryChipColors(backgroundColor = accent),
                         ) {
-                            uiState = AccountUiState.SignedOut
+                            pairingStartNonce += 1
                         }
                     }
                 }

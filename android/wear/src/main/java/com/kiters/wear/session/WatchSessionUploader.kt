@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.SimpleDateFormat
@@ -139,7 +138,7 @@ class WatchSessionUploader(
         val jwt = accessToken()
         val conn = (URL(ingestUrl).openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
-            setRequestProperty("Content-Type",  "application/json")
+            setRequestProperty("Content-Type",  "application/octet-stream")
             setRequestProperty("apikey",        anonKey)
             setRequestProperty("Authorization", "Bearer $jwt")
             doOutput     = true
@@ -147,7 +146,7 @@ class WatchSessionUploader(
             readTimeout    = 15_000
         }
         conn.outputStream.use { os ->
-            OutputStreamWriter(os).use { it.write(body.toString()) }
+            os.write(BinaryLogEnvelope.encode(body))
         }
         val status = conn.responseCode
         if (status == 401) {

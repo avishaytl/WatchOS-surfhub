@@ -33,14 +33,15 @@
 "session.end_message" = "Are you sure you want to end this session?";
 "session.upload_prompt_title" = "Upload Session?";
 "session.upload_prompt_message" = "This session is saved on your watch. Upload it to SurfHub cloud too?";
+"session.upload_offline_message" = "No internet connection was detected. Keep this session on your watch and upload it when the connection is back, or discard it.";
 "session.upload_now" = "Upload";
 "session.keep_local" = "Keep Local";
 "session.discard" = "Discard";
 "session.too_short_title" = "Session Not Saved";
 "session.too_short_message" = "Sessions shorter than 1 minute are discarded.";
 "session.upload_failed_title" = "Could Not Upload";
-"session.upload_no_gps_message" = "No GPS point was recorded, so this session could not be started on the server. It stayed on your watch.";
-"session.upload_failed_message" = "The session stayed on your watch. Check GPS, sign-in, and network connection, then try again later.";
+"session.upload_no_gps_message" = "No GPS point was recorded, so SurfHub used a fallback start point for upload.";
+"session.upload_failed_message" = "The session stayed on your watch. Check sign-in and network connection, then try again later.";
 "session.upload_success_title" = "Session Uploaded";
 "session.upload_success_message" = "Your session was uploaded to SurfHub cloud successfully.";
 "session.cancel" = "Cancel";

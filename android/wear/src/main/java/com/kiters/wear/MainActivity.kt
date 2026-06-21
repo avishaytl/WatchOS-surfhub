@@ -65,6 +65,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         sessionManager?.refreshLocationAuth()
+        sessionManager?.refreshNetworkStatus()
         // Re-apply the flag in case the activity was recreated mid-session.
         sessionManager?.let { vm ->
             if (vm.isRecording.value) {

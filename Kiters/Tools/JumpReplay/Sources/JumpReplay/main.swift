@@ -12,7 +12,8 @@ struct CLIOptions {
     var verbose: Bool = false
     var silenceLogger: Bool = true
     var surfr: Bool = false
-    var toss: Bool = false
+    var requireSurfrWindows: Bool = false
+    var noGPS: Bool = false
 }
 
 func parseArgs() -> CLIOptions {
@@ -47,8 +48,11 @@ func parseArgs() -> CLIOptions {
             o.silenceLogger = false
         case "--surfr":
             o.surfr = true
-        case "--toss":
-            o.toss = true
+        case "--require-surfr-windows":
+            o.surfr = true
+            o.requireSurfrWindows = true
+        case "--no-gps":
+            o.noGPS = true
         case "-h", "--help":
             printUsage()
             exit(0)
@@ -84,7 +88,8 @@ func printUsage() {
       --compare                       Compare actual to expected; exit 1 on mismatch
       --with-logger                   Enable SessionLogger CSV writes (default: silent)
       --surfr                         Print Surfr screenshot timing comparison
-      --toss                          Use app toss/no-GPS live tuning during replay
+      --require-surfr-windows         Fail unless all 4 Surfr signal windows are present
+      --no-gps                        Do not feed GPS/speed into the detector
       -v, --verbose                   Print sample-level events
       -h, --help                      Show this help
     """
@@ -108,12 +113,11 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
         // The detector only fires onJumpDetected for accepted jumps.
         // For rejected jumps we'd need to introspect logs — skip for now.
 
-        JumpDetectionConfig.shared.setRuntimeDevModeOverride(opts.toss)
         detector.reset(mode: opts.mode)
 
         // Prefer the on-device CSV speed column when present. Falling back to
         // MockGPS keeps older synthetic logs usable.
-        let hasLogSpeeds = log.speeds.contains { ($0 ?? 0) > 0 }
+        let hasLogSpeeds = !opts.noGPS && log.speeds.contains { ($0 ?? 0) > 0 }
 
         // Mock GPS that fires before each new sample — keeps state in RIDING.
         let gps = MockGPS(speed: opts.speed, detector: detector)
@@ -122,7 +126,7 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
         for (idx, sample) in log.samples.enumerated() {
             if hasLogSpeeds, idx < log.speeds.count, let spd = log.speeds[idx] {
                 detector.updateGPS(speed: spd, altitude: 0, latitude: 0, longitude: 0, timestamp: sample.timestamp)
-            } else {
+            } else if !opts.noGPS {
                 gps.tickIfNeeded(at: sample.timestamp)
             }
             detector.processSample(sample)
@@ -158,7 +162,8 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
             durationSec: durationSec,
             mockSpeedMps: opts.speed,
             detectionMode: opts.mode.rawValue,
-            jumps: replayJumps
+            jumps: replayJumps,
+            surfrWindowMatches: opts.surfr ? makeSurfrWindowMatches(log: log, jumps: replayJumps) : nil
         )
 
         // Print human-readable
@@ -199,6 +204,23 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
             }
         }
 
+        if opts.requireSurfrWindows {
+            let matches = report.surfrWindowMatches ?? []
+            let ok = matches.count == SurfrReference.jumps.count && matches.allSatisfy(\.windowSignalAccepted)
+            if ok {
+                print("✓ Surfr signal windows present: \(matches.count)/\(SurfrReference.jumps.count)", to: &stdout)
+            } else {
+                print("✗ Surfr signal windows missing:", to: &stdout)
+                for m in matches where !m.windowSignalAccepted {
+                    print(String(format: "    - #%d ref=%.0fs event=%@ rawA=%.2fg rawG=%.2f spd=%.2f",
+                                 m.index, m.referenceTimeSec,
+                                 m.nearestEventTimeSec.map { String(format: "%.2fs", $0) } ?? "-",
+                                 m.rawMaxAccelG, m.rawMaxGyro, m.rawMedianSpeedMS), to: &stdout)
+                }
+                return false
+            }
+        }
+
         return true
 }
 
@@ -217,3 +239,63 @@ for url in opts.inputs {
     }
 }
 exit(allOK ? 0 : 1)
+
+private func makeSurfrWindowMatches(log: LoadedLog, jumps: [ReplayJump]) -> [SurfrWindowMatch] {
+    guard let first = log.samples.first?.timestamp else { return [] }
+    let accepted = jumps.filter(\.accepted)
+    return SurfrReference.jumps.map { ref in
+        let nearbyEvents = log.events
+            .map { event -> (Double, LoadedLogEvent) in
+                (event.timestamp.timeIntervalSince(first), event)
+            }
+            .filter { abs($0.0 - ref.time) <= 20.0 }
+            .filter { $0.1.message.contains("AIRBORNE") || $0.1.message.contains("JUMP ACCEPTED") }
+        let nearestEvent = nearbyEvents.min { abs($0.0 - ref.time) < abs($1.0 - ref.time) }
+        let nearestAccepted = accepted.min { abs($0.takeoffOffsetSec - ref.time) < abs($1.takeoffOffsetSec - ref.time) }
+
+        let samples = log.samples.filter { sample in
+            let t = sample.timestamp.timeIntervalSince(first)
+            return t >= ref.time - 8.0 && t <= ref.time + 12.0
+        }
+        let maxAccel = samples.map(\.accelerationMagnitude).max() ?? 0
+        let maxGyro = samples.map(\.rotationMagnitude).max() ?? 0
+        let speeds = log.samples.enumerated().compactMap { idx, sample -> Double? in
+            let t = sample.timestamp.timeIntervalSince(first)
+            guard t >= ref.time - 8.0 && t <= ref.time + 12.0,
+                  idx < log.speeds.count else { return nil }
+            return log.speeds[idx]
+        }
+
+        return SurfrWindowMatch(
+            index: ref.index,
+            referenceTimeSec: ref.time,
+            nearestEventTimeSec: nearestEvent?.0,
+            nearestEventDeltaSec: nearestEvent.map { $0.0 - ref.time },
+            nearestEvent: nearestEvent?.1.message,
+            nearestAcceptedTimeSec: nearestAccepted?.takeoffOffsetSec,
+            nearestAcceptedDeltaSec: nearestAccepted.map { $0.takeoffOffsetSec - ref.time },
+            acceptedWithinTolerance: nearestAccepted.map { abs($0.takeoffOffsetSec - ref.time) <= 3.0 && $0.height >= 1.0 } ?? false,
+            windowSignalAccepted: nearestEvent.map { abs($0.0 - ref.time) <= 10.0 } ?? false
+                && maxAccel >= 1.5
+                && maxGyro >= 2.0,
+            rawMaxAccelG: rounded(maxAccel, places: 3),
+            rawMaxGyro: rounded(maxGyro, places: 3),
+            rawMedianSpeedMS: rounded(median(speeds), places: 3)
+        )
+    }
+}
+
+private func median(_ values: [Double]) -> Double {
+    guard !values.isEmpty else { return 0 }
+    let sorted = values.sorted()
+    let mid = sorted.count / 2
+    if sorted.count % 2 == 0 {
+        return (sorted[mid - 1] + sorted[mid]) / 2
+    }
+    return sorted[mid]
+}
+
+private func rounded(_ value: Double, places: Int) -> Double {
+    let factor = pow(10.0, Double(places))
+    return (value * factor).rounded() / factor
+}

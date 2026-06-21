@@ -77,6 +77,29 @@ for log in "${LOGS[@]}"; do
     fi
 done
 
+SURFR_LOG="$SCRIPT_DIR/../../../docs/log2.json"
+if [[ -f "$SURFR_LOG" ]]; then
+    echo ""
+    echo "=== Running Surfr window calibration check ==="
+    if "$BINARY" --require-surfr-windows "$SURFR_LOG" 2>/dev/null; then
+        echo "  ✓  docs/log2.json Surfr windows"
+        ((PASS++))
+    else
+        echo "  ✗  docs/log2.json Surfr windows"
+        ((FAIL++))
+    fi
+
+    echo ""
+    echo "=== Running GPS-independent Surfr check ==="
+    if "$BINARY" --require-surfr-windows --no-gps "$SURFR_LOG" 2>/dev/null; then
+        echo "  ✓  docs/log2.json Surfr windows without GPS"
+        ((PASS++))
+    else
+        echo "  ✗  docs/log2.json Surfr windows without GPS"
+        ((FAIL++))
+    fi
+fi
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed, $SKIP skipped"
 echo ""

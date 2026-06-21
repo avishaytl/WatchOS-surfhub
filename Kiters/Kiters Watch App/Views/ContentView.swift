@@ -36,8 +36,10 @@ struct ContentView: View {
                 }
             )
         ) {
-            Button(L("session.upload_now")) {
-                sessionManager.uploadPendingSessionToCloud()
+            if sessionManager.canUploadPendingSession {
+                Button(L("session.upload_now")) {
+                    sessionManager.uploadPendingSessionToCloud()
+                }
             }
             Button(L("session.keep_local")) {
                 sessionManager.keepPendingSessionLocal()
@@ -46,7 +48,9 @@ struct ContentView: View {
                 sessionManager.discardPendingSession()
             }
         } message: {
-            Text(L("session.upload_prompt_message"))
+            Text(L(sessionManager.canUploadPendingSession
+                   ? "session.upload_prompt_message"
+                   : "session.upload_offline_message"))
         }
         .alert(
             L(sessionManager.sessionNotice?.titleKey ?? "common.ok"),

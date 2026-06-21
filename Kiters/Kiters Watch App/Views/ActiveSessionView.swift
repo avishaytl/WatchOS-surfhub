@@ -12,7 +12,20 @@ struct ActiveSessionView: View {
     @State private var selectedTab = 1  // Start at middle tab (metrics)
     @State private var showingEndConfirmation = false
     @AppStorage("appLanguage") private var languageCode: String = "en"
+    @AppStorage("appTheme") private var appTheme: String = "orange"
     @Environment(\.isLuminanceReduced) var isLuminanceReduced
+
+    private var themeColor: Color {
+        switch appTheme {
+        case "yellow": return .yellow
+        case "green":  return .green
+        case "red":    return .red
+        case "orange": return .orange
+        case "cyan":   return .cyan
+        case "pink":   return .pink
+        default:       return .orange
+        }
+    }
 
     var body: some View {
         if isLuminanceReduced {
@@ -23,29 +36,46 @@ struct ActiveSessionView: View {
                 AmbientSessionView()
             }
         } else {
-            TabView(selection: $selectedTab) {
-                // Tab 0 (Left): Controls - Stop/Pause
-                ControlsView(showingEndConfirmation: $showingEndConfirmation)
-                    .tag(0)
+            ZStack {
+                TabView(selection: $selectedTab) {
+                    // Tab 0 (Left): Controls - Stop/Pause
+                    ControlsView(showingEndConfirmation: $showingEndConfirmation)
+                        .tag(0)
 
-                // Tab 1 (Middle): Main metrics - DEFAULT
-                MetricsView()
-                    .tag(1)
+                    // Tab 1 (Middle): Main metrics - DEFAULT
+                    MetricsView()
+                        .tag(1)
 
-                // Tab 2: Jump stats
-                JumpStatsView()
-                    .tag(2)
+                    // Tab 2: Jump stats
+                    JumpStatsView()
+                        .tag(2)
 
-                // Tab 3 (Right): GPS Route tracker
-                GPSRouteView()
-                    .tag(3)
+                    // Tab 3 (Right): GPS Route tracker
+                    GPSRouteView()
+                        .tag(3)
+                }
+                .tabViewStyle(.page)
+                .navigationBarHidden(true)
+                .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+
+                if let jump = sessionManager.newBestJumpPresentation {
+                    NewBestJumpOverlay(jump: jump, themeColor: themeColor) {
+                        sessionManager.dismissNewBestJumpPresentation()
+                    }
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                    .zIndex(10)
+                }
             }
-            .tabViewStyle(.page)
-            .navigationBarHidden(true)
-            .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+            .animation(.spring(response: 0.35, dampingFraction: 0.88), value: sessionManager.newBestJumpPresentation?.id)
             .onAppear {
                 // Water Lock must be enabled while the session screen is foreground-active.
                 sessionManager.enableWaterLockIfNeeded()
+            }
+            .onChange(of: sessionManager.newBestJumpPresentation?.id) { _, id in
+                guard id != nil else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+                    sessionManager.dismissNewBestJumpPresentation()
+                }
             }
             .alert(L("session.end_confirm"), isPresented: $showingEndConfirmation) {
                 Button(L("session.cancel"), role: .cancel) { }
@@ -67,24 +97,39 @@ struct ActiveSessionView: View {
 //   - Show only the 3 most important numbers
 struct AmbientSessionView: View {
     @EnvironmentObject var sessionManager: SessionManager
+    @AppStorage("appTheme") private var appTheme: String = "orange"
+
+    private var themeColor: Color {
+        switch appTheme {
+        case "yellow": return .yellow
+        case "green":  return .green
+        case "red":    return .red
+        case "orange": return .orange
+        case "cyan":   return .cyan
+        case "pink":   return .pink
+        default:       return .orange
+        }
+    }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             Text(formatDuration(sessionManager.duration))
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
                 .monospacedDigit()
 
             Text(formatHeight(sessionManager.currentSession?.jumps.last?.height ?? 0) + "m")
-                .font(.system(size: 40, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .font(.system(size: 58, weight: .heavy, design: .rounded))
+                .foregroundColor(sessionManager.jumpCount > 0 ? themeColor : .white)
+                .minimumScaleFactor(0.72)
+                .lineLimit(1)
 
             HStack(spacing: 16) {
                 Text(formatSpeed(sessionManager.maxSpeed))
-                    .font(.system(size: 14, design: .rounded))
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
                     .foregroundColor(.gray)
                 Text(formatDistance(sessionManager.distance))
-                    .font(.system(size: 14, design: .rounded))
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
                     .foregroundColor(.gray)
             }
         }
@@ -99,6 +144,42 @@ struct AmbientSessionView: View {
     private func formatHeight(_ v: Double) -> String { String(format: "%.1f", v) }
     private func formatSpeed(_ v: Double) -> String { String(format: "%.0f km/h", v * 3.6) }
     private func formatDistance(_ v: Double) -> String { String(format: "%.2f km", v / 1000) }
+}
+
+struct NewBestJumpOverlay: View {
+    let jump: Jump
+    let themeColor: Color
+    let dismiss: () -> Void
+
+    var body: some View {
+        Button(action: dismiss) {
+            VStack(spacing: 8) {
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundColor(themeColor)
+
+                Text(L("session.max"))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.82))
+
+                Text(String(format: "%.1f", jump.height))
+                    .font(.system(size: 76, weight: .heavy, design: .rounded))
+                    .foregroundColor(themeColor)
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.62)
+                    .lineLimit(1)
+
+                Text("m")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.72))
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.black.opacity(0.96))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .edgesIgnoringSafeArea(.all)
+    }
 }
 
 struct MetricsView: View {

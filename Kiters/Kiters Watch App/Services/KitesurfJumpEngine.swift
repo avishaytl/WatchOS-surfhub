@@ -127,6 +127,9 @@ struct JumpResult {
     let jumpDistanceGPSMeters: Double?  // GPS position haversine (secondary)
     let maxSessionSpeedKnots: Double
     let maxSessionSpeedKmh: Double
+    let movementDistanceMeters: Double?
+    let movementSource: MovementSource
+    let hasReliableGPSForJump: Bool
     let confidence: Double              // 0…1
     let landingKind: LandingKind
     let heightSource: HeightSource
@@ -142,6 +145,43 @@ struct JumpResult {
 
     enum LandingKind: String { case contact, hardImpact, baroRecovery, settle, timeout }
     enum HeightSource: String { case kinematic, barometric, blended }
+    enum MovementSource: String { case gpsPosition, gpsSpeed, none }
+}
+
+private enum GPSStationaryGate {
+    static func accepts(heightMeters: Double,
+                        movementDistanceMeters: Double?,
+                        hasReliableGPS: Bool,
+                        minJumpHeightM: Double,
+                        stationaryDistanceM: Double,
+                        stationaryMinHeightM: Double) -> Bool {
+        guard heightMeters >= minJumpHeightM else { return false }
+        guard hasReliableGPS, let movementDistanceMeters else { return true }
+        if movementDistanceMeters < stationaryDistanceM && heightMeters < stationaryMinHeightM {
+            return false
+        }
+        return true
+    }
+}
+
+private enum BackgroundNoiseGate {
+    static func accepts(heightMeters: Double,
+                        displayedAirTimeSeconds: Double,
+                        rotations: Int,
+                        regularDistanceMeters: Double?,
+                        maxDistanceM: Double,
+                        maxRotations: Int,
+                        maxDisplayedAirTimeSec: Double,
+                        maxHeightM: Double) -> Bool {
+        guard let regularDistanceMeters else { return true }
+        if regularDistanceMeters < maxDistanceM,
+           rotations <= maxRotations,
+           displayedAirTimeSeconds < maxDisplayedAirTimeSec,
+           heightMeters < maxHeightM {
+            return false
+        }
+        return true
+    }
 }
 
 // ================================================================
@@ -222,9 +262,9 @@ final class KitesurfJumpEngineV7 {
 
     struct Config {
         // ── Baro pipeline ────────────────────────────────────────
-        var baroMedianHalfWindow   = 7
-        var baroLowPassAlpha1       = 0.30
-        var baroLowPassAlpha2       = 0.15
+        var baroMedianHalfWindow   = 3
+        var baroLowPassAlpha1       = 0.45
+        var baroLowPassAlpha2       = 0.30
 
         // ── Baro SIGNIFICANCE (sensor-grounded) ──────────────────
         // Real watch quantum ≈ 0.01 hPa. We require the drop to clear
@@ -241,23 +281,47 @@ final class KitesurfJumpEngineV7 {
         var landingContactGyro      = 2.0
         var landingSpikeG           = 1.40   // hard-landing impact (g)
         var landingSpikeGyro        = 1.0
-        var settleTolG              = 0.35   // legacy, retained for compatibility
-        var settleSamplesNeeded     = 12     // legacy, retained for compatibility
+        var settleTolG              = 0.35   // |a| within this of ride-mean = settled
+        var settleSamplesNeeded     = 12     // sustained calm before soft landing
         var minAirTimeSec           = 2.0
         var hardLandingMinAirTimeSec = 2.0   // ignore in-air board/arm hits before this
-        var settleMinAirTimeSec     = 3.80   // legacy, retained for compatibility
-        var settleMinBaroDropHPa    = 0.06   // legacy, retained for compatibility
-        var maxAirTimeSec           = 6.5    // low-range kinematic watchdog
-        var minJumpHeightMeters     = 1.5    // Surfr display gate
+        var settleMinAirTimeSec     = 3.80   // do not end kite jumps on early calm wrist motion
+        var settleMinBaroDropHPa    = 0.06   // soft landing needs a real pressure dip
+        var maxAirTimeSec           = 6.5    // kite-glide watchdog
+        var minJumpHeightMeters     = 1.0    // report jumps >= 1 m, ignore sub-metre chop
+        var minResultConfidence     = 0.40
+        var gpsStationaryDistanceM  = 1.0
+        var gpsStationaryMinHeightM = 1.5
+        var gpsReliableFixMaxAgeSec = 3.0
+        var noiseRejectMaxDistanceM = 30.0
+        var noiseRejectMaxRotations = 0
+        var noiseRejectMaxDisplayedAirTimeSec = 3.0
+        var noiseRejectMaxHeightM = 2.0
+        var timeoutRecoveryMinBaroDropHPa = 0.35
+        var timeoutRecoveryMinPeakGyro = 4.0
+        var timeoutRecoveryMinTakeoffG = 2.0
+        var timeoutRecoveryMinHeightMeters = 3.0
+        var timeoutRecoveryMinBurstSamples = 14
+        var sensorFlightLookbackSec = 9.0
+        var sensorFlightQuietAccelG = 0.35
+        var sensorFlightQuietMinRunSec = 1.25
+        var sensorFlightLandingAccelG = 2.5
+        var sensorFlightLandingGyro = 10.0
+        var sensorFlightMaxAirTimeSec = 9.5
+        var sensorFlightShortAirRecoverySec = 2.75
 
         // ── Gyro ─────────────────────────────────────────────────
         var gyroQualityThreshold    = 8.0    // rad/s — chaotic above (toss/tumble)
         var gyroIsDegPerSec: Bool?  = false  // watch reports rad/s; nil = auto-detect
 
+        // ── Live sensor-only/toss behaviour ──────────────────────
+        var requireBaroBaselineBeforeTakeoff = true
+        var baselineWarmupSec      = 8.0
+
         // ── Kinematic calibration ────────────────────────────────
         // Time-of-flight underestimates if release/land spikes clip the
         // true ballistic endpoints. >1 compensates. Tune from labelled logs.
-        var kinematicCalibration    = 1.0
+        var kinematicCalibration    = 1.25
 
         var enableIMUBiasCorrection = true
 
@@ -270,8 +334,8 @@ final class KitesurfJumpEngineV7 {
         var maxPlausibleHeightM     = 50.0
         var symmetricAscentFraction = 0.143 // ascent fraction when no apex found
         var displayedAirtimeScale   = 0.73  // public/Surfr-like airtime
-        var kiteAirtimeHeightScale  = 0.13  // legacy, retained for compatibility
-        var kiteFallbackMinAirSec   = 2.25  // legacy, retained for compatibility
+        var kiteAirtimeHeightScale  = 0.13  // retained for parity/docs
+        var kiteFallbackMinAirSec   = 2.25  // retained for parity/docs
 
         static let `default` = Config()
     }
@@ -282,12 +346,15 @@ final class KitesurfJumpEngineV7 {
     // ── Public entry: analyse a captured jump buffer ─────────────
     func process(_ rawSamples: [SensorSample],
                  takeoffHint t0HintRaw: Int? = nil,
+                 landingHint tlHintRaw: Int? = nil,
+                 landingKind landingKindHint: JumpResult.LandingKind? = nil,
                  maxSessionSpeedMS: Double) -> JumpResult? {
         // Drop non-advancing timestamps (duplicate rows / stuttered batches
         // produce zero-dt gaps that corrupt the air-time integration) and remap
         // the take-off hint onto the deduped indices.
         let (samples, indexMap) = Self.dedupeByTime(rawSamples)
         let t0Hint: Int? = t0HintRaw.flatMap { ($0 >= 0 && $0 < indexMap.count) ? indexMap[$0] : nil }
+        let tlHint: Int? = tlHintRaw.flatMap { ($0 >= 0 && $0 < indexMap.count) ? indexMap[$0] : nil }
         let n = samples.count
         guard n >= 12 else { return nil }
         let dt = estimateDt(samples)
@@ -319,9 +386,12 @@ final class KitesurfJumpEngineV7 {
         // ── TAKEOFF: adaptive release spike + airborne confirmation ──
         let releaseThr = max(cfg.releaseFloorG, rideMeanA + cfg.releaseSigmaK * max(rideStdA, 0.05))
         var t0 = -1
+        let hintedTakeoff: Bool
         if let hint = t0Hint, hint > 1, hint < n - 4 {
             t0 = hint
+            hintedTakeoff = true
         } else {
+            hintedTakeoff = false
             for i in 2..<(n - 4) where accMag[i] >= releaseThr {
                 // confirm a take-off: gyro energy OR a baro dip follows (rules out
                 // a stationary jolt). A real launch spins the wrist.
@@ -331,42 +401,104 @@ final class KitesurfJumpEngineV7 {
                 }
             }
         }
-        guard t0 != -1 else { return nil }
+        guard t0 != -1 else {
+            JumpDiagnostics.event("detector rejected: no takeoff candidate releaseThr=\(String(format: "%.2f", releaseThr))")
+            return nil
+        }
 
-        // ── LANDING: first water/board contact OR hard impact ──
+        let shouldTrySensorFlightRecovery: Bool
+        if let landingHint = tlHint, landingHint > t0 {
+            shouldTrySensorFlightRecovery = Double(landingHint - t0) * dt <= cfg.sensorFlightShortAirRecoverySec
+        } else {
+            shouldTrySensorFlightRecovery = true
+        }
+
+        if hintedTakeoff,
+           shouldTrySensorFlightRecovery,
+           let recovered = sensorFlightTakeoffIndex(accMag: accMag, gyroMag: gyroMag, around: t0, dt: dt),
+           recovered < t0 {
+            JumpDiagnostics.event("detector recovered sensor-flight takeoff: old=\(String(format: "%.2f", samples[t0].t)) new=\(String(format: "%.2f", samples[recovered].t))")
+            t0 = recovered
+        }
+
+        // ── LANDING: contact OR hard impact OR baro recovery OR settle ──
         let minAS = Int(cfg.minAirTimeSec / dt)
         let hardMinAS = max(minAS, Int(cfg.hardLandingMinAirTimeSec / dt))
+        let settleMinAS = max(minAS, Int(cfg.settleMinAirTimeSec / dt))
         let maxAS = Int(cfg.maxAirTimeSec / dt)
+        let sensorMaxAS = Int(max(cfg.maxAirTimeSec, cfg.sensorFlightMaxAirTimeSec) / dt)
         var tl = -1
         var landingKind: JumpResult.LandingKind = .timeout
         var jumpMinP = haveBaro ? baselineP : 0
 
-        var i = t0 + 1
-        while i < n && (i - t0) <= maxAS {
-            if haveBaro { jumpMinP = min(jumpMinP, baroSmooth[i]) }
-            let air = Double(i - t0) * dt
-
-            if air >= cfg.minAirTimeSec {
-                // (a) first water/board contact: a moderate slap plus wrist rotation.
-                if accMag[i] >= cfg.landingContactG && gyroMag[i] >= cfg.landingContactGyro {
-                    tl = i; landingKind = .contact; break
-                }
-                // (b) hard impact: higher acceleration can use a lower gyro floor.
-                if (i - t0) >= hardMinAS && accMag[i] >= cfg.landingSpikeG && gyroMag[i] >= cfg.landingSpikeGyro {
-                    tl = i; landingKind = .hardImpact; break
-                }
+        if let hint = tlHint, hint > t0, hint < n, (hint - t0) >= minAS, (hint - t0) <= sensorMaxAS {
+            tl = hint
+            landingKind = landingKindHint ?? .contact
+            if haveBaro {
+                for k in (t0 + 1)...tl { jumpMinP = min(jumpMinP, baroSmooth[k]) }
             }
-            i += 1
+        } else {
+            var softLandingIndex = -1
+            var softLandingKind: JumpResult.LandingKind = .timeout
+            var settleRun = 0
+            var i = t0 + 1
+            while i < n && (i - t0) <= maxAS {
+                if haveBaro { jumpMinP = min(jumpMinP, baroSmooth[i]) }
+                let air = Double(i - t0) * dt
+
+                if air >= cfg.minAirTimeSec {
+                    // (a) first water/board contact: a moderate slap plus wrist rotation.
+                    if accMag[i] >= cfg.landingContactG && gyroMag[i] >= cfg.landingContactGyro {
+                        tl = i; landingKind = .contact; break
+                    }
+                    // (b) hard impact: higher acceleration can use a lower gyro floor.
+                    if (i - t0) >= hardMinAS && accMag[i] >= cfg.landingSpikeG && gyroMag[i] >= cfg.landingSpikeGyro {
+                        tl = i; landingKind = .hardImpact; break
+                    }
+                    // (c) baro recovery: useful for soft kite landings where impact is muted.
+                    // Keep it as a fallback so a later contact/hard impact can win.
+                    if (i - t0) >= hardMinAS && haveBaro {
+                        let drop = baselineP - jumpMinP
+                        if drop > cfg.baroNoiseFloorHPa {
+                            let recover = max(drop * 0.08, cfg.baroNoiseFloorHPa)
+                            if baroSmooth[i] >= baselineP - recover && softLandingIndex == -1 {
+                                softLandingIndex = i
+                                softLandingKind = .baroRecovery
+                            }
+                        }
+                    }
+                    // (d) settle: sustained return to riding-like acceleration after a real pressure dip.
+                    // This is also a fallback; do not close early if a stronger landing follows.
+                    let settleBaroOK = haveBaro && (baselineP - jumpMinP) >= cfg.settleMinBaroDropHPa
+                    if settleBaroOK && (i - t0) >= settleMinAS && abs(accMag[i] - rideMeanA) < cfg.settleTolG && gyroMag[i] < cfg.gyroQualityThreshold {
+                        settleRun += 1
+                        if settleRun >= cfg.settleSamplesNeeded && (i - t0) > minAS && softLandingIndex == -1 {
+                            softLandingIndex = i
+                            softLandingKind = .settle
+                        }
+                    } else {
+                        settleRun = 0
+                    }
+                }
+                i += 1
+            }
+            if tl == -1 && softLandingIndex != -1 {
+                tl = softLandingIndex
+                landingKind = softLandingKind
+            }
         }
         if tl == -1 { tl = min(n - 1, t0 + maxAS); landingKind = .timeout }
         guard tl > t0 else { return nil }
-        guard landingKind != .timeout else { return nil }
 
         let airTimeSec = Double(tl - t0) * dt
 
         // ── GPS metrics (computed before height gate) ─────────────
         let jumpDistSpeedTime = distanceSpeedTime(samples, t0: t0, airTimeSec: airTimeSec)
-        let jumpDistGPS       = distanceGPS(samples, t0: t0, tl: tl)
+        let gpsMovement       = gpsPositionMovement(samples, t0: t0, tl: tl)
+        let jumpDistGPS       = gpsMovement?.distance
+        let movementDistance  = gpsMovement?.distance ?? jumpDistSpeedTime
+        let movementSource: JumpResult.MovementSource = gpsMovement != nil ? .gpsPosition : (jumpDistSpeedTime != nil ? .gpsSpeed : .none)
+        let hasReliableGPSForJump = gpsMovement != nil
 
         // ── BAROMETRIC HEIGHT (may be ~0 — that is expected & fine) ──
         let dP    = haveBaro ? max(0, baselineP - jumpMinP) : 0
@@ -411,7 +543,21 @@ final class KitesurfJumpEngineV7 {
         let fusedH = min(heightM, cfg.maxPlausibleHeightM)
 
         // ── HEIGHT GATE ───────────────────────────────────────────
-        guard fusedH >= cfg.minJumpHeightMeters else { return nil }
+        guard fusedH >= cfg.minJumpHeightMeters else {
+            JumpDiagnostics.event("detector rejected: height \(String(format: "%.2f", fusedH))m < min \(String(format: "%.2f", cfg.minJumpHeightMeters))m air=\(String(format: "%.2f", airTimeSec))s")
+            return nil
+        }
+        guard GPSStationaryGate.accepts(
+            heightMeters: fusedH,
+            movementDistanceMeters: movementDistance,
+            hasReliableGPS: hasReliableGPSForJump,
+            minJumpHeightM: cfg.minJumpHeightMeters,
+            stationaryDistanceM: cfg.gpsStationaryDistanceM,
+            stationaryMinHeightM: cfg.gpsStationaryMinHeightM
+        ) else {
+            JumpDiagnostics.event("gps stationary reject: h=\(String(format: "%.2f", fusedH))m move=\(String(format: "%.2f", movementDistance ?? -1))m threshold=\(String(format: "%.2f", cfg.gpsStationaryDistanceM))m minMovingH=\(String(format: "%.2f", cfg.gpsStationaryMinHeightM))m")
+            return nil
+        }
 
         // ── APEX (integrate gravity-projected vertical accel) ─────
         let (apex, _) = integrateApex(samples, t0: t0, tl: tl, dt: dt)
@@ -420,19 +566,64 @@ final class KitesurfJumpEngineV7 {
         var totalRad = 0.0
         for k in (t0 + 1)...tl { totalRad += gyroMag[k] * dt }
         let rotations = Int((totalRad / K.twoPi).rounded(.down))
+        let displayedAirTimeSec = airTimeSec * cfg.displayedAirtimeScale
+
+        guard BackgroundNoiseGate.accepts(
+            heightMeters: fusedH,
+            displayedAirTimeSeconds: displayedAirTimeSec,
+            rotations: rotations,
+            regularDistanceMeters: jumpDistSpeedTime,
+            maxDistanceM: cfg.noiseRejectMaxDistanceM,
+            maxRotations: cfg.noiseRejectMaxRotations,
+            maxDisplayedAirTimeSec: cfg.noiseRejectMaxDisplayedAirTimeSec,
+            maxHeightM: cfg.noiseRejectMaxHeightM
+        ) else {
+            JumpDiagnostics.event("background noise reject: h=\(String(format: "%.2f", fusedH))m air=\(String(format: "%.2f", displayedAirTimeSec))s rot=\(rotations) dist=\(String(format: "%.1f", jumpDistSpeedTime ?? -1))m")
+            return nil
+        }
 
         // ── GYRO QUALITY (for confidence) ─────────────────────────
         let gyroQ = gyroMag.map { max(0, 1 - $0 / (cfg.gyroQualityThreshold * 2.5)) }
         let avgGyroQ = DSP.mean(gyroQ[t0...tl])
         let peakGyro = gyroMag[t0...tl].max() ?? 0
         let peakTakeoffG = accMag[max(0, t0 - 2)...min(n - 1, t0 + 4)].max() ?? 0
+        var timeoutBurstRun = 0
+        var timeoutMaxBurstRun = 0
+        for k in t0...tl {
+            if accMag[k] >= releaseThr && gyroMag[k] >= cfg.releaseGyroMinRad {
+                timeoutBurstRun += 1
+                timeoutMaxBurstRun = max(timeoutMaxBurstRun, timeoutBurstRun)
+            } else {
+                timeoutBurstRun = 0
+            }
+        }
+
+        if landingKind == .timeout {
+            let baroTimeoutRecovered =
+                dP >= cfg.timeoutRecoveryMinBaroDropHPa &&
+                fusedH >= cfg.timeoutRecoveryMinHeightMeters &&
+                peakGyro >= cfg.timeoutRecoveryMinPeakGyro &&
+                peakTakeoffG >= cfg.timeoutRecoveryMinTakeoffG
+            let inertialTimeoutRecovered =
+                dP < cfg.baroNoiseFloorHPa &&
+                fusedH >= cfg.timeoutRecoveryMinHeightMeters &&
+                peakGyro >= cfg.timeoutRecoveryMinPeakGyro &&
+                peakTakeoffG >= cfg.timeoutRecoveryMinTakeoffG &&
+                timeoutMaxBurstRun >= cfg.timeoutRecoveryMinBurstSamples
+            guard baroTimeoutRecovered || inertialTimeoutRecovered else {
+                JumpDiagnostics.event("detector rejected: landing timeout takeoffT=\(String(format: "%.2f", samples[t0].t)) maxAir=\(String(format: "%.1f", cfg.maxAirTimeSec))s dP=\(String(format: "%.3f", dP))hPa peakG=\(String(format: "%.2f", peakTakeoffG)) gyro=\(String(format: "%.2f", peakGyro)) burst=\(timeoutMaxBurstRun)")
+                return nil
+            }
+            let path = baroTimeoutRecovered ? "baro" : "inertial"
+            JumpDiagnostics.event("detector recovered timeout: \(path) takeoffT=\(String(format: "%.2f", samples[t0].t)) h=\(String(format: "%.2f", fusedH))m dP=\(String(format: "%.3f", dP))hPa gyro=\(String(format: "%.2f", peakGyro)) burst=\(timeoutMaxBurstRun)")
+        }
 
         // ── CONFIDENCE (physics-linked) ───────────────────────────
         var conf = 0.55
         // baro & rise-time kinematic agree → strong evidence of a real jump.
         if baroConsistent && abs(baroH - riseH) / max(baroH, riseH, 0.1) < 0.4 { conf += 0.20 }
         if peakTakeoffG >= releaseThr * 1.3 { conf += 0.15 } else if peakTakeoffG >= releaseThr { conf += 0.08 }
-        if maxSessionSpeedMS >= 2.0 { conf += 0.10 }            // ride-away (not a stationary toss)
+        conf += 0.10                                            // sensor-only path; GPS never gates confidence
         if airTimeSec >= 1.0 { conf += 0.05 }
         if landingKind == .timeout { conf -= 0.20 }             // never saw a clean landing
         if peakGyro > cfg.gyroQualityThreshold * 2.5 { conf -= 0.15 } // chaotic tumble → maybe not a jump
@@ -448,13 +639,16 @@ final class KitesurfJumpEngineV7 {
             baroHeightMeters:      r2(baroH),
             kinematicHeightMeters: r2(kinematicH),
             airTimeSeconds:        r2(airTimeSec),
-            displayedAirTimeSeconds: r2(airTimeSec * cfg.displayedAirtimeScale),
+            displayedAirTimeSeconds: r2(displayedAirTimeSec),
             apexTimeSeconds:       apex.map(r2),
             rotations:             rotations,
             jumpDistanceMeters:    jumpDistSpeedTime,
             jumpDistanceGPSMeters: jumpDistGPS,
             maxSessionSpeedKnots:  r1(maxSessionSpeedMS * K.ms2kn),
             maxSessionSpeedKmh:    r1(maxSessionSpeedMS * K.ms2kmh),
+            movementDistanceMeters: movementDistance.map(r1),
+            movementSource:         movementSource,
+            hasReliableGPSForJump:  hasReliableGPSForJump,
             confidence:            (conf * 1000).rounded() / 1000,
             landingKind:           landingKind,
             heightSource:          source,
@@ -467,6 +661,55 @@ final class KitesurfJumpEngineV7 {
             takeoffIndex:          t0,
             landingIndex:          tl
         )
+    }
+
+    private func sensorFlightTakeoffIndex(accMag: [Double], gyroMag: [Double], around hint: Int, dt: Double) -> Int? {
+        guard hint > 4, dt > 0 else { return nil }
+        let landingLo = max(0, hint - Int((0.20 / dt).rounded()))
+        let landingHi = min(accMag.count - 1, hint + Int((1.20 / dt).rounded()))
+        let landingPeakA = accMag[landingLo...landingHi].max() ?? 0
+        let landingPeakG = gyroMag[landingLo...landingHi].max() ?? 0
+        guard landingPeakA >= cfg.sensorFlightLandingAccelG,
+              landingPeakG >= cfg.sensorFlightLandingGyro else {
+            return nil
+        }
+
+        let lookback = max(1, Int((cfg.sensorFlightLookbackSec / dt).rounded()))
+        let minRun = max(1, Int((cfg.sensorFlightQuietMinRunSec / dt).rounded()))
+        let searchLo = max(0, hint - lookback)
+        let searchHi = max(searchLo, hint - Int((0.25 / dt).rounded()))
+        guard searchHi > searchLo else { return nil }
+
+        var bestStart = -1
+        var bestEnd = -1
+        var runStart = -1
+        var runEnd = -1
+
+        for i in searchLo...searchHi {
+            if accMag[i] <= cfg.sensorFlightQuietAccelG {
+                if runStart == -1 { runStart = i }
+                runEnd = i
+            } else if runStart != -1 {
+                if runEnd - runStart + 1 >= minRun {
+                    bestStart = runStart
+                    bestEnd = runEnd
+                }
+                runStart = -1
+                runEnd = -1
+            }
+        }
+        if runStart != -1, runEnd - runStart + 1 >= minRun {
+            bestStart = runStart
+            bestEnd = runEnd
+        }
+
+        guard bestStart >= 0, bestEnd >= bestStart else { return nil }
+        let airToLanding = Double(hint - bestStart) * dt
+        guard airToLanding >= cfg.minAirTimeSec,
+              airToLanding <= cfg.sensorFlightMaxAirTimeSec else {
+            return nil
+        }
+        return bestStart
     }
 
     // ── Apex via gravity-projected vertical-accel integration ────
@@ -506,21 +749,27 @@ final class KitesurfJumpEngineV7 {
     }
 
     // ── Distance: GPS position haversine (limited by 1 Hz) ───────
-    private func distanceGPS(_ s: [SensorSample], t0: Int, tl: Int) -> Double? {
-        struct P { let i: Int; let t, lat, lon: Double }
+    private func gpsPositionMovement(_ s: [SensorSample], t0: Int, tl: Int) -> (distance: Double, source: JumpResult.MovementSource)? {
+        struct P { let i: Int; let t, lat, lon, accuracy: Double }
         let pts: [P] = s.enumerated().compactMap { idx, x in
-            guard let la = x.gpsLat, let lo = x.gpsLon, la.isFinite, lo.isFinite else { return nil }
-            return P(i: idx, t: x.t, lat: la, lon: lo)
+            guard let la = x.gpsLat, let lo = x.gpsLon, la.isFinite, lo.isFinite,
+                  let acc = x.gpsAccuracyM, acc.isFinite, acc > 0, acc <= 20 else { return nil }
+            return P(i: idx, t: x.t, lat: la, lon: lo, accuracy: acc)
         }
         guard pts.count >= 2 else { return nil }
         let tT = s[t0].t, tL = s[tl].t
         let nearT = pts.min { abs($0.t - tT) < abs($1.t - tT) }!
         var nearL = pts.min { abs($0.t - tL) < abs($1.t - tL) }!
+        guard abs(nearT.t - tT) <= cfg.gpsReliableFixMaxAgeSec,
+              abs(nearL.t - tL) <= cfg.gpsReliableFixMaxAgeSec else { return nil }
         if nearT.i == nearL.i {
-            guard let alt = pts.filter({ $0.i != nearT.i }).min(by: { abs($0.t - tL) < abs($1.t - tL) }) else { return nil }
+            guard let alt = pts
+                .filter({ $0.i != nearT.i && abs($0.t - tL) <= cfg.gpsReliableFixMaxAgeSec })
+                .min(by: { abs($0.t - tL) < abs($1.t - tL) }) else { return nil }
             nearL = alt
         }
-        return (GPSUtil.haversine(nearT.lat, nearT.lon, nearL.lat, nearL.lon) * 10).rounded() / 10
+        let d = (GPSUtil.haversine(nearT.lat, nearT.lon, nearL.lat, nearL.lon) * 10).rounded() / 10
+        return (d, .gpsPosition)
     }
 
     // ── Helpers ──────────────────────────────────────────────────
@@ -611,10 +860,11 @@ final class KitesurfSession {
     enum State { case idle, riding, airborne, analyzing }
 
     // ── Time-based tunables (seconds / Hz-independent) ───────────
-    private let preTailSec          = 2.0     // pre-takeoff tail handed to V7
+    private let preTailSec: Double            // pre-takeoff tail handed to V7
     private let postLandingSec      = 1.0     // post-landing tail for apex/settle
-    private let rollingSec          = 6.0     // circular buffer span
-    private let baselineWarmupSec   = 8.0     // collect before baseline is usable
+    private let rollingSec: Double            // circular buffer span
+    private let baselineWarmupSec: Double     // collect before baseline is usable
+    private let requireBaroBaselineBeforeTakeoff: Bool
     // These are derived in init from the same KitesurfJumpEngineV7.Config used
     // by the offline analyser, so the streaming trigger and analyser agree.
     private let takeoffReleaseFloorG: Double  // matches V7 release floor (adaptive on top)
@@ -623,6 +873,7 @@ final class KitesurfSession {
     private let minAirSec: Double
     private let maxAirborneSec: Double         // kite-glide watchdog
     private let refractorySec: Double          // no re-trigger right after landing
+    private let minResultConfidence: Double
 
     // ── Derived from measured rate ───────────────────────────────
     private var dt = K.dt
@@ -657,10 +908,14 @@ final class KitesurfSession {
     private var baselineAtTakeoff = 0.0
     private var takeoffT = 0.0
     private var takeoffIndexInBuffer = -1
+    private var landingIndexInBuffer = -1
+    private var landingKindInBuffer: JumpResult.LandingKind?
     private var maxSessionSpeedMS = 0.0
     private var speedTop3 = [Double]()            // median-of-top-3 (robust max speed)
     private var refractoryUntil = -Double.infinity
     private var postCountdown = 0
+    private var settleRun = 0
+    private var softLandingPending = false
 
     // ── Output ───────────────────────────────────────────────────
     var onJumpDetected: ((JumpResult) -> Void)?
@@ -676,25 +931,39 @@ final class KitesurfSession {
         self.releaseSigmaK = detectorConfig.releaseSigmaK
         self.minAirSec = detectorConfig.minAirTimeSec
         self.maxAirborneSec = detectorConfig.maxAirTimeSec
+        self.minResultConfidence = detectorConfig.minResultConfidence
+        self.baselineWarmupSec = detectorConfig.baselineWarmupSec
+        self.requireBaroBaselineBeforeTakeoff = detectorConfig.requireBaroBaselineBeforeTakeoff
         self.detectorLandingContactG = detectorConfig.landingContactG
         self.detectorLandingContactGyro = detectorConfig.landingContactGyro
         self.detectorLandingSpikeG = detectorConfig.landingSpikeG
         self.detectorLandingSpikeGyro = detectorConfig.landingSpikeGyro
+        self.detectorNoiseFloorHPa = detectorConfig.baroNoiseFloorHPa
+        self.detectorSettleMinBaroDropHPa = detectorConfig.settleMinBaroDropHPa
         self.hardLandingMinAirSec = detectorConfig.hardLandingMinAirTimeSec
+        self.settleMinAirSec = detectorConfig.settleMinAirTimeSec
+        self.settleTolG = detectorConfig.settleTolG
+        self.settleSamplesNeeded = detectorConfig.settleSamplesNeeded
+        self.preTailSec = max(2.0, detectorConfig.sensorFlightLookbackSec)
+        self.rollingSec = max(6.0, detectorConfig.sensorFlightLookbackSec + 1.0)
         self.refractorySec = max(0, refractorySec)
         self.synchronousAnalysis = synchronousAnalysis
-        self.rollingBuffer = CircularBuffer<SensorSample>(capacity: Int((6.0 * K.sampleRate).rounded()))
+        self.rollingBuffer = CircularBuffer<SensorSample>(capacity: Int((max(6.0, detectorConfig.sensorFlightLookbackSec + 1.0) * K.sampleRate).rounded()))
     }
 
     // ── Lifecycle ────────────────────────────────────────────────
     func start() {
         rollingBuffer.clear()
         jumpBuffer.removeAll(keepingCapacity: true)
+        landingIndexInBuffer = -1
+        landingKindInBuffer = nil
         rideWindow.removeAll(keepingCapacity: true)
         sessionBaselineP = 0; baselineWarmCount = 0
         baselineReady = false; baselineFrozen = false
         jumpMinPressure = .greatestFiniteMagnitude
         maxSessionSpeedMS = 0; speedTop3.removeAll()
+        settleRun = 0
+        softLandingPending = false
         refractoryUntil = -.infinity; isAnalyzing = false
         rateLocked = false; rateSamples.removeAll(); lastT = nil; dt = K.dt; hz = K.sampleRate
         transition(to: .riding)
@@ -734,7 +1003,8 @@ final class KitesurfSession {
         case .riding:
             rollingBuffer.push(s)
             pushRide(s.accelMagG)
-            guard s.t >= refractoryUntil, baselineReady || s.baro == nil else { return }
+            guard s.t >= refractoryUntil else { return }
+            guard !requireBaroBaselineBeforeTakeoff || baselineReady || s.baro == nil else { return }
 
             if isReleaseSpike(s) {
                 // Snapshot a clean pre-jump tail so V7 computes its own baseline.
@@ -742,10 +1012,14 @@ final class KitesurfSession {
                 // The current sample is already the last element of that tail
                 // (it was pushed above) — do NOT append it again.
                 takeoffIndexInBuffer = jumpBuffer.count - 1
+                landingIndexInBuffer = -1
+                landingKindInBuffer = nil
                 takeoffT = s.t
                 baselineAtTakeoff = sessionBaselineP
                 jumpMinPressure = s.baro ?? sessionBaselineP
                 baselineFrozen = true
+                settleRun = 0
+                softLandingPending = false
                 transition(to: .airborne)
             }
 
@@ -756,7 +1030,12 @@ final class KitesurfSession {
 
             let air = s.t - takeoffT
             if air > maxAirborneSec { beginAnalyzing(); return }
-            if air >= minAirSec, landingDetected(s, air: air) { beginAnalyzing(); return }
+            if air >= minAirSec, let kind = landingDetected(s, air: air) {
+                landingIndexInBuffer = jumpBuffer.count - 1
+                landingKindInBuffer = kind
+                beginAnalyzing()
+                return
+            }
 
         case .analyzing:
             // Keep recording the post-landing tail for apex/settle.
@@ -779,23 +1058,74 @@ final class KitesurfSession {
     private func isReleaseSpike(_ s: SensorSample) -> Bool {
         let a = s.accelMagG
         guard a >= takeoffReleaseFloorG else { return false }
-        guard rideWindow.count > 10 else { return a >= takeoffReleaseFloorG }
+        guard rideWindow.count > 10 else {
+            JumpDiagnostics.event("takeoff candidate: warmup a=\(String(format: "%.2f", a))g gyro=\(String(format: "%.2f", s.gyroMag))")
+            return a >= takeoffReleaseFloorG
+        }
         let mu = median(rideWindow)
         let sd = std(rideWindow, mean: mean(rideWindow))
         let thr = max(takeoffReleaseFloorG, mu + releaseSigmaK * max(sd, 0.05))
         // Require gyro energy too — a real launch spins the wrist; a knock does not.
-        return a >= thr && s.gyroMag >= releaseGyroMinRad
+        guard a >= thr else { return false }
+        if s.gyroMag >= releaseGyroMinRad {
+            JumpDiagnostics.event("takeoff candidate: accepted a=\(String(format: "%.2f", a))g thr=\(String(format: "%.2f", thr)) gyro=\(String(format: "%.2f", s.gyroMag))")
+            return true
+        }
+        JumpDiagnostics.event("takeoff candidate: rejected low gyro a=\(String(format: "%.2f", a))g thr=\(String(format: "%.2f", thr)) gyro=\(String(format: "%.2f", s.gyroMag))")
+        return false
     }
 
-    /// Landing: first water/board contact OR hard impact.
-    private func landingDetected(_ s: SensorSample, air: Double) -> Bool {
+    /// Landing: contact/hard impact close immediately; soft paths are pending fallbacks.
+    private func landingDetected(_ s: SensorSample, air: Double) -> JumpResult.LandingKind? {
         // (a) first water/board contact
-        if s.accelMagG >= detectorLandingContactG && s.gyroMag >= detectorLandingContactGyro { return true }
+        if s.accelMagG >= detectorLandingContactG && s.gyroMag >= detectorLandingContactGyro {
+            JumpDiagnostics.event("landing candidate: contact air=\(String(format: "%.2f", air))s a=\(String(format: "%.2f", s.accelMagG))g gyro=\(String(format: "%.2f", s.gyroMag))")
+            return .contact
+        }
 
         // (b) hard impact
-        if air >= hardLandingMinAirSec && s.accelMagG >= detectorLandingSpikeG && s.gyroMag >= detectorLandingSpikeGyro { return true }
+        if air >= hardLandingMinAirSec && s.accelMagG >= detectorLandingSpikeG && s.gyroMag >= detectorLandingSpikeGyro {
+            JumpDiagnostics.event("landing candidate: hardImpact air=\(String(format: "%.2f", air))s a=\(String(format: "%.2f", s.accelMagG))g gyro=\(String(format: "%.2f", s.gyroMag))")
+            return .hardImpact
+        }
 
-        return false
+        // (c) baro recovery after a real pressure dip.
+        if air >= hardLandingMinAirSec, let p = s.baro {
+            let drop = baselineAtTakeoff - jumpMinPressure
+            if drop > detectorNoiseFloorHPa {
+                let recover = max(drop * 0.08, detectorNoiseFloorHPa)
+                if p >= baselineAtTakeoff - recover {
+                    if !softLandingPending {
+                        softLandingPending = true
+                        JumpDiagnostics.event("landing candidate: pending baroRecovery air=\(String(format: "%.2f", air))s drop=\(String(format: "%.3f", drop))hPa")
+                    }
+                    return nil
+                }
+            }
+        }
+
+        // (d) settle: calm ride-like motion, only after baro confirms a real dip.
+        let settleBaroOK = baselineAtTakeoff > 0
+            && jumpMinPressure.isFinite
+            && (baselineAtTakeoff - jumpMinPressure) >= detectorSettleMinBaroDropHPa
+        guard air >= settleMinAirSec && settleBaroOK else {
+            settleRun = 0
+            return nil
+        }
+        let rideMean = rideWindow.isEmpty ? 0.1 : median(rideWindow)
+        if abs(s.accelMagG - rideMean) < settleTolG && s.gyroMag < 8.0 {
+            settleRun += 1
+            if settleRun >= settleSamplesNeeded {
+                if !softLandingPending {
+                    softLandingPending = true
+                    JumpDiagnostics.event("landing candidate: pending settle air=\(String(format: "%.2f", air))s run=\(settleRun)")
+                }
+                return nil
+            }
+        } else {
+            settleRun = 0
+        }
+        return nil
     }
 
     // Mirror of the detector's gates so the trigger and analyser agree.
@@ -803,7 +1133,12 @@ final class KitesurfSession {
     private let detectorLandingContactGyro: Double
     private let detectorLandingSpikeG: Double
     private let detectorLandingSpikeGyro: Double
+    private let detectorNoiseFloorHPa: Double
+    private let detectorSettleMinBaroDropHPa: Double
     private let hardLandingMinAirSec: Double
+    private let settleMinAirSec: Double
+    private let settleTolG: Double
+    private let settleSamplesNeeded: Int
 
     // ================================================================
     // MARK: Offline Analysis (background thread)
@@ -812,16 +1147,28 @@ final class KitesurfSession {
         isAnalyzing = true
         let buffer = jumpBuffer                  // value copy → thread-safe
         let hint = takeoffIndexInBuffer
+        let landingHint = landingIndexInBuffer
+        let landingKind = landingKindInBuffer
         let peakSpeed = maxSessionSpeedMS
 
         if synchronousAnalysis {
             let result = detector.process(buffer, takeoffHint: hint >= 0 ? hint : nil,
+                                          landingHint: landingHint >= 0 ? landingHint : nil,
+                                          landingKind: landingKind,
                                           maxSessionSpeedMS: peakSpeed)
-            if let r = result, r.confidence >= 0.40 { onJumpDetected?(r) }
+            if let r = result, r.confidence >= minResultConfidence {
+                onJumpDetected?(r)
+            } else {
+                JumpDiagnostics.event("detector rejected: no result or low confidence")
+            }
             jumpBuffer.removeAll(keepingCapacity: true)
             takeoffIndexInBuffer = -1
+            landingIndexInBuffer = -1
+            landingKindInBuffer = nil
             jumpMinPressure = .greatestFiniteMagnitude
             baselineFrozen = false
+            settleRun = 0
+            softLandingPending = false
             isAnalyzing = false
             refractoryUntil = (lastT ?? 0) + refractorySec
             transition(to: .riding)
@@ -831,14 +1178,24 @@ final class KitesurfSession {
         analysisQueue.async { [weak self] in
             guard let self else { return }
             let result = self.detector.process(buffer, takeoffHint: hint >= 0 ? hint : nil,
+                                               landingHint: landingHint >= 0 ? landingHint : nil,
+                                               landingKind: landingKind,
                                                maxSessionSpeedMS: peakSpeed)
             DispatchQueue.main.async {
-                if let r = result, r.confidence >= 0.40 { self.onJumpDetected?(r) }
+                if let r = result, r.confidence >= self.minResultConfidence {
+                    self.onJumpDetected?(r)
+                } else {
+                    JumpDiagnostics.event("detector rejected: no result or low confidence")
+                }
                 // Reset for next jump; unfreeze baseline so it re-tracks drift.
                 self.jumpBuffer.removeAll(keepingCapacity: true)
                 self.takeoffIndexInBuffer = -1
+                self.landingIndexInBuffer = -1
+                self.landingKindInBuffer = nil
                 self.jumpMinPressure = .greatestFiniteMagnitude
                 self.baselineFrozen = false
+                self.settleRun = 0
+                self.softLandingPending = false
                 self.isAnalyzing = false
                 self.refractoryUntil = (self.lastT ?? 0) + self.refractorySec
                 self.transition(to: .riding)
@@ -887,6 +1244,15 @@ final class KitesurfSession {
     }
 
     private func transition(to s: State) { state = s; onStateChange?(s) }
+}
+
+private enum JumpDiagnostics {
+    static func event(_ message: String) {
+        #if DEBUG
+        print("🦘 \(message)")
+        #endif
+        SessionLogger.shared.logEvent(message)
+    }
 }
 
 // ================================================================

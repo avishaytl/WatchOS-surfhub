@@ -18,6 +18,7 @@ let package = Package(
             path: "Kiters Watch App/Services",
             exclude: [
                 "AuthService.swift",
+                "BinaryLogEnvelope.swift",
                 "CloudSyncService.swift",
                 "GoogleSignInService.swift",
                 "JumpDetector.swift",

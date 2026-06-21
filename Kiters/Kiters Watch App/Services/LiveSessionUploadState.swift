@@ -1,5 +1,41 @@
 import Foundation
 
+public enum V7GPSStationaryGate {
+    public static func accepts(heightMeters: Double,
+                               movementDistanceMeters: Double?,
+                               hasReliableGPS: Bool,
+                               minJumpHeightM: Double = 1.0,
+                               stationaryDistanceM: Double = 1.0,
+                               stationaryMinHeightM: Double = 1.5) -> Bool {
+        guard heightMeters >= minJumpHeightM else { return false }
+        guard hasReliableGPS, let movementDistanceMeters else { return true }
+        if movementDistanceMeters < stationaryDistanceM && heightMeters < stationaryMinHeightM {
+            return false
+        }
+        return true
+    }
+}
+
+public enum V7BackgroundNoiseGate {
+    public static func accepts(heightMeters: Double,
+                               displayedAirTimeSeconds: Double,
+                               rotations: Int,
+                               regularDistanceMeters: Double?,
+                               maxDistanceM: Double = 30.0,
+                               maxRotations: Int = 0,
+                               maxDisplayedAirTimeSec: Double = 3.0,
+                               maxHeightM: Double = 2.0) -> Bool {
+        guard let regularDistanceMeters else { return true }
+        if regularDistanceMeters < maxDistanceM,
+           rotations <= maxRotations,
+           displayedAirTimeSeconds < maxDisplayedAirTimeSec,
+           heightMeters < maxHeightM {
+            return false
+        }
+        return true
+    }
+}
+
 public struct PendingLiveRecord: Equatable {
     public var jumpM: Double?
     public var airS: Double?
@@ -66,6 +102,10 @@ public final class LiveSessionUploadState {
         lastTrackTime = now
         appendTrackPoint(lat: lat, lng: lng)
         return true
+    }
+
+    public func beginStartAttemptWithFallback(sessionId: String, now: Date) -> Bool {
+        beginStartAttempt(sessionId: sessionId, now: now, lat: 0, lng: 0)
     }
 
     public func acceptStart(sessionId: String, sessId: Int) -> Bool {

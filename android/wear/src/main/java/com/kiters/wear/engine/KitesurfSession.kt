@@ -2,6 +2,7 @@ package com.kiters.wear.engine
 
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.math.abs
 
 // ================================================================
 // Real-Time Session Manager (streaming trigger).
@@ -29,7 +30,8 @@ class KitesurfSession(
     private val preTailSec = 2.0
     private val postLandingSec = 1.0
     private val rollingSec = 6.0
-    private val baselineWarmupSec = 8.0
+    private val baselineWarmupSec = detectorConfig.baselineWarmupSec
+    private val requireBaroBaselineBeforeTakeoff = detectorConfig.requireBaroBaselineBeforeTakeoff
 
     private val takeoffReleaseFloorG = detectorConfig.releaseFloorG
     private val releaseGyroMinRad = detectorConfig.releaseGyroMinRad
@@ -41,7 +43,12 @@ class KitesurfSession(
     private val detectorLandingContactGyro = detectorConfig.landingContactGyro
     private val detectorLandingSpikeG = detectorConfig.landingSpikeG
     private val detectorLandingSpikeGyro = detectorConfig.landingSpikeGyro
+    private val detectorNoiseFloorHPa = detectorConfig.baroNoiseFloorHPa
+    private val detectorSettleMinBaroDropHPa = detectorConfig.settleMinBaroDropHPa
     private val hardLandingMinAirSec = detectorConfig.hardLandingMinAirTimeSec
+    private val settleMinAirSec = detectorConfig.settleMinAirTimeSec
+    private val settleTolG = detectorConfig.settleTolG
+    private val settleSamplesNeeded = detectorConfig.settleSamplesNeeded
 
     // Derived from measured rate
     private var dt = K.dt
@@ -75,10 +82,14 @@ class KitesurfSession(
     private var baselineAtTakeoff = 0.0
     private var takeoffT = 0.0
     private var takeoffIndexInBuffer = -1
+    private var landingIndexInBuffer = -1
+    private var landingKindInBuffer: JumpResult.LandingKind? = null
     private var maxSessionSpeedMS = 0.0
     private val speedTop3 = ArrayList<Double>()
     private var refractoryUntil = Double.NEGATIVE_INFINITY
     private var postCountdown = 0
+    private var settleRun = 0
+    private var softLandingPending = false
 
     // Output
     var onJumpDetected: ((JumpResult) -> Unit)? = null
@@ -89,11 +100,15 @@ class KitesurfSession(
     fun start() {
         rollingBuffer.clear()
         jumpBuffer.clear()
+        landingIndexInBuffer = -1
+        landingKindInBuffer = null
         rideWindow.clear()
         sessionBaselineP = 0.0; baselineWarmCount = 0
         baselineReady = false; baselineFrozen = false
         jumpMinPressure = Double.MAX_VALUE
         maxSessionSpeedMS = 0.0; speedTop3.clear()
+        settleRun = 0
+        softLandingPending = false
         refractoryUntil = Double.NEGATIVE_INFINITY; isAnalyzing = false
         rateLocked = false; rateSamples.clear(); lastT = null; dt = K.dt; hz = K.sampleRate
         transition(State.RIDING)
@@ -131,14 +146,19 @@ class KitesurfSession(
             State.RIDING -> {
                 rollingBuffer.push(s)
                 pushRide(s.accelMagG)
-                if (s.t < refractoryUntil || !(baselineReady || s.baro == null)) return
+                if (s.t < refractoryUntil) return
+                if (requireBaroBaselineBeforeTakeoff && !baselineReady && s.baro != null) return
                 if (isReleaseSpike(s)) {
                     jumpBuffer = ArrayList(rollingBuffer.last(samples(preTailSec)))
                     takeoffIndexInBuffer = jumpBuffer.size - 1
+                    landingIndexInBuffer = -1
+                    landingKindInBuffer = null
                     takeoffT = s.t
                     baselineAtTakeoff = sessionBaselineP
                     jumpMinPressure = s.baro ?: sessionBaselineP
                     baselineFrozen = true
+                    settleRun = 0
+                    softLandingPending = false
                     transition(State.AIRBORNE)
                 }
             }
@@ -149,7 +169,13 @@ class KitesurfSession(
                 s.baro?.let { jumpMinPressure = minOf(jumpMinPressure, it) }
                 val air = s.t - takeoffT
                 if (air > maxAirborneSec) { beginAnalyzing(); return }
-                if (air >= minAirSec && landingDetected(s, air)) { beginAnalyzing(); return }
+                val kind = if (air >= minAirSec) landingDetected(s, air) else null
+                if (kind != null) {
+                    landingIndexInBuffer = jumpBuffer.size - 1
+                    landingKindInBuffer = kind
+                    beginAnalyzing()
+                    return
+                }
             }
 
             State.ANALYZING -> {
@@ -179,12 +205,47 @@ class KitesurfSession(
         return a >= thr && s.gyroMag >= releaseGyroMinRad
     }
 
-    /** Landing: first water/board contact OR hard impact. */
-    private fun landingDetected(s: SensorSample, air: Double): Boolean {
-        if (s.accelMagG >= detectorLandingContactG && s.gyroMag >= detectorLandingContactGyro) return true
-        return air >= hardLandingMinAirSec &&
+    /** Landing: contact/hard impact close immediately; soft paths are pending fallbacks. */
+    private fun landingDetected(s: SensorSample, air: Double): JumpResult.LandingKind? {
+        if (s.accelMagG >= detectorLandingContactG && s.gyroMag >= detectorLandingContactGyro) {
+            return JumpResult.LandingKind.CONTACT
+        }
+        if (air >= hardLandingMinAirSec &&
             s.accelMagG >= detectorLandingSpikeG &&
             s.gyroMag >= detectorLandingSpikeGyro
+        ) {
+            return JumpResult.LandingKind.HARD_IMPACT
+        }
+        val p = s.baro
+        if (air >= hardLandingMinAirSec && p != null) {
+            val drop = baselineAtTakeoff - jumpMinPressure
+            if (drop > detectorNoiseFloorHPa) {
+                val recover = maxOf(drop * 0.08, detectorNoiseFloorHPa)
+                if (p >= baselineAtTakeoff - recover) {
+                    softLandingPending = true
+                    return null
+                }
+            }
+        }
+
+        val settleBaroOK = baselineAtTakeoff > 0 &&
+            jumpMinPressure.isFinite() &&
+            (baselineAtTakeoff - jumpMinPressure) >= detectorSettleMinBaroDropHPa
+        if (air < settleMinAirSec || !settleBaroOK) {
+            settleRun = 0
+            return null
+        }
+        val rideMean = if (rideWindow.isEmpty()) 0.1 else DSP.median(rideWindow)
+        if (abs(s.accelMagG - rideMean) < settleTolG && s.gyroMag < 8.0) {
+            settleRun += 1
+            if (settleRun >= settleSamplesNeeded) {
+                softLandingPending = true
+                return null
+            }
+        } else {
+            settleRun = 0
+        }
+        return null
     }
 
     // Offline analysis
@@ -192,27 +253,45 @@ class KitesurfSession(
         isAnalyzing = true
         val buffer = ArrayList(jumpBuffer)          // value copy -> thread-safe
         val hint = takeoffIndexInBuffer
+        val landingHint = landingIndexInBuffer
+        val landingKind = landingKindInBuffer
         val peakSpeed = maxSessionSpeedMS
 
         val finish: (JumpResult?) -> Unit = { result ->
             if (result != null && result.confidence >= 0.40) onJumpDetected?.invoke(result)
             jumpBuffer.clear()
             takeoffIndexInBuffer = -1
+            landingIndexInBuffer = -1
+            landingKindInBuffer = null
             jumpMinPressure = Double.MAX_VALUE
             baselineFrozen = false
+            settleRun = 0
+            softLandingPending = false
             isAnalyzing = false
             refractoryUntil = (lastT ?: 0.0) + refractorySec
             transition(State.RIDING)
         }
 
         if (synchronousAnalysis) {
-            val result = detector.process(buffer, if (hint >= 0) hint else null, peakSpeed)
+            val result = detector.process(
+                buffer,
+                takeoffHint = if (hint >= 0) hint else null,
+                landingHint = if (landingHint >= 0) landingHint else null,
+                landingKindHint = landingKind,
+                maxSessionSpeedMS = peakSpeed,
+            )
             finish(result)
             return
         }
 
         backgroundExecutor {
-            val result = detector.process(buffer, if (hint >= 0) hint else null, peakSpeed)
+            val result = detector.process(
+                buffer,
+                takeoffHint = if (hint >= 0) hint else null,
+                landingHint = if (landingHint >= 0) landingHint else null,
+                landingKindHint = landingKind,
+                maxSessionSpeedMS = peakSpeed,
+            )
             mainExecutor { finish(result) }
         }
     }

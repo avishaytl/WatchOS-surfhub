@@ -2,7 +2,6 @@ package com.kiters.wear.engine
 
 import com.kiters.wear.model.DetectionMode
 import com.kiters.wear.model.ImuSample
-import com.kiters.wear.model.JumpDetectionConfig
 import com.kiters.wear.model.Jump
 
 // ================================================================
@@ -21,13 +20,9 @@ class JumpDetector(
 
     // v7 emits confidence 0..1; the rest of the app reads 0..100.
     private val confidenceAsPercent = true
-    // Relaxed in dev/Toss-Test mode so a hand-toss still registers.
-    private val acceptConfidence01: Double get() = if (devMode) 0.20 else 0.40
-
-    // IMU fallback when the GPS speed gate fails (no/weak GPS): accept a jump
-    // anyway if it has a clearly real airtime AND a rotation or high confidence.
-    private val fallbackMinAirtimeSec = 1.5
-    private val fallbackMinConfidence = 0.75
+    // Unified production gate. GPS enriches metrics only; it never decides
+    // whether a sensor candidate is a jump.
+    private val acceptConfidence01 = 0.40
 
     enum class JumpState(val rawValue: String) {
         IDLE("IDLE"),
@@ -49,9 +44,6 @@ class JumpDetector(
 
     private lateinit var session: KitesurfSession
     private var mode: DetectionMode = DetectionMode.STANDARD
-
-    private val devMode: Boolean get() = JumpDetectionConfig.shared.devMode
-    private val stationarySpeed = 1.0   // m/s
 
     // GPS context (one-shot, mirrors old updateGPS behaviour)
     private var pendingSpeedMS: Double? = null
@@ -102,10 +94,10 @@ class JumpDetector(
             latestSpeedMS = v
         }
 
-        // Arming gate (mirrors the old IDLE<->RIDING speed gate).
+        // GPS speed/location enriches jump metrics; it does not arm or disarm
+        // jump analysis.
         if (state == JumpState.IDLE || state == JumpState.RIDING) {
-            if (devMode || v >= mode.minSpeed) setState(JumpState.RIDING)
-            else if (v < stationarySpeed) setState(JumpState.IDLE)
+            setState(JumpState.RIDING)
         }
     }
 
@@ -125,18 +117,19 @@ class JumpDetector(
             maxAirTimeSec = mode.maxAirtime
             kinematicCalibration = mode.kinematicCalibration
 
-            // Toss-Test (dev) mode: relax the gates so tossing the watch in your
-            // hand registers as a jump (short airtime, low height, gentle launch
-            // and catch). The GPS speed gate is already bypassed for devMode in
-            // the adapter's arming logic. Testing only.
-            if (JumpDetectionConfig.shared.devMode) {
-                releaseFloorG = 1.30
-                minAirTimeSec = 0.25
-                hardLandingMinAirTimeSec = 0.25
-                minJumpHeightMeters = 0.20
-                landingContactGyro = 0.8
-                landingSpikeGyro = 0.5
-            }
+            releaseSigmaK = 1.50
+            releaseFloorG = 1.70
+            releaseGyroMinRad = 2.00
+            minAirTimeSec = 2.00
+            hardLandingMinAirTimeSec = 2.00
+            maxAirTimeSec = 6.50
+            minJumpHeightMeters = 1.00
+            landingContactGyro = 2.00
+            landingSpikeGyro = 1.00
+            symmetricAscentFraction = 0.143
+            displayedAirtimeScale = 0.73
+            requireBaroBaselineBeforeTakeoff = false
+            baselineWarmupSec = 0.0
         }
         session = KitesurfSession(
             detectorConfig = cfg,
@@ -154,8 +147,7 @@ class JumpDetector(
     private fun mapV7State(st: KitesurfSession.State) {
         when (st) {
             KitesurfSession.State.IDLE -> setState(JumpState.IDLE)
-            KitesurfSession.State.RIDING ->
-                setState(if (devMode || latestSpeedMS >= mode.minSpeed) JumpState.RIDING else JumpState.IDLE)
+            KitesurfSession.State.RIDING -> setState(JumpState.RIDING)
             KitesurfSession.State.AIRBORNE -> setState(JumpState.AIRBORNE)
             KitesurfSession.State.ANALYZING -> setState(JumpState.AIRBORNE)
         }
@@ -202,19 +194,6 @@ class JumpDetector(
 
     private fun emitJump(r: JumpResult) {
         if (r.confidence < acceptConfidence01) return
-
-        if (!devMode) {
-            val minKnots = mode.minSpeed * 1.94384
-            if (r.maxSessionSpeedKnots < minKnots) {
-                // GPS speed gate failed (no/weak GPS, or not riding fast enough).
-                // FALLBACK: still accept if the IMU shows a clearly real jump —
-                // a genuine airtime AND either a rotation or high confidence.
-                // Bumps/handling (short airtime, no spin, low confidence) stay rejected.
-                val clearImuJump = r.airTimeSeconds >= fallbackMinAirtimeSec &&
-                    (r.rotations >= 1 || r.confidence >= fallbackMinConfidence)
-                if (!clearImuJump) return
-            }
-        }
 
         val end = System.currentTimeMillis()
         val start = end - (r.airTimeSeconds * 1000).toLong()

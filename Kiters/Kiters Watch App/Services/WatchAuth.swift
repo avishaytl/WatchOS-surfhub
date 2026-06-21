@@ -69,7 +69,7 @@ enum WatchAuth {
 
     enum PairingPoll {
         case pending
-        case approved(uid: String)
+        case approved(uid: String, email: String)
         case expired
         case failed(String)
     }
@@ -151,7 +151,7 @@ enum WatchAuth {
 
         let expiresAt = unixTimeValue(json, "expiresAt", "expires_at")
             ?? Date().timeIntervalSince1970 + 3600
-        let email = stringValue(json, "email") ?? ""
+        let email = resolvedEmail(from: json, accessToken: access)
         let pairing = WatchPairing(
             accessToken: access,
             refreshToken: refresh,
@@ -160,7 +160,7 @@ enum WatchAuth {
             email: email
         )
         await WatchPairingStore.shared.apply(pairing)
-        return .approved(uid: uid)
+        return .approved(uid: uid, email: email)
     }
 
     static func signOut() async {
@@ -219,6 +219,34 @@ enum WatchAuth {
         return nil
     }
 
+    private static func resolvedEmail(from json: [String: Any], accessToken: String) -> String {
+        if let email = stringValue(json, "email") {
+            return email
+        }
+        if let user = json["user"] as? [String: Any],
+           let email = stringValue(user, "email") {
+            return email
+        }
+        return emailFromJWT(accessToken) ?? ""
+    }
+
+    private static func emailFromJWT(_ token: String) -> String? {
+        let parts = token.split(separator: ".")
+        guard parts.count >= 2 else { return nil }
+        var payload = String(parts[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let padding = (4 - payload.count % 4) % 4
+        if padding > 0 {
+            payload += String(repeating: "=", count: padding)
+        }
+        guard let data = Data(base64Encoded: payload),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        return stringValue(json, "email")
+    }
+
     private static func unixTimeValue(_ json: [String: Any], _ keys: String...) -> TimeInterval? {
         for key in keys {
             if let value = json[key] as? TimeInterval {
@@ -241,12 +269,13 @@ enum WatchAuth {
             let refresh = json["refresh_token"] as? String,
             let expires = json["expires_at"]    as? TimeInterval,
             let user    = json["user"]           as? [String: Any],
-            let uid     = user["id"]             as? String,
-            let email   = user["email"]          as? String
+            let uid     = user["id"]             as? String
         else { throw WatchAuthError.networkError }
 
+        let email = user["email"] as? String ?? ""
+        let resolvedEmail = email.isEmpty ? (emailFromJWT(access) ?? "") : email
         let pairing = WatchPairing(accessToken: access, refreshToken: refresh,
-                                   expiresAt: expires, userId: uid, email: email)
+                                   expiresAt: expires, userId: uid, email: resolvedEmail)
         await WatchPairingStore.shared.apply(pairing)
         return uid
     }

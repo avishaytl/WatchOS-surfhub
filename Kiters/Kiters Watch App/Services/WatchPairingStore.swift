@@ -9,7 +9,7 @@ struct WatchPairing {
     let email: String
 
     var accountLabel: String {
-        email.isEmpty ? userId : email
+        email.isEmpty ? L("account.connected_title") : email
     }
 }
 
@@ -87,11 +87,32 @@ actor WatchPairingStore {
             let refresh = json["refresh_token"] as? String,
             let expires = json["expires_at"]    as? TimeInterval,
             let user    = json["user"]           as? [String: Any],
-            let uid     = user["id"]             as? String,
-            let email   = user["email"]          as? String
+            let uid     = user["id"]             as? String
         else { throw WatchAuthError.networkError }
+        let email = (user["email"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+            ?? Self.emailFromJWT(access)
+            ?? ""
         return WatchPairing(accessToken: access, refreshToken: refresh,
                             expiresAt: expires, userId: uid, email: email)
+    }
+
+    private static func emailFromJWT(_ token: String) -> String? {
+        let parts = token.split(separator: ".")
+        guard parts.count >= 2 else { return nil }
+        var payload = String(parts[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let padding = (4 - payload.count % 4) % 4
+        if padding > 0 {
+            payload += String(repeating: "=", count: padding)
+        }
+        guard let data = Data(base64Encoded: payload),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let email = json["email"] as? String,
+              !email.isEmpty else {
+            return nil
+        }
+        return email
     }
 
     // MARK: - Keychain helpers
