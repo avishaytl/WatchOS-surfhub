@@ -245,6 +245,29 @@ final class KitesurfJumpEngineV10 {
         var maxAirTimeSec           = 14.0   // kite glide watchdog
         var minJumpHeightMeters     = 1.0    // ignore pop / wave-chop hops; real jumps ≥1 m
 
+        // ── RIDING-CONTEXT GATE (the noise-vs-jump discriminator) ─────────
+        // Real labelled logs (Surfr ground truth, 2026-06-26) show the jumps
+        // ONLY happen while the rider is planing. The first ~10-16 min of a
+        // session (rigging, body-dragging, launching the kite on the beach)
+        // produces dozens of accel/gyro spikes that LOOK like take-offs but
+        // are NOT jumps — the rider is not moving. Requiring a sustained
+        // riding speed near the take-off rejects that whole class of noise.
+        //
+        // GPS frequently DROPS OUT during the jump itself (the watch occludes
+        // the antenna mid-rotation), so we do NOT gate on the instantaneous
+        // speed. Instead we latch a "rode recently" timestamp once speed has
+        // been ≥ floor for `ridingSustainSec` (robust to single-sample GPS
+        // glitches) and keep treating the rider as airborne-capable for
+        // `ridingPersistSec` afterwards (survives the dropout).
+        var requireRidingContext    = true
+        var ridingSpeedFloorMS      = 2.6    // ≈ 5 kn — planing threshold
+        var ridingSustainSec        = 30.0   // median-speed window for the riding latch
+        var ridingPersistSec        = 120.0  // stay "riding" this long after last ride
+        // Collapse the multi-fire cluster a single real jump produces (release
+        // spike, mid-air bump, landing impact each re-trigger). Real jumps are
+        // ≥30 s apart in labelled logs, so an 8 s floor never merges two reals.
+        var minJumpSpacingSec       = 12.0
+
         // ── Gyro ─────────────────────────────────────────────────
         var gyroQualityThreshold    = 8.0    // rad/s — chaotic above (toss/tumble)
         var gyroIsDegPerSec: Bool?  = false  // watch reports rad/s; nil = auto-detect
@@ -263,7 +286,13 @@ final class KitesurfJumpEngineV10 {
         // rejects a baro reading that exceeds the airtime envelope (drift/spike).
         var airtimeCeilingTolerance = 1.25  // baroH may exceed sym-kin height ≤ this×
         var maxPlausibleHeightM     = 50.0
-        var symmetricAscentFraction = 0.18  // Surfr-like kite rise fraction when no apex found
+        var symmetricAscentFraction = 0.20  // Surfr-like kite rise fraction when no apex found
+        // Kite jumps spend FAR less of their airtime rising than a free-fall arc
+        // (the kite holds the rider up on descent). Labelled Surfr heights imply
+        // the rise is only ~0.20–0.25 of the airtime, NOT ~0.5. Cap the apex-
+        // derived rise time so a noisy/glitched baro minimum cannot inflate the
+        // height into the 8–25 m fantasy range we saw on raw logs.
+        var maxRiseFractionOfAir    = 0.25
 
         static let `default` = Config()
     }
@@ -392,7 +421,10 @@ final class KitesurfJumpEngineV10 {
             var minIdx = t0, mp = Double.greatestFiniteMagnitude
             for i in t0...tl where baroSmooth[i] < mp { mp = baroSmooth[i]; minIdx = i }
             let tr = Double(minIdx - t0) * dt
-            if tr > 0.1 && tr < airTimeSec - 0.05 { tRise = tr }
+            // Only trust the baro apex, and only up to the kite-physical cap —
+            // a glitched baro minimum near the end of the window would otherwise
+            // make tRise ≈ airtime and explode the height.
+            if tr > 0.1 { tRise = min(tr, airTimeSec * cfg.maxRiseFractionOfAir) }
         }
         let riseH = cfg.kinematicCalibration * 0.5 * K10.g * tRise * tRise
 
@@ -417,17 +449,12 @@ final class KitesurfJumpEngineV10 {
         }
         let peakTakeoffG = accMag[max(0, t0 - 2)...min(n - 1, t0 + 4)].max() ?? 0
         let peakGyroForHeight = gyroMag[t0...tl].max() ?? 0
-        var fusedH = min(heightM, cfg.maxPlausibleHeightM)
+        let fusedH = min(heightM, cfg.maxPlausibleHeightM)
 
-        // Surfr-style display calibration for soft kite jumps: when there is
-        // real barometric support and riding speed, a wrist-mounted watch often
-        // clips takeoff/landing and underestimates the visible jump. Keep this
-        // as a floor (not a replacement) so stronger baro/kinematic estimates
-        // still win.
-        if maxSessionSpeedMS >= 4.0, (peakTakeoffG >= 1.5 || peakGyroForHeight >= 2.0) {
-            let displayFloor = min(3.75, 1.0 + 0.85 * min(airTimeSec, 3.2))
-            fusedH = max(fusedH, displayFloor)
-        }
+        // NOTE: the old "display floor" (1.0 + 0.85·airtime, capped 3.75 m) was
+        // removed — it pinned almost every detection to ~3.7 m, far above the
+        // labelled Surfr heights (1.3–2.5 m). Height is now the rise-time
+        // kinematic (apex-capped), which tracks Surfr within tolerance.
 
         // ── HEIGHT GATE ───────────────────────────────────────────
         guard fusedH >= cfg.minJumpHeightMeters else { return nil }
@@ -676,6 +703,17 @@ final class KitesurfSessionV10 {
     private var maxSessionSpeedMS = 0.0
     private var speedTop3 = [Double]()            // median-of-top-3 (robust max speed)
     private var refractoryUntil = -Double.infinity
+
+    // ── Riding-context tracker (rejects non-jump noise; see Config) ──
+    private let requireRidingContext: Bool
+    private let ridingSpeedFloorMS: Double
+    private let ridingSustainSec: Double
+    private let ridingPersistSec: Double
+    private let minJumpSpacingSec: Double
+    private var latestSpeedMS = 0.0
+    private var speedWindow = [(t: Double, v: Double)]()  // recent speeds for median latch
+    private var lastSustainedRideT = -Double.infinity     // last time we confirmed planing
+    private var currentT = 0.0                            // latest sample time (always advances)
     private var postCountdown = 0
     private var settleRun = 0
 
@@ -698,6 +736,11 @@ final class KitesurfSessionV10 {
         self.detectorBaroRecoveryMinAirSec = detectorConfig.baroRecoveryMinAirTimeSec
         self.detectorSettleMinAirSec = detectorConfig.settleMinAirTimeSec
         self.detectorSettleSamplesNeeded = detectorConfig.settleSamplesNeeded
+        self.requireRidingContext = detectorConfig.requireRidingContext
+        self.ridingSpeedFloorMS = detectorConfig.ridingSpeedFloorMS
+        self.ridingSustainSec = detectorConfig.ridingSustainSec
+        self.ridingPersistSec = detectorConfig.ridingPersistSec
+        self.minJumpSpacingSec = detectorConfig.minJumpSpacingSec
         self.refractorySec = max(0, refractorySec)
         self.synchronousAnalysis = synchronousAnalysis
         self.rollingBuffer = CircularBufferV10<SensorSampleV10>(capacity: Int((rollingSec * K10.sampleRate).rounded()))
@@ -712,6 +755,7 @@ final class KitesurfSessionV10 {
         baselineReady = false; baselineFrozen = false
         jumpMinPressure = .greatestFiniteMagnitude
         maxSessionSpeedMS = 0; speedTop3.removeAll()
+        latestSpeedMS = 0; speedWindow.removeAll(); lastSustainedRideT = -.infinity; currentT = 0
         refractoryUntil = -.infinity; isAnalyzing = false
         rateLocked = false; rateSamples.removeAll(); lastT = nil; dt = K10.dt; hz = K10.sampleRate
         transition(to: .riding)
@@ -724,12 +768,15 @@ final class KitesurfSessionV10 {
     // ================================================================
     func onSample(_ s: SensorSampleV10) {
         lockRate(s.t)
+        currentT = s.t   // lastT freezes after rate-lock; this always advances
 
         // (1) GPS speed — robust max (median of top-3), independent of state.
         if let spd = s.gpsSpeedMS, spd.isFinite, spd > 0 {
             updateMaxSpeed(spd)
             onSpeedUpdate?(maxSessionSpeedMS * K10.ms2kn)
         }
+        if let spd = s.gpsSpeedMS, spd.isFinite { latestSpeedMS = spd }
+        updateRidingContext(at: s.t)
 
         // (2) Adaptive baro baseline — slow EMA, frozen during a jump.
         if let p = s.baro, p > 0, !baselineFrozen {
@@ -752,6 +799,10 @@ final class KitesurfSessionV10 {
             rollingBuffer.push(s)
             pushRide(s.accelMagG)
             guard s.t >= refractoryUntil, baselineReady || s.baro == nil else { return }
+            // Riding-context gate: ignore take-off-like spikes when the rider is
+            // not (and has not recently been) planing. Kills rigging/beach noise
+            // and the first ~10 min of every session without touching real jumps.
+            guard isRidingContext(at: s.t) else { return }
 
             if isReleaseSpike(s) || isBaroRecoveryJumpSignal(s) {
                 // Snapshot a clean pre-jump tail so V7 computes its own baseline.
@@ -792,6 +843,31 @@ final class KitesurfSessionV10 {
         postCountdown = samples(postLandingSec)
         transition(to: .analyzing)
     }
+
+    /// Latch "the rider is planing". Uses the MEDIAN speed over the last
+    /// `ridingSustainSec` rather than an instantaneous/ZOH-held value — a single
+    /// bad GPS fix (which the watch holds for ~1 s) cannot move the median, so
+    /// the beach/rigging glitches that briefly read 11 kn no longer count as
+    /// riding, while genuine planing (sustained high median) does.
+    private func updateRidingContext(at t: Double) {
+        speedWindow.append((t, latestSpeedMS))
+        let cutoff = t - ridingSustainSec
+        while let first = speedWindow.first, first.t < cutoff { speedWindow.removeFirst() }
+        guard speedWindow.count >= 3 else { return }
+        if median(speedWindow.map { $0.v }) >= ridingSpeedFloorMS { lastSustainedRideT = t }
+    }
+
+    /// True when the rider has been planing within the last `ridingPersistSec`
+    /// (covers GPS dropouts that routinely occur mid-jump).
+    private func isRidingContext(at t: Double) -> Bool {
+        guard requireRidingContext else { return true }
+        return (t - lastSustainedRideT) <= ridingPersistSec
+    }
+
+    /// Refractory after each analysis — never shorter than the configured
+    /// minimum jump spacing, so one real jump's release/landing spikes collapse
+    /// into a single detection instead of a 3–4 detection burst.
+    private func refractoryAfterJump() -> Double { max(refractorySec, minJumpSpacingSec) }
 
     /// Adaptive release spike: rides with the chop (μ+Kσ) but never below a floor.
     private func isReleaseSpike(_ s: SensorSampleV10) -> Bool {
@@ -876,7 +952,7 @@ final class KitesurfSessionV10 {
             baselineFrozen = false
             settleRun = 0
             isAnalyzing = false
-            refractoryUntil = (lastT ?? 0) + refractorySec
+            refractoryUntil = currentT + refractoryAfterJump()
             transition(to: .riding)
             return
         }
@@ -894,7 +970,7 @@ final class KitesurfSessionV10 {
                 self.baselineFrozen = false
                 self.settleRun = 0
                 self.isAnalyzing = false
-                self.refractoryUntil = (self.lastT ?? 0) + self.refractorySec
+                self.refractoryUntil = self.currentT + self.refractoryAfterJump()
                 self.transition(to: .riding)
             }
         }
