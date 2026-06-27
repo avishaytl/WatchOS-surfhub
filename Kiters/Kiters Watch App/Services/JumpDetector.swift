@@ -848,7 +848,7 @@ import WatchKit
 #endif
 import os
 
-final class JumpDetector {
+final class JumpDetector: JumpDetecting {
 
     // MARK: - Tuning toggles (adapter-level)
 
@@ -961,6 +961,9 @@ final class JumpDetector {
             + "land=\(mode.landingGSafe)g air=\(mode.minAirtimeSafe)-\(mode.maxAirtimeSafe)s "
             + "cd=\(mode.cooldownSafe)s")
     }
+
+    /// Streaming engine analyses + emits jumps live; nothing to flush at session end.
+    func endSession() -> [Jump] { [] }
 
     func updateGPS(speed: Double,
                    altitude: Double,

@@ -65,8 +65,16 @@ final class CloudSyncService {
     private let session: URLSession
     private let defaults = UserDefaults.standard
 
-    private init(session: URLSession = .shared) {
+    private init(session: URLSession = CloudSyncService.makeDefaultSession()) {
         self.session = session
+    }
+
+    private static func makeDefaultSession() -> URLSession {
+        let configuration = URLSessionConfiguration.default
+        configuration.waitsForConnectivity = true
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 120
+        return URLSession(configuration: configuration)
     }
 
     func uploadLog(_ fileURL: URL) async throws -> CloudLogUploadResponse {

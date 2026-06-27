@@ -1,0 +1,76 @@
+{
+  "detectedRateHz" : 50.335966798601575,
+  "detectionMode" : "standard",
+  "durationSec" : 160.8789999485016,
+  "file" : "log_20260619_161142_00DC2259.kslog",
+  "format" : "onDevice",
+  "jumps" : [
+    {
+      "accepted" : true,
+      "airtime" : 1.54,
+      "apexTime" : 0.77,
+      "confidence" : 50,
+      "height" : 2.91,
+      "heightSource" : "ballistic",
+      "index" : 0,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 1.5410000085830688,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 9.843999981880188
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.66,
+      "apexTime" : 0.83,
+      "confidence" : 50,
+      "height" : 3.39,
+      "heightSource" : "ballistic",
+      "index" : 1,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 1.6639999151229858,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 59.33500003814697
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.6,
+      "apexTime" : 0.8,
+      "confidence" : 50,
+      "height" : 3.14,
+      "heightSource" : "ballistic",
+      "index" : 2,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 1.6009999513626099,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 68.44099998474121
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.76,
+      "apexTime" : 0.88,
+      "confidence" : 50,
+      "height" : 3.8,
+      "heightSource" : "ballistic",
+      "index" : 3,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 1.7610000371932983,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 79.92799997329712
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.92,
+      "apexTime" : 0.96,
+      "confidence" : 50,
+      "height" : 4.52,
+      "heightSource" : "ballistic",
+      "index" : 4,
+      "jumpDistance" : 0,
+      "physicalAirtime" : 1.9210000038146973,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 93.85699999332428
+    }
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 8099
+}

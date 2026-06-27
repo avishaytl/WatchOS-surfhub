@@ -29,11 +29,17 @@ struct ReplayReport: Codable {
 struct SurfrWindowMatch: Codable {
     let index: Int
     let referenceTimeSec: Double
+    let referenceHeightM: Double
+    let referenceAirtimeSec: Double
     let nearestEventTimeSec: Double?
     let nearestEventDeltaSec: Double?
     let nearestEvent: String?
     let nearestAcceptedTimeSec: Double?
     let nearestAcceptedDeltaSec: Double?
+    let nearestAcceptedHeightM: Double?
+    let nearestAcceptedHeightDeltaM: Double?
+    let nearestAcceptedAirtimeSec: Double?
+    let nearestAcceptedAirtimeDeltaSec: Double?
     let acceptedWithinTolerance: Bool
     let windowSignalAccepted: Bool
     let rawMaxAccelG: Double
@@ -70,9 +76,9 @@ enum Reporter {
             for j in report.jumps {
                 let apex = j.apexTime.map { String(format: "%.2f", $0) } ?? "-"
                 let mark = j.accepted ? "✓" : "✗"
-                print(String(format: "  [%@] #%d  t=%.2fs  air=%.2fs phys=%.2fs  h=%.2fm(%@)  apex=%@s  conf=%d  rot=%d",
+                print(String(format: "  [%@] #%d  t=%.2fs  air=%.2fs phys=%.2fs  h=%.2fm(%@)  dist=%.1fm  apex=%@s  conf=%d  rot=%d",
                              mark, j.index, j.takeoffOffsetSec, j.airtime, j.physicalAirtime ?? j.airtime,
-                             j.height, j.heightSource, apex, Int(j.confidence), j.rotations), to: &s)
+                             j.height, j.heightSource, j.jumpDistance, apex, Int(j.confidence), j.rotations), to: &s)
             }
         }
         if let matches = report.surfrWindowMatches, !matches.isEmpty {
@@ -83,9 +89,12 @@ enum Reporter {
                 let acceptedDt = m.nearestAcceptedDeltaSec.map { String(format: "%+.2fs", $0) } ?? "-"
                 let mark = m.windowSignalAccepted ? "✓" : "✗"
                 let v7 = m.acceptedWithinTolerance ? "v7✓" : "v7✗"
-                print(String(format: "  [%@] #%d ref=%.0fs event=%@ accepted=%@ dt=%@ %@ rawA=%.2fg rawG=%.2f spd=%.2f",
+                let height = m.nearestAcceptedHeightM.map { String(format: "%.2f/%.2fm", m.referenceHeightM, $0) } ?? "-"
+                let heightDt = m.nearestAcceptedHeightDeltaM.map { String(format: "%+.2fm", $0) } ?? "-"
+                let airtime = m.nearestAcceptedAirtimeSec.map { String(format: "%.2f/%.2fs", m.referenceAirtimeSec, $0) } ?? "-"
+                print(String(format: "  [%@] #%d ref=%.0fs event=%@ accepted=%@ dt=%@ %@ h=%@ dh=%@ air=%@ rawA=%.2fg rawG=%.2f spd=%.2f",
                              mark, m.index, m.referenceTimeSec, event, accepted, acceptedDt,
-                             v7, m.rawMaxAccelG, m.rawMaxGyro, m.rawMedianSpeedMS), to: &s)
+                             v7, height, heightDt, airtime, m.rawMaxAccelG, m.rawMaxGyro, m.rawMedianSpeedMS), to: &s)
             }
         }
         print("════════════════════════════════════════════════", to: &s)
@@ -147,7 +156,7 @@ enum SurfrReference {
 
     static func printComparison<S: TextOutputStream>(_ report: ReplayReport, _ s: inout S) {
         let accepted = report.jumps.filter(\.accepted)
-        print("Surfr reference timing:", to: &s)
+        print("Surfr reference comparison:", to: &s)
         guard !accepted.isEmpty else {
             print("  no accepted jumps to compare", to: &s)
             return
@@ -162,14 +171,114 @@ enum SurfrReference {
             matched.insert(best.offset)
             let j = best.element
             let dt = j.takeoffOffsetSec - ref.time
+            let dh = j.height - ref.height
+            let da = j.airtime - ref.airtime
+            let dd = j.jumpDistance - ref.distance
             residuals.append(abs(dt))
-            print(String(format: "  #%d Surfr %.0fs -> ours %.2fs  dt=%+.2fs  h=%.2f/%.2fm  air=%.2f/%.2fs",
+            print(String(format: "  #%d Surfr %.0fs -> ours %.2fs  dt=%+.2fs  h=%.2f/%.2fm dh=%+.2fm  air=%.2f/%.2fs da=%+.2fs  dist=%.0f/%.1fm dd=%+.1fm",
                          ref.index, ref.time, j.takeoffOffsetSec, dt,
-                         ref.height, j.height, ref.airtime, j.airtime), to: &s)
+                         ref.height, j.height, dh, ref.airtime, j.airtime, da,
+                         ref.distance, j.jumpDistance, dd), to: &s)
         }
         let extras = max(0, accepted.count - jumps.count)
-        let pass = accepted.count == jumps.count && residuals.count == jumps.count && residuals.allSatisfy { $0 <= 3.0 }
-        print("  result: \(pass ? "PASS" : "FAIL")  accepted=\(accepted.count) extras=\(extras) maxAbsDt=\(String(format: "%.2f", residuals.max() ?? 0))s", to: &s)
+        let pass = residuals.count == jumps.count && residuals.allSatisfy { $0 <= 3.0 }
+        print("  timing: \(pass ? "PASS" : "FAIL")  accepted=\(accepted.count) extras=\(extras) maxAbsDt=\(String(format: "%.2f", residuals.max() ?? 0))s", to: &s)
+    }
+
+    struct Tolerances {
+        let timeSec: Double
+        let heightM: Double
+        let airtimeSec: Double
+        let distanceM: Double
+    }
+
+    struct CheckResult {
+        let ok: Bool
+        let lines: [String]
+    }
+
+    static func check(report: ReplayReport, tolerances: Tolerances, allowExtraJumps: Bool) -> CheckResult {
+        let accepted = report.jumps.filter(\.accepted)
+        var lines: [String] = [
+            String(format: "tolerances: time=±%.2fs height=±%.2fm airtime=±%.2fs distance=±%.1fm",
+                   tolerances.timeSec,
+                   tolerances.heightM,
+                   tolerances.airtimeSec,
+                   tolerances.distanceM)
+        ]
+        guard !accepted.isEmpty else {
+            return CheckResult(ok: false, lines: lines + ["FAIL no accepted jumps"])
+        }
+
+        var ok = true
+        var usedAcceptedIndexes = Set<Int>()
+
+        for ref in jumps {
+            let candidates = accepted.enumerated().filter { !usedAcceptedIndexes.contains($0.offset) }
+            guard let best = candidates.min(by: {
+                abs($0.element.takeoffOffsetSec - ref.time) < abs($1.element.takeoffOffsetSec - ref.time)
+            }) else {
+                lines.append(String(format: "FAIL #%d missing accepted jump near %.0fs", ref.index, ref.time))
+                ok = false
+                continue
+            }
+
+            usedAcceptedIndexes.insert(best.offset)
+            let j = best.element
+            let dt = j.takeoffOffsetSec - ref.time
+            let dh = j.height - ref.height
+            let da = j.airtime - ref.airtime
+            let dd = j.jumpDistance - ref.distance
+            var failures: [String] = []
+
+            if abs(dt) > tolerances.timeSec {
+                failures.append(String(format: "dt=%+.2fs", dt))
+            }
+            if abs(dh) > tolerances.heightM {
+                failures.append(String(format: "dh=%+.2fm", dh))
+            }
+            if abs(da) > tolerances.airtimeSec {
+                failures.append(String(format: "da=%+.2fs", da))
+            }
+            if abs(dd) > tolerances.distanceM {
+                failures.append(String(format: "dd=%+.1fm", dd))
+            }
+
+            let prefix = failures.isEmpty ? "PASS" : "FAIL"
+            if !failures.isEmpty { ok = false }
+            lines.append(String(format: "%@ #%d ref t=%.0fs h=%.2fm air=%.2fs dist=%.0fm -> actual t=%.2fs h=%.2fm air=%.2fs dist=%.1fm%@",
+                                prefix,
+                                ref.index,
+                                ref.time,
+                                ref.height,
+                                ref.airtime,
+                                ref.distance,
+                                j.takeoffOffsetSec,
+                                j.height,
+                                j.airtime,
+                                j.jumpDistance,
+                                failures.isEmpty ? "" : " (" + failures.joined(separator: ", ") + ")"))
+        }
+
+        let extraJumps = accepted.filter { jump in
+            jumps.allSatisfy { ref in
+                abs(jump.takeoffOffsetSec - ref.time) > tolerances.timeSec
+            }
+        }
+        if !allowExtraJumps && !extraJumps.isEmpty {
+            ok = false
+            let extras = extraJumps.map {
+                String(format: "#%d@%.2fs", $0.index, $0.takeoffOffsetSec)
+            }.joined(separator: ", ")
+            lines.append("FAIL extra accepted jumps: \(extras)")
+        } else if allowExtraJumps && !extraJumps.isEmpty {
+            let extras = extraJumps.map {
+                String(format: "#%d@%.2fs", $0.index, $0.takeoffOffsetSec)
+            }.joined(separator: ", ")
+            lines.append("INFO extra accepted jumps ignored: \(extras)")
+        }
+
+        return CheckResult(ok: ok, lines: lines)
     }
 }
 

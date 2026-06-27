@@ -77,7 +77,8 @@ class SessionManager: ObservableObject {
     private let motionManager = MotionManager()
     private let workoutManager = WorkoutManager()
     private let storageManager = StorageManager()
-    private let jumpDetector = JumpDetector()
+    /// Selected at each session start based on the "detectionEngine" setting.
+    private var jumpDetector: JumpDetecting = JumpDetector()
     private let sessionLogger = SessionLogger.shared
     
     // Published state
@@ -152,6 +153,13 @@ class SessionManager: ObservableObject {
     private var liveEndInFlightSessionIds = Set<String>()
     private var finalizedLiveSessionIds = Set<String>()
     private var liveEndRetryCounts: [String: Int] = [:]
+    /// session id → diagnostic .kslog URL for sessions queued for cloud upload,
+    /// so an offline upload can still attach the log when it flushes on reconnect.
+    private var pendingUploadLogURLs: [String: URL] = [:]
+    /// session ids whose log upload is in-flight or already succeeded — dedups the
+    /// log upload across the live-finalize handler, the workout callback and the
+    /// reconnect flush (all of which may fire for the same session).
+    private var logUploadInFlightOrDone = Set<String>()
     private var recordingPipelineStarted = false
     private let networkMonitor = NWPathMonitor()
     private let networkMonitorQueue = DispatchQueue(label: "com.kiters.network-monitor")
@@ -162,12 +170,19 @@ class SessionManager: ObservableObject {
         let raw = UserDefaults.standard.string(forKey: "detectionMode") ?? DetectionMode.standard.rawValue
         return DetectionMode(rawValue: raw) ?? .standard
     }
+
+    /// Selected jump-detection engine. Read at session start so the user's
+    /// Settings choice takes effect on the next session (no app restart).
+    private var detectionEngine: DetectionEngine {
+        let raw = UserDefaults.standard.string(forKey: "detectionEngine") ?? DetectionEngine.v10.rawValue
+        return DetectionEngine(rawValue: raw) ?? .v10
+    }
     
     init() {
         setupCallbacks()
         observeManagers()
         startNetworkMonitoring()
-        restorePendingCloudUploadIfNeeded()
+        flushPendingCloudUploads()
     }
     
     // MARK: - Launch Permissions
@@ -218,12 +233,17 @@ class SessionManager: ObservableObject {
             self?.handleIMUBatch(batch)
         }
         
-        // Jump detection
+        // Jump detection callbacks (re-wired whenever the detector is swapped).
+        wireJumpDetectorCallbacks()
+    }
+
+    /// Wires the jump-detector callbacks. Called again after the detector is
+    /// (re)created at session start, since the engine can change between sessions.
+    private func wireJumpDetectorCallbacks() {
         jumpDetector.onJumpDetected = { [weak self] jump in
             self?.handleJumpDetected(jump)
         }
-        
-        // Jump state changes (for UI)
+
         jumpDetector.onStateChanged = { [weak self] newState in
             DispatchQueue.main.async {
                 self?.jumpDetectionState = newState
@@ -339,11 +359,19 @@ class SessionManager: ObservableObject {
         recordingPipelineStarted = false
         
         // Reset jump detector before sensors start streaming so the first IMU
-        // samples belong to the new live session.
+        // samples belong to the new live session. The engine is (re)selected
+        // here from the user's Settings choice and its callbacks re-wired.
         let mode = detectionMode
+        let engine = detectionEngine
+        switch engine {
+        case .v10: jumpDetector = JumpDetectorV10()
+        case .v8: jumpDetector = JumpDetectorV8()
+        case .v7: jumpDetector = JumpDetector()
+        }
+        wireJumpDetectorCallbacks()
         jumpDetector.sessionId = newSession.id
         jumpDetector.reset(mode: mode)
-        print("🦘 Jump detector reset — mode: \(mode.displayName)")
+        print("🦘 Jump detector reset — engine: \(engine.displayName), mode: \(mode.displayName)")
 
         // Open diagnostics immediately. Jump detection is sensor-only, so short
         // no-GPS live sessions must still produce a .kslog trail.
@@ -431,6 +459,12 @@ class SessionManager: ObservableObject {
     }
     
     func endSession() {
+        // Batch engines (v8) may detect a jump in the closing seconds. Flush them
+        // synchronously and fold into currentSession (on the main thread) BEFORE the
+        // session is captured below for saving. Streaming v7 returns [] (no-op).
+        let finalJumps = jumpDetector.endSession()
+        for jump in finalJumps { handleJumpDetected(jump) }
+
         guard var session = currentSession else { return }
 
         // Live lifecycle is independent of workout/log/local-save handling.
@@ -450,6 +484,9 @@ class SessionManager: ObservableObject {
         if recordingPipelineStarted {
             sessionLogger.stop()
         }
+        // Remember the log location synchronously (before the async live-finalize
+        // completes) so the finalize handler can upload the .kslog too.
+        if let logURL = completedLogURL { pendingUploadLogURLs[session.id] = logURL }
         
         // Stop timer
         timer?.invalidate()
@@ -481,13 +518,13 @@ class SessionManager: ObservableObject {
             self.storageManager.markPendingCloudUpload(sessionId: session.id)
             print("✅ Session saved: \(session.jumps.count) jumps, \(String(format: "%.2f", session.distance/1000))km")
             
-            // Reset state on main thread
+            // Always present the end-of-session prompt and keep it open until the
+            // user explicitly chooses (upload / keep local / discard). The session
+            // is the user's decision point for cloud upload of the diagnostic log;
+            // live metadata may already be on the cloud, but nothing here may
+            // dismiss the prompt on the user's behalf.
             DispatchQueue.main.async {
-                if self.finalizedLiveSessionIds.contains(session.id) {
-                    self.storageManager.clearPendingCloudUpload(sessionId: session.id)
-                } else {
-                    self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: completedLogURL)
-                }
+                self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: completedLogURL)
             }
         }
     }
@@ -495,15 +532,41 @@ class SessionManager: ObservableObject {
     func keepPendingSessionLocal() {
         guard let pending = pendingCloudUpload else { return }
         pendingCloudUpload = nil
+        // Local-only: drop it from the cloud queue so it is not auto-uploaded later.
+        storageManager.clearPendingCloudUpload(sessionId: pending.session.id)
         print("⌚️ Session kept local only: \(pending.session.id)")
     }
 
+    /// User chose to upload. Works offline: the session stays queued and is
+    /// auto-uploaded on the next reconnect (see `flushPendingCloudUploads`).
+    /// Sign-in is enforced at the call site (ContentView) before this runs.
     func uploadPendingSessionToCloud() {
         guard let pending = pendingCloudUpload else { return }
-        guard canUploadPendingSession else { return }
         pendingCloudUpload = nil
+        // Keep it in the cloud queue so a failed/offline upload is retried later.
+        storageManager.markPendingCloudUpload(sessionId: pending.session.id)
+        if let logURL = pending.logURL {
+            pendingUploadLogURLs[pending.session.id] = logURL
+        }
+
         finishLiveSessionOnServer(session: pending.session)
-        uploadLogToCloud(pending.logURL)
+        uploadSessionLog(sessionId: pending.session.id, logURL: pending.logURL)
+    }
+
+    /// Called from the prompt when the user taps Upload but is not signed in.
+    /// Keeps the session queued (it will upload once signed in + online) and
+    /// surfaces a sign-in hint.
+    func notifySignInRequiredForUpload() {
+        guard let pending = pendingCloudUpload else { return }
+        pendingCloudUpload = nil
+        storageManager.markPendingCloudUpload(sessionId: pending.session.id)
+        if let logURL = pending.logURL {
+            pendingUploadLogURLs[pending.session.id] = logURL
+        }
+        sessionNotice = SessionUserNotice(
+            titleKey: "session.signin_required_title",
+            messageKey: "session.signin_required_message"
+        )
     }
 
     /// Discard the just-finished local copy. The live server session is still
@@ -517,18 +580,34 @@ class SessionManager: ObservableObject {
         print("🗑️ Local session copy discarded: \(pending.session.id)")
     }
 
-    private func uploadLogToCloud(_ logURL: URL?) {
+    /// Uploads the diagnostic .kslog for a session and clears it from the cloud
+    /// queue on success. Idempotent per session — safe to call from the live
+    /// finalize handler, the end-of-session callback, the manual prompt and the
+    /// reconnect flush. On failure it stays queued for the next reconnect.
+    private func uploadSessionLog(sessionId: String, logURL: URL?) {
+        guard !logUploadInFlightOrDone.contains(sessionId) else { return }
         guard let logURL else {
+            // No log to upload — don't keep the session queued forever for a log.
             print("☁️ No session log available for cloud upload")
+            storageManager.clearPendingCloudUpload(sessionId: sessionId)
+            pendingUploadLogURLs.removeValue(forKey: sessionId)
             return
         }
+        logUploadInFlightOrDone.insert(sessionId)
         Task {
             do {
                 let response = try await CloudSyncService.shared.uploadLog(logURL)
                 let cloudPath = response.path ?? "(no path)"
                 print("☁️ Session log uploaded: \(logURL.lastPathComponent) → \(cloudPath)")
+                await MainActor.run {
+                    self.storageManager.clearPendingCloudUpload(sessionId: sessionId)
+                    self.pendingUploadLogURLs.removeValue(forKey: sessionId)
+                }
             } catch {
                 print("☁️ Session log upload failed: \(error.localizedDescription)")
+                await MainActor.run {
+                    self.logUploadInFlightOrDone.remove(sessionId)   // allow retry on reconnect
+                }
             }
         }
     }
@@ -559,18 +638,33 @@ class SessionManager: ObservableObject {
                 guard let self = self else { return }
                 self.canUploadPendingSession = path.status == .satisfied
                 if self.canUploadPendingSession {
-                    self.restorePendingCloudUploadIfNeeded()
+                    self.flushPendingCloudUploads()
                 }
             }
         }
         networkMonitor.start(queue: networkMonitorQueue)
     }
 
-    private func restorePendingCloudUploadIfNeeded() {
-        guard pendingCloudUpload == nil,
-              !isRecording,
-              let session = storageManager.loadMostRecentPendingCloudSession() else { return }
-        pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: nil)
+    /// Uploads every session the user queued for the cloud (the pending queue),
+    /// silently, when a connection is available. Sessions chosen "Keep Local" or
+    /// "Discard" were removed from the queue, so they are skipped. A successful
+    /// upload clears the session from the queue (see `finishLiveSessionOnServer`).
+    private func flushPendingCloudUploads() {
+        guard canUploadPendingSession, !isRecording else { return }
+        let pendingIds = Set(storageManager.pendingCloudUploadSessionIds())
+        guard !pendingIds.isEmpty else { return }
+
+        let sessions = storageManager.loadAllSessions().filter { pendingIds.contains($0.id) }
+        for session in sessions {
+            // Skip the session currently shown in the end-of-session prompt; the
+            // user hasn't chosen yet.
+            if pendingCloudUpload?.session.id == session.id { continue }
+            // Silent retry: don't pop the end-of-session prompt if this fails.
+            finishLiveSessionOnServer(session: session, showPendingPrompt: false)
+            let logURL = pendingUploadLogURLs[session.id]
+                ?? sessionLogger.allLogURLs().first { $0.lastPathComponent.contains(String(session.id.prefix(8))) }
+            uploadSessionLog(sessionId: session.id, logURL: logURL)
+        }
     }
     
     // MARK: - Data Handling
@@ -675,16 +769,18 @@ class SessionManager: ObservableObject {
     }
     
     private func handleJumpDetected(_ jump: Jump) {
-        // Mutate Session struct on main thread only.
-        DispatchQueue.main.async { [weak self] in
+        // Mutate Session struct on the main thread only. Run synchronously when
+        // already on main so the v8 end-of-session flush lands in currentSession
+        // before endSession() captures it for saving.
+        let body: () -> Void = { [weak self] in
             guard let self = self else { return }
             guard var session = self.currentSession else { return }
-            
+
             var detectedJump = jump
             detectedJump.sessionId = session.id
             let previousBest = session.jumps.map(\.height).max() ?? 0
             session.jumps.append(detectedJump)
-            
+
             self.currentSession = session
             self.jumpCount = session.jumps.count
             if detectedJump.height > previousBest {
@@ -693,6 +789,12 @@ class SessionManager: ObservableObject {
 
             print("🎉 JUMP DETECTED! Height: \(String(format: "%.2f", jump.height))m, Airtime: \(String(format: "%.2f", jump.airtime))s")
             self.handleUploadOnJump(detectedJump)
+        }
+
+        if Thread.isMainThread {
+            body()
+        } else {
+            DispatchQueue.main.async(execute: body)
         }
     }
 
@@ -955,10 +1057,10 @@ class SessionManager: ObservableObject {
                     if finished {
                         self.finalizedLiveSessionIds.insert(session.id)
                         self.liveEndRetryCounts.removeValue(forKey: session.id)
-                        self.storageManager.clearPendingCloudUpload(sessionId: session.id)
-                        if self.pendingCloudUpload?.session.id == session.id {
-                            self.pendingCloudUpload = nil
-                        }
+                        // Metadata is on the cloud. Do NOT upload the log or dismiss
+                        // the end-of-session prompt here — the diagnostic log is the
+                        // user's choice via the prompt, which must stay open until
+                        // they tap upload / keep local / discard.
                         if self.uploadState.activeSessionId == session.id {
                             self.uploadState.reset(sessionId: nil)
                         }

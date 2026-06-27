@@ -275,6 +275,37 @@ enum DetectionMode: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - Jump Detection Engine
+/// User-selectable jump-detection ENGINE (independent of DetectionMode presets).
+/// Stored in UserDefaults as "detectionEngine". Takes effect at next session start.
+enum DetectionEngine: String, Codable, CaseIterable {
+    case v10  // sensor-grounded kite-aware evolution (KitesurfJumpEngineV10) — current default
+    case v7   // legacy streaming FSM (KitesurfJumpEngineV7)
+    case v8   // baro-centric whole-session engine (periodic re-analysis live)
+
+    var displayName: String {
+        switch self {
+        case .v10: return "V10 (Default)"
+        case .v7: return "V7"
+        case .v8: return "V8"
+        }
+    }
+    var description: String {
+        switch self {
+        case .v10: return "Sensor-grounded, kite-aware engine."
+        case .v7: return "Legacy real-time engine."
+        case .v8: return "Baro-centric engine (experimental)."
+        }
+    }
+    var icon: String {
+        switch self {
+        case .v10: return "checkmark.seal"
+        case .v7: return "clock.arrow.circlepath"
+        case .v8: return "sparkles"
+        }
+    }
+}
+
 // MARK: - Jump Detection Configuration (6 parameters)
 /// Stores user-tunable parameters in UserDefaults.
 /// Used when DetectionMode is .custom.

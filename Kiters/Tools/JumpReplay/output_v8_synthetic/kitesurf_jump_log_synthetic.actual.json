@@ -1,0 +1,12 @@
+{
+  "detectedRateHz" : 20,
+  "detectionMode" : "standard",
+  "durationSec" : 14,
+  "file" : "kitesurf_jump_log_synthetic.csv",
+  "format" : "coreMotion",
+  "jumps" : [
+
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 281
+}

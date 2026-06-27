@@ -13,6 +13,7 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: String = "orange"
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("detectionMode") private var detectionModeRaw: String = DetectionMode.standard.rawValue
+    @AppStorage("detectionEngine") private var detectionEngineRaw: String = DetectionEngine.v10.rawValue
     @AppStorage("autoLock") private var autoLock: Bool = true
     @AppStorage("hapticFeedback") private var hapticFeedback: Bool = true
     @AppStorage("metricsTopPadding") private var metricsTopPadding: Double = -1  // -1 = auto
@@ -353,6 +354,37 @@ struct SettingsView: View {
                 
                 Divider()
                 
+                // Jump Detection Engine Section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L("settings.engine.section"))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .textCase(.uppercase)
+
+                    ZStack {
+                        Color.clear
+                        Picker(L("settings.engine.section"), selection: $detectionEngineRaw) {
+                            ForEach(DetectionEngine.allCases, id: \.self) { engine in
+                                HStack {
+                                    Image(systemName: engine.icon)
+                                        .frame(width: 16)
+                                    Text(engine.displayName)
+                                }
+                                .tag(engine.rawValue)
+                            }
+                        }
+                        .pickerStyle(.navigationLink)
+                        .labelsHidden()
+                        .buttonStyle(.plain)
+                    }
+                    .overlay(
+                        Rectangle()
+                            .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                    )
+                }
+
+                Divider()
+
                 // About Section
                 VStack(alignment: .leading, spacing: 8) {
                     Text(L("settings.about"))

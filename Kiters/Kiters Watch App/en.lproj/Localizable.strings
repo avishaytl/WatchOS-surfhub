@@ -33,10 +33,14 @@
 "session.end_message" = "Are you sure you want to end this session?";
 "session.upload_prompt_title" = "Upload Session?";
 "session.upload_prompt_message" = "This session is saved on your watch. Upload it to SurfHub cloud too?";
-"session.upload_offline_message" = "No internet connection was detected. Keep this session on your watch and upload it when the connection is back, or discard it.";
+"session.upload_offline_message" = "No internet connection right now. Upload it to the cloud (it will send when you're back online), keep it on your watch, or discard it.";
 "session.upload_now" = "Upload";
 "session.keep_local" = "Keep Local";
 "session.discard" = "Discard";
+"session.queued_title" = "Queued for Upload";
+"session.queued_message" = "This session will upload to SurfHub cloud automatically when a connection is available.";
+"session.signin_required_title" = "Sign In Required";
+"session.signin_required_message" = "Sign in to your SurfHub account (Settings → Account) to upload sessions to the cloud. It's saved on your watch for now.";
 "session.too_short_title" = "Session Not Saved";
 "session.too_short_message" = "Sessions shorter than 1 minute are discarded.";
 "session.upload_failed_title" = "Could Not Upload";
@@ -100,6 +104,7 @@
 "settings.voice_announcements" = "Voice Announcements";
 "settings.data" = "Data";
 "settings.manage_sessions" = "Manage Sessions";
+"settings.engine.section" = "Jump Engine";
 "settings.about" = "About";
 "settings.version" = "Version";
 "settings.build" = "Build";

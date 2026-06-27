@@ -33,10 +33,14 @@
 "session.end_message" = "האם אתה בטוח שברצונך לסיים את האימון?";
 "session.upload_prompt_title" = "להעלות לענן?";
 "session.upload_prompt_message" = "האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?";
-"session.upload_offline_message" = "לא זוהה חיבור לאינטרנט. אפשר לשמור את האימון בשעון ולהעלות אותו כשהחיבור יחזור, או למחוק אותו.";
+"session.upload_offline_message" = "אין כרגע חיבור לאינטרנט. אפשר להעלות לענן (יישלח כשהחיבור יחזור), לשמור בשעון, או למחוק.";
 "session.upload_now" = "העלה לענן";
 "session.keep_local" = "השאר מקומי";
 "session.discard" = "מחק סשן";
+"session.queued_title" = "ממתין להעלאה";
+"session.queued_message" = "האימון יועלה לענן SurfHub אוטומטית כשיהיה חיבור לאינטרנט.";
+"session.signin_required_title" = "נדרשת התחברות";
+"session.signin_required_message" = "התחבר לחשבון SurfHub (הגדרות ← חשבון) כדי להעלות אימונים לענן. בינתיים האימון שמור בשעון.";
 "session.too_short_title" = "האימון לא נשמר";
 "session.too_short_message" = "אימונים קצרים מדקה נמחקים ולא נשמרים.";
 "session.upload_failed_title" = "לא ניתן להעלות";
@@ -100,6 +104,7 @@
 "settings.voice_announcements" = "הודעות קוליות";
 "settings.data" = "נתונים";
 "settings.manage_sessions" = "ניהול אימונים";
+"settings.engine.section" = "מנוע קפיצות";
 "settings.about" = "אודות";
 "settings.version" = "גרסה";
 "settings.build" = "בנייה";

@@ -1,0 +1,12 @@
+{
+  "detectedRateHz" : 49.999999920394465,
+  "detectionMode" : "standard",
+  "durationSec" : 11.980000019073486,
+  "file" : "kitesurf_realistic_log.csv",
+  "format" : "android",
+  "jumps" : [
+
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 600
+}

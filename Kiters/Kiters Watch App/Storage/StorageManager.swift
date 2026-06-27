@@ -186,7 +186,7 @@ class StorageManager {
         }
     }
 
-    private func pendingCloudUploadSessionIds() -> [String] {
+    func pendingCloudUploadSessionIds() -> [String] {
         UserDefaults.standard.stringArray(forKey: pendingCloudUploadKey) ?? []
     }
 }

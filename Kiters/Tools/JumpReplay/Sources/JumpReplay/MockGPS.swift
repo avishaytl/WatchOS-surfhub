@@ -4,10 +4,10 @@ import Foundation
 /// machine leaves IDLE. Real GPS isn't available in offline replay.
 final class MockGPS {
     let speed: Double  // m/s
-    private let detector: JumpDetector
+    private let detector: JumpDetecting
     private var lastEmit: Date?
 
-    init(speed: Double, detector: JumpDetector) {
+    init(speed: Double, detector: JumpDetecting) {
         self.speed = speed
         self.detector = detector
     }
@@ -24,6 +24,7 @@ final class MockGPS {
             latitude: 0,
             longitude: 0,
             course: -1,
+            horizontalAccuracy: nil,
             timestamp: sampleTime
         )
     }
