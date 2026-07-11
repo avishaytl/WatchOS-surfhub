@@ -8,177 +8,30 @@
 import SwiftUI
 
 struct ActiveSessionView: View {
-    @EnvironmentObject var sessionManager: SessionManager
     @State private var selectedTab = 1  // Start at middle tab (metrics)
-    @State private var showingEndConfirmation = false
     @AppStorage("appLanguage") private var languageCode: String = "en"
-    @AppStorage("appTheme") private var appTheme: String = "orange"
-    @Environment(\.isLuminanceReduced) var isLuminanceReduced
-
-    private var themeColor: Color {
-        switch appTheme {
-        case "yellow": return .yellow
-        case "green":  return .green
-        case "red":    return .red
-        case "orange": return .orange
-        case "cyan":   return .cyan
-        case "pink":   return .pink
-        default:       return .orange
-        }
-    }
 
     var body: some View {
-        if isLuminanceReduced {
-            // Ambient mode (screen dimmed / AOD): show a minimal always-on view.
-            // The TimelineView drives periodic re-renders so the timer stays current
-            // even when @Published updates are throttled by the OS in ambient mode.
-            TimelineView(.periodic(from: Date(), by: 1)) { _ in
-                AmbientSessionView()
-            }
-        } else {
-            ZStack {
-                TabView(selection: $selectedTab) {
-                    // Tab 0 (Left): Controls - Stop/Pause
-                    ControlsView(showingEndConfirmation: $showingEndConfirmation)
-                        .tag(0)
+        TabView(selection: $selectedTab) {
+            // Tab 0 (Left): Controls - Stop/Pause
+            ControlsView()
+                .tag(0)
 
-                    // Tab 1 (Middle): Main metrics - DEFAULT
-                    MetricsView()
-                        .tag(1)
+            // Tab 1 (Middle): Main metrics - DEFAULT
+            MetricsView()
+                .tag(1)
 
-                    // Tab 2: Jump stats
-                    JumpStatsView()
-                        .tag(2)
+            // Tab 2: Jump stats
+            JumpStatsView()
+                .tag(2)
 
-                    // Tab 3 (Right): GPS Route tracker
-                    GPSRouteView()
-                        .tag(3)
-                }
-                .tabViewStyle(.page)
-                .navigationBarHidden(true)
-                .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
-
-                if let jump = sessionManager.newBestJumpPresentation {
-                    NewBestJumpOverlay(jump: jump, themeColor: themeColor) {
-                        sessionManager.dismissNewBestJumpPresentation()
-                    }
-                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                    .zIndex(10)
-                }
-            }
-            .animation(.spring(response: 0.35, dampingFraction: 0.88), value: sessionManager.newBestJumpPresentation?.id)
-            .onAppear {
-                // Water Lock must be enabled while the session screen is foreground-active.
-                sessionManager.enableWaterLockIfNeeded()
-            }
-            .onChange(of: sessionManager.newBestJumpPresentation?.id) { _, id in
-                guard id != nil else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
-                    sessionManager.dismissNewBestJumpPresentation()
-                }
-            }
-            .alert(L("session.end_confirm"), isPresented: $showingEndConfirmation) {
-                Button(L("session.cancel"), role: .cancel) { }
-                Button(L("session.end"), role: .destructive) {
-                    sessionManager.endSession()
-                }
-            } message: {
-                Text(L("session.end_message"))
-            }
+            // Tab 3 (Right): GPS Route tracker
+            GPSRouteView()
+                .tag(3)
         }
-    }
-}
-
-// Minimal always-on display shown when the watch screen dims to ambient mode.
-// Rules for ambient content (Apple HIG):
-//   - Pure black background (avoids OLED bleed and saves power)
-//   - White / grey text only — no colour fills, no gradients
-//   - No animations
-//   - Show only the 3 most important numbers
-struct AmbientSessionView: View {
-    @EnvironmentObject var sessionManager: SessionManager
-    @AppStorage("appTheme") private var appTheme: String = "orange"
-
-    private var themeColor: Color {
-        switch appTheme {
-        case "yellow": return .yellow
-        case "green":  return .green
-        case "red":    return .red
-        case "orange": return .orange
-        case "cyan":   return .cyan
-        case "pink":   return .pink
-        default:       return .orange
-        }
-    }
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(formatDuration(sessionManager.duration))
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-                .monospacedDigit()
-
-            Text(formatHeight(sessionManager.currentSession?.jumps.last?.height ?? 0) + "m")
-                .font(.system(size: 58, weight: .heavy, design: .rounded))
-                .foregroundColor(sessionManager.jumpCount > 0 ? themeColor : .white)
-                .minimumScaleFactor(0.72)
-                .lineLimit(1)
-
-            HStack(spacing: 16) {
-                Text(formatSpeed(sessionManager.maxSpeed))
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundColor(.gray)
-                Text(formatDistance(sessionManager.distance))
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundColor(.gray)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
-    }
-
-    private func formatDuration(_ d: TimeInterval) -> String {
-        let h = Int(d) / 3600; let m = (Int(d) % 3600) / 60; let s = Int(d) % 60
-        return h > 0 ? String(format: "%d:%02d:%02d", h, m, s) : String(format: "%02d:%02d", m, s)
-    }
-    private func formatHeight(_ v: Double) -> String { String(format: "%.1f", v) }
-    private func formatSpeed(_ v: Double) -> String { String(format: "%.0f km/h", v * 3.6) }
-    private func formatDistance(_ v: Double) -> String { String(format: "%.2f km", v / 1000) }
-}
-
-struct NewBestJumpOverlay: View {
-    let jump: Jump
-    let themeColor: Color
-    let dismiss: () -> Void
-
-    var body: some View {
-        Button(action: dismiss) {
-            VStack(spacing: 8) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundColor(themeColor)
-
-                Text(L("session.max"))
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.82))
-
-                Text(String(format: "%.1f", jump.height))
-                    .font(.system(size: 76, weight: .heavy, design: .rounded))
-                    .foregroundColor(themeColor)
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.62)
-                    .lineLimit(1)
-
-                Text("m")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.72))
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.black.opacity(0.96))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .edgesIgnoringSafeArea(.all)
+        .tabViewStyle(.page)
+        .navigationBarHidden(true)
+        .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
     }
 }
 
@@ -844,7 +697,6 @@ struct GPSStatCard: View {
 
 struct ControlsView: View {
     @EnvironmentObject var sessionManager: SessionManager
-    @Binding var showingEndConfirmation: Bool
     @AppStorage("appLanguage") private var languageCode: String = "en"
     
     var body: some View {
@@ -876,7 +728,7 @@ struct ControlsView: View {
             
             // End button
             Button(action: {
-                showingEndConfirmation = true
+                sessionManager.endSession()
             }) {
                 VStack(spacing: 8) {
                     Image(systemName: "stop.circle.fill")

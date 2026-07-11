@@ -75,6 +75,7 @@ class SessionManager: ObservableObject {
     // Services
     private let locationManager = LocationManager()
     private let motionManager = MotionManager()
+    private let waterSubmersionManager = WaterSubmersionManager()
     private let workoutManager = WorkoutManager()
     private let storageManager = StorageManager()
     /// Selected at each session start based on the "detectionEngine" setting.
@@ -160,7 +161,9 @@ class SessionManager: ObservableObject {
     /// log upload across the live-finalize handler, the workout callback and the
     /// reconnect flush (all of which may fire for the same session).
     private var logUploadInFlightOrDone = Set<String>()
+    private var activeDetectionEngine: DetectionEngine = .v11Buffered
     private var recordingPipelineStarted = false
+    private var motionPipelineStarted = false
     private let networkMonitor = NWPathMonitor()
     private let networkMonitorQueue = DispatchQueue(label: "com.kiters.network-monitor")
 
@@ -174,8 +177,8 @@ class SessionManager: ObservableObject {
     /// Selected jump-detection engine. Read at session start so the user's
     /// Settings choice takes effect on the next session (no app restart).
     private var detectionEngine: DetectionEngine {
-        let raw = UserDefaults.standard.string(forKey: "detectionEngine") ?? DetectionEngine.v10.rawValue
-        return DetectionEngine(rawValue: raw) ?? .v10
+        let raw = UserDefaults.standard.string(forKey: "detectionEngine") ?? DetectionEngine.v11Buffered.rawValue
+        return DetectionEngine(rawValue: raw) ?? .v11Buffered
     }
     
     init() {
@@ -232,6 +235,20 @@ class SessionManager: ObservableObject {
         motionManager.onIMUBatch = { [weak self] batch in
             self?.handleIMUBatch(batch)
         }
+
+        motionManager.onAbsoluteAltitude = { [weak self] sensorT, receivedT, altitudeM, accuracyM, precisionM in
+            self?.handleAbsoluteAltitude(
+                sensorT: sensorT,
+                receivedT: receivedT,
+                altitudeM: altitudeM,
+                accuracyM: accuracyM,
+                precisionM: precisionM
+            )
+        }
+
+        waterSubmersionManager.onSnapshot = { [weak self] snapshot in
+            self?.motionManager.updateSubmersion(snapshot)
+        }
         
         // Jump detection callbacks (re-wired whenever the detector is swapped).
         wireJumpDetectorCallbacks()
@@ -247,6 +264,26 @@ class SessionManager: ObservableObject {
         jumpDetector.onStateChanged = { [weak self] newState in
             DispatchQueue.main.async {
                 self?.jumpDetectionState = newState
+            }
+        }
+
+        // v9 and v12 emit a fast first jump, then refine it in place once their
+        // later baseline/drift check settles. Other engines are untouched.
+        if let v9 = jumpDetector as? JumpDetectorV9 {
+            v9.onJumpUpdated = { [weak self] jump in
+                self?.handleJumpUpdated(jump)
+            }
+            v9.onJumpRetracted = { [weak self] jumpId in
+                self?.handleJumpRetracted(jumpId)
+            }
+        }
+
+        if let v12 = jumpDetector as? JumpDetectorV12 {
+            v12.onJumpUpdated = { [weak self] jump in
+                self?.handleJumpUpdated(jump)
+            }
+            v12.onJumpRetracted = { [weak self] jumpId in
+                self?.handleJumpRetracted(jumpId)
             }
         }
     }
@@ -286,6 +323,19 @@ class SessionManager: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] cal in
                 self?.activeCalories = cal
+            }
+            .store(in: &cancellables)
+
+        workoutManager.$isActive
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] active in
+                guard let self = self else { return }
+                guard active, self.isRecording, !self.isPaused else { return }
+                if self.motionPipelineStarted {
+                    self.motionManager.upgradeToBatchedIfAvailable()
+                } else {
+                    self.startMotionPipelineIfNeeded(preferBatched: true, reason: "workout-running")
+                }
             }
             .store(in: &cancellables)
     }
@@ -341,6 +391,7 @@ class SessionManager: ObservableObject {
         currentSession = newSession
         isRecording = true
         isPaused = false
+        setFrontmostTimeoutExtended(true, reason: "session-start")
         jumpCount = 0
         distance = 0
         maxSpeed = 0
@@ -357,39 +408,52 @@ class SessionManager: ObservableObject {
         lastGPSPoint = nil
         speedSmoothingBuffer.removeAll(keepingCapacity: true)
         recordingPipelineStarted = false
+        motionPipelineStarted = false
         
         // Reset jump detector before sensors start streaming so the first IMU
         // samples belong to the new live session. The engine is (re)selected
         // here from the user's Settings choice and its callbacks re-wired.
         let mode = detectionMode
-        let engine = detectionEngine
-        switch engine {
-        case .v10: jumpDetector = JumpDetectorV10()
-        case .v8: jumpDetector = JumpDetectorV8()
-        case .v7: jumpDetector = JumpDetector()
+        let requestedEngine = detectionEngine
+        let selection = makeJumpDetector(for: requestedEngine)
+        activeDetectionEngine = selection.engine
+        jumpDetector = selection.detector
+        if let fallbackReason = selection.fallbackReason {
+            sessionNotice = SessionUserNotice(
+                titleKey: "session.v12_unavailable_title",
+                messageKey: "session.v12_unavailable_message"
+            )
+            print("🦘 \(requestedEngine.displayName) unavailable — falling back to \(selection.engine.displayName): \(fallbackReason)")
         }
         wireJumpDetectorCallbacks()
         jumpDetector.sessionId = newSession.id
         jumpDetector.reset(mode: mode)
-        print("🦘 Jump detector reset — engine: \(engine.displayName), mode: \(mode.displayName)")
+        print("🦘 Jump detector reset — requested: \(requestedEngine.displayName), active: \(selection.engine.displayName), mode: \(mode.displayName)")
 
         // Open diagnostics immediately. Jump detection is sensor-only, so short
         // no-GPS live sessions must still produce a .kslog trail.
         startRecordingPipelineIfReady(session: newSession)
+        if let fallbackReason = selection.fallbackReason {
+            sessionLogger.logEvent("Jump engine fallback: requested=\(requestedEngine.rawValue) active=\(selection.engine.rawValue) reason=\(fallbackReason)")
+        }
 
         // Reset cloud upload state for the new session
         uploadState.reset(sessionId: newSession.id)
         startLiveSessionIfNeeded(session: newSession, coordinate: liveStartCoordinate(for: newSession), reason: "session-start")
 
-        // Start all services AFTER session and detector state are ready.
-        print("📍 Starting location tracking...")
-        locationManager.startTracking()
-        
-        print("🎯 Starting motion tracking...")
-        motionManager.startTracking()
-        
+        // Start services AFTER session and detector state are ready. V12/V13
+        // start sensors immediately; other engines wait briefly for the workout path.
         print("💪 Starting workout (if available)...")
         workoutManager.startWorkout(sport: sport)
+
+        print("📍 Starting location tracking...")
+        locationManager.startTracking()
+
+        if activeDetectionEngine == .v12AppleSensorFusion || activeDetectionEngine == .v13Pure {
+            startMotionPipelineIfNeeded(preferBatched: false, reason: "\(activeDetectionEngine.rawValue)-immediate-sensor-start")
+        } else {
+            scheduleMotionFallbackIfWorkoutDoesNotStart()
+        }
         
         // Start UI timer
         startTimer()
@@ -397,27 +461,62 @@ class SessionManager: ObservableObject {
         
         print("✅ Session started successfully!")
     }
-    
-    /// Activates watchOS Water Lock when the "autoLock" setting is enabled.
-    ///
-    /// IMPORTANT: `enableWaterLock()` only works while the app is in the
-    /// **foreground active** scene. Calling it from `startSession()` (during the
-    /// button tap, before the ActiveSessionView has appeared) is the common cause
-    /// of "Water Lock doesn't work on device". This is therefore invoked from
-    /// `ActiveSessionView.onAppear`, where the session screen is guaranteed
-    /// frontmost. The user double-presses the Digital Crown to exit Water Lock.
-    func enableWaterLockIfNeeded() {
-        let autoLock = UserDefaults.standard.object(forKey: "autoLock") as? Bool ?? true
-        guard autoLock else {
-            print("💧 Water Lock skipped (autoLock disabled)")
-            return
+
+    private func makeJumpDetector(for requestedEngine: DetectionEngine) -> (engine: DetectionEngine, detector: JumpDetecting, fallbackReason: String?) {
+        switch requestedEngine {
+        case .v11Buffered:
+            return (.v11Buffered, JumpDetectorV11(), nil)
+        case .v13Pure:
+            let readiness = JumpDetectorV13.readinessReport()
+            if !readiness.isReady {
+                print("🦘 V13 selected despite readiness issue; keeping V13 active: \(readiness.logDetails)")
+            }
+            return (.v13Pure, JumpDetectorV13(), nil)
+        case .v12AppleSensorFusion:
+            let readiness = JumpDetectorV12.readinessReport()
+            let forceV12 = UserDefaults.standard.bool(forKey: V12DebugSettings.forceEngineWhenNotReady)
+            guard readiness.isReady || forceV12 else {
+                return (.v11Buffered, JumpDetectorV11(), readiness.logDetails)
+            }
+            if !readiness.isReady {
+                print("🦘 V12 forced by debug settings despite readiness: \(readiness.logDetails)")
+            }
+            return (.v12AppleSensorFusion, JumpDetectorV12(), nil)
+        case .v10:
+            return (.v10, JumpDetectorV10(), nil)
+        case .v9:
+            return (.v9, JumpDetectorV9(), nil)
+        case .v8:
+            return (.v8, JumpDetectorV8(), nil)
+        case .v7:
+            return (.v7, JumpDetector(), nil)
         }
-        guard isRecording else { return }
-        // Small delay so the scene is fully active before locking.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            guard self.isRecording else { return }
-            WKInterfaceDevice.current().enableWaterLock()
-            print("💧 Water Lock enabled")
+    }
+
+    private func startMotionPipelineIfNeeded(preferBatched: Bool, reason: String) {
+        guard isRecording, !isPaused, !motionPipelineStarted else { return }
+        motionPipelineStarted = true
+
+        waterSubmersionManager.start()
+        motionManager.startTracking(preferBatched: preferBatched)
+        print("Motion pipeline started (\(reason), batched=\(preferBatched))")
+    }
+
+    private func setFrontmostTimeoutExtended(_ enabled: Bool, reason: String) {
+        WKExtension.shared().isFrontmostTimeoutExtended = enabled
+        print("⌚️ Frontmost timeout extended=\(enabled) (\(reason))")
+    }
+
+    private func scheduleMotionFallbackIfWorkoutDoesNotStart() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) { [weak self] in
+            guard let self = self else { return }
+            guard self.isRecording, !self.isPaused, !self.motionPipelineStarted else { return }
+
+            // CMBatchedSensorManager requires the workout session to be running.
+            // If HealthKit is unavailable or slow to transition, keep recording
+            // with the 50 Hz CMMotionManager fallback rather than losing the
+            // beginning of the session.
+            self.startMotionPipelineIfNeeded(preferBatched: false, reason: "workout-not-running-fallback")
         }
     }
     
@@ -427,6 +526,8 @@ class SessionManager: ObservableObject {
         // Pause all services
         locationManager.pauseTracking()
         motionManager.pauseTracking()
+        waterSubmersionManager.stop()
+        motionPipelineStarted = false
         workoutManager.pauseWorkout()
         
         // Update session status synchronously (called from main via button)
@@ -445,8 +546,12 @@ class SessionManager: ObservableObject {
         
         // Resume all services
         locationManager.resumeTracking()
-        motionManager.resumeTracking()
         workoutManager.resumeWorkout()
+        if workoutManager.isActive {
+            startMotionPipelineIfNeeded(preferBatched: true, reason: "resume-workout-running")
+        } else {
+            scheduleMotionFallbackIfWorkoutDoesNotStart()
+        }
         
         // Update session status synchronously (called from main via button)
         currentSession?.status = .active
@@ -478,6 +583,8 @@ class SessionManager: ObservableObject {
         // Stop all services
         locationManager.stopTracking()
         motionManager.stopTracking()
+        waterSubmersionManager.stop()
+        motionPipelineStarted = false
         
         // Stop session logger only if the one-minute recording gate opened.
         let completedLogURL = recordingPipelineStarted ? sessionLogger.mostRecentLogURL() : nil
@@ -616,10 +723,13 @@ class SessionManager: ObservableObject {
         currentSession = nil
         isRecording = false
         isPaused = false
+        setFrontmostTimeoutExtended(false, reason: "session-finished")
         jumpCount = 0
         isGPSActive = false
         gpsSignalQuality = .none
         newBestJumpPresentation = nil
+        activeDetectionEngine = .v11Buffered
+        motionPipelineStarted = false
     }
 
     private func deleteLogFile(_ url: URL?) {
@@ -685,6 +795,7 @@ class SessionManager: ObservableObject {
         // prewarm there is no session, so we skip detector/metrics entirely
         // (and avoid polluting the speed-smoothing buffer that the session reuses).
         guard isRecording else { return }
+        sessionLogger.logGPSPoint(point)
 
         // Smooth speed via simple moving average to remove GPS jitter
         // before feeding the detector. Buffer is bounded to N samples.
@@ -754,7 +865,22 @@ class SessionManager: ObservableObject {
         // thread with struct copies and makes the UI unresponsive.
         // The IMU batch callback writes samples to storage in bulk.
         // Here we only feed the jump detector (runs on the OperationQueue background thread).
+        sessionLogger.logMotionSample(sample)
         jumpDetector.processSample(sample)
+    }
+
+    private func handleAbsoluteAltitude(sensorT: TimeInterval,
+                                        receivedT: TimeInterval,
+                                        altitudeM: Double,
+                                        accuracyM: Double?,
+                                        precisionM: Double?) {
+        jumpDetector.processAbsoluteAltitude(
+            sensorT: sensorT,
+            receivedT: receivedT,
+            altitudeM: altitudeM,
+            accuracyM: accuracyM,
+            precisionM: precisionM
+        )
     }
     
     private func handleIMUBatch(_ batch: [IMUSample]) {
@@ -798,6 +924,54 @@ class SessionManager: ObservableObject {
         }
     }
 
+    /// Refinement from engines that emit a fast first result (v9/v12): replace an
+    /// already-recorded jump (matched by `Jump.id`) in place. If the provisional is no longer in
+    /// the session (e.g. it was pruned), the accurate jump is folded in as new so it
+    /// is never lost. The live count is unchanged by an update.
+    private func handleJumpUpdated(_ jump: Jump) {
+        let body: () -> Void = { [weak self] in
+            guard let self = self else { return }
+            guard var session = self.currentSession else { return }
+
+            guard let idx = session.jumps.firstIndex(where: { $0.id == jump.id }) else {
+                self.handleJumpDetected(jump)   // provisional gone — don't lose the final
+                return
+            }
+
+            var updated = jump
+            updated.sessionId = session.id
+            session.jumps[idx] = updated
+            self.currentSession = session
+            self.jumpCount = session.jumps.count
+
+            print("🔧 JUMP REFINED! Height: \(String(format: "%.2f", updated.height))m, Airtime: \(String(format: "%.2f", updated.airtime))s")
+            // Push the corrected metrics to the cloud (only records if it improves a PB).
+            self.handleUploadOnJump(updated)
+        }
+
+        if Thread.isMainThread { body() } else { DispatchQueue.main.async(execute: body) }
+    }
+
+    /// Remove a provisional/instant jump later rejected by a full-baseline or
+    /// drift-corrected re-analysis.
+    private func handleJumpRetracted(_ jumpId: String) {
+        let body: () -> Void = { [weak self] in
+            guard let self = self else { return }
+            guard var session = self.currentSession else { return }
+            guard let idx = session.jumps.firstIndex(where: { $0.id == jumpId }) else { return }
+
+            let removed = session.jumps.remove(at: idx)
+            self.currentSession = session
+            self.jumpCount = session.jumps.count
+            if self.newBestJumpPresentation?.id == removed.id {
+                self.newBestJumpPresentation = nil
+            }
+            print("↩️ JUMP RETRACTED (false positive) — id=\(jumpId)")
+        }
+
+        if Thread.isMainThread { body() } else { DispatchQueue.main.async(execute: body) }
+    }
+
     func dismissNewBestJumpPresentation() {
         newBestJumpPresentation = nil
     }
@@ -812,9 +986,26 @@ class SessionManager: ObservableObject {
         sessionLogger.start(
             sessionId: session.id,
             mode: mode,
-            sensorOnly: true
+            sensorOnly: true,
+            engine: activeDetectionEngine
         )
+        emitSessionStartSyncMarker()
+        if ProcessInfo.processInfo.isLowPowerModeEnabled {
+            sessionLogger.logEvent("Low Power Mode is ON - disable it for absolute-altitude cadence")
+        }
         print("🟢 Recording diagnostics opened")
+    }
+
+    private func emitSessionStartSyncMarker() {
+        sessionLogger.logSync(label: "session-start-triple-tap")
+        sessionLogger.logEvent("SYNC marker: three watch haptic taps")
+
+        for idx in 0..<3 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12 + Double(idx) * 0.18) {
+                guard self.isRecording else { return }
+                WKInterfaceDevice.current().play(.click)
+            }
+        }
     }
 
     /// Called on the main thread from handleGPSPoint.

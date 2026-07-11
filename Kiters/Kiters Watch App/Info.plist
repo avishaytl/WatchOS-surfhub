@@ -44,7 +44,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Kiters tracks your location in the background to keep recording your session even when the screen is off.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Kiters uses motion sensors to detect jumps and calculate jump height and rotations.</string>
+	<string>Kiters uses motion, depth, and pressure sensors to detect jumps and improve water-session measurements.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -52,6 +52,7 @@
 	<key>WKBackgroundModes</key>
 	<array>
 		<string>workout-processing</string>
+		<string>underwater-depth</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

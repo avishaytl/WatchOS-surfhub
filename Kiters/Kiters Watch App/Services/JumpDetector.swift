@@ -1150,7 +1150,7 @@ final class JumpDetector: JumpDetecting {
 
         #if os(watchOS)
         // Respect the "Haptic Feedback" setting (Settings → Display & Feedback).
-        // Mirrors the autoLock default convention: missing key ⇒ enabled.
+        // Missing key ⇒ enabled.
         let hapticsEnabled = UserDefaults.standard.object(forKey: "hapticFeedback") as? Bool ?? true
         if hapticsEnabled {
             let strong = (CONFIDENCE_AS_PERCENT ? jump.confidence : jump.confidence * 100) >= 75

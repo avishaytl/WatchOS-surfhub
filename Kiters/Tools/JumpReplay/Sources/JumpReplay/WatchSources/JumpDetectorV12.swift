@@ -1,0 +1,1 @@
+../../../../../Kiters Watch App/Services/JumpDetectorV12.swift

@@ -1,0 +1,22 @@
+{
+  "avgCandidatesPerJump" : 1.6,
+  "labels" : 9,
+  "log" : "log_20260626_163255_E04B8F70.kslog",
+  "v10" : {
+    "f1" : 0.23,
+    "fn" : 0,
+    "fp" : 60,
+    "precision" : 0.13,
+    "recall" : 1,
+    "tp" : 9
+  },
+  "v11" : {
+    "f1" : 1,
+    "fn" : 0,
+    "fp" : 0,
+    "precision" : 1,
+    "recall" : 1,
+    "tp" : 9
+  },
+  "v11Clusters" : 88
+}

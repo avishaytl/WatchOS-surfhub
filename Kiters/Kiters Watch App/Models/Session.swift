@@ -88,6 +88,14 @@ struct Jump: Identifiable, Codable {
     var imuSamples: [IMUSample]
     /// Time from takeoff to apex (peak height), seconds. nil if not computed.
     var apexTime: Double?
+    /// V12 absolute-altitude metadata. Optional so older sessions and older
+    /// engines decode unchanged.
+    var heightSource: String?
+    var absoluteTakeoffAltitude: Double?
+    var absoluteApexAltitude: Double?
+    var absoluteLandingAltitude: Double?
+    var takeoffSpeed: Double?
+    var landingSpeed: Double?
 
     init(sessionId: String, startTime: Date) {
         self.id = UUID().uuidString
@@ -101,6 +109,12 @@ struct Jump: Identifiable, Codable {
         self.confidence = 0
         self.imuSamples = []
         self.apexTime = nil
+        self.heightSource = nil
+        self.absoluteTakeoffAltitude = nil
+        self.absoluteApexAltitude = nil
+        self.absoluteLandingAltitude = nil
+        self.takeoffSpeed = nil
+        self.landingSpeed = nil
     }
 }
 
@@ -137,9 +151,85 @@ struct IMUSample: Codable {
     let rotationY: Double
     let rotationZ: Double
     let gravity: Vector3?
+    /// CoreMotion monotonic timestamp for the IMU sample, seconds since boot.
+    /// Used by V12 so motion, barometer, GPS, and submersion share one clock.
+    let motionTimestamp: TimeInterval?
     /// Barometric pressure in hPa (from CMAltimeter). nil when unavailable.
     let pressure: Double?
-    
+    /// CMAltimeter relative altitude in metres, delivered on the barometer's own
+    /// cadence. nil when unavailable or for logs captured before V12 metadata.
+    let relativeAltitude: Double?
+    /// CoreMotion monotonic timestamp for the barometer sample currently stamped
+    /// onto this IMU sample. V12 de-duplicates ZOH-held baro samples by this value.
+    let barometerTimestamp: TimeInterval?
+    /// CMAltimeter absolute altitude in metres, from startAbsoluteAltitudeUpdates.
+    /// V12 prefers this fast delta channel when available; the local jump anchor
+    /// cancels its slow sea-level offset.
+    let absoluteAltitude: Double?
+    let absoluteAltitudeAccuracy: Double?
+    let absoluteAltitudePrecision: Double?
+    let absoluteAltitudeTimestamp: TimeInterval?
+    /// Device attitude quaternion from CMDeviceMotion, needed by LOG5 v2 replay.
+    let attitudeQuaternion: MotionQuaternion?
+
+    // ── Water submersion (Apple Watch Ultra · CMWaterSubmersionManager) ──
+    // ZOH-held onto each IMU sample the same way `pressure` is. All optional so
+    // older `.kslog` files (recorded before this channel existed) and non-Ultra
+    // devices simply decode these as nil — the engine treats absent submersion
+    // as "unknown" and falls back to IMU-only detection.
+    /// True while the watch reports the wearer/board is under water (surfaced =
+    /// false). nil when submersion sensing is unavailable.
+    let submerged: Bool?
+    /// Depth under water in metres (nil when surfaced or unavailable).
+    let waterDepth: Double?
+    /// Water pressure in hPa from the submersion sensor (a higher-quality baro
+    /// than CMAltimeter during water sports). nil when surfaced/unavailable.
+    let waterPressure: Double?
+
+    /// New submersion params default to nil so every existing call site (which
+    /// ends at `pressure:`) and every previously-recorded log stays valid.
+    init(timestamp: Date,
+         accelerationX: Double,
+         accelerationY: Double,
+         accelerationZ: Double,
+         rotationX: Double,
+         rotationY: Double,
+         rotationZ: Double,
+         gravity: Vector3?,
+         pressure: Double?,
+         motionTimestamp: TimeInterval? = nil,
+         relativeAltitude: Double? = nil,
+         barometerTimestamp: TimeInterval? = nil,
+         absoluteAltitude: Double? = nil,
+         absoluteAltitudeAccuracy: Double? = nil,
+         absoluteAltitudePrecision: Double? = nil,
+         absoluteAltitudeTimestamp: TimeInterval? = nil,
+         attitudeQuaternion: MotionQuaternion? = nil,
+         submerged: Bool? = nil,
+         waterDepth: Double? = nil,
+         waterPressure: Double? = nil) {
+        self.timestamp = timestamp
+        self.accelerationX = accelerationX
+        self.accelerationY = accelerationY
+        self.accelerationZ = accelerationZ
+        self.rotationX = rotationX
+        self.rotationY = rotationY
+        self.rotationZ = rotationZ
+        self.gravity = gravity
+        self.motionTimestamp = motionTimestamp
+        self.pressure = pressure
+        self.relativeAltitude = relativeAltitude
+        self.barometerTimestamp = barometerTimestamp
+        self.absoluteAltitude = absoluteAltitude
+        self.absoluteAltitudeAccuracy = absoluteAltitudeAccuracy
+        self.absoluteAltitudePrecision = absoluteAltitudePrecision
+        self.absoluteAltitudeTimestamp = absoluteAltitudeTimestamp
+        self.attitudeQuaternion = attitudeQuaternion
+        self.submerged = submerged
+        self.waterDepth = waterDepth
+        self.waterPressure = waterPressure
+    }
+
     var accelerationMagnitude: Double {
         sqrt(accelerationX * accelerationX +
              accelerationY * accelerationY +
@@ -156,6 +246,13 @@ struct IMUSample: Codable {
 
 // MARK: - Supporting Types
 struct Vector3: Codable {
+    let x: Double
+    let y: Double
+    let z: Double
+}
+
+struct MotionQuaternion: Codable {
+    let w: Double
     let x: Double
     let y: Double
     let z: Double
@@ -279,29 +376,45 @@ enum DetectionMode: String, Codable, CaseIterable {
 /// User-selectable jump-detection ENGINE (independent of DetectionMode presets).
 /// Stored in UserDefaults as "detectionEngine". Takes effect at next session start.
 enum DetectionEngine: String, Codable, CaseIterable {
-    case v10  // sensor-grounded kite-aware evolution (KitesurfJumpEngineV10) — current default
-    case v7   // legacy streaming FSM (KitesurfJumpEngineV7)
+    case v11Buffered = "v11-buffered"  // offline buffered engine (3–5 s delayed, fewer false positives) — current default
+    case v13Pure = "v13-pure"          // recall-first pure engine: IMU opens a candidate, classification runs after landing (≤5 s)
+    case v12AppleSensorFusion = "v12-apple-sensor-fusion" // opt-in Apple sensor-fusion engine; runtime-gated by required sensors
+    case v10  // sensor-grounded kite-aware evolution (KitesurfJumpEngineV10)
+    case v9   // cyclic-buffer scanner over the v8 engine (provisional→final, surfaces the accurate final)
     case v8   // baro-centric whole-session engine (periodic re-analysis live)
+    case v7   // legacy streaming FSM (KitesurfJumpEngineV7)
 
     var displayName: String {
         switch self {
-        case .v10: return "V10 (Default)"
-        case .v7: return "V7"
+        case .v11Buffered: return "V11 (Default)"
+        case .v13Pure: return "V13 Pure (Beta)"
+        case .v12AppleSensorFusion: return "V12 Sensor Fusion"
+        case .v10: return "V10"
+        case .v9: return "V9"
         case .v8: return "V8"
+        case .v7: return "V7"
         }
     }
     var description: String {
         switch self {
+        case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
+        case .v13Pure: return "Recall-first: IMU only opens a candidate; the jump is classified after landing from buffered absolute altitude with drift-compensated baselines. Result within 5 s of touchdown; GPS never rejects."
+        case .v12AppleSensorFusion: return "Apple sensor-fusion engine using batched motion, altimeter, GPS and optional submersion data. Opt-in and gated by runtime readiness checks."
         case .v10: return "Sensor-grounded, kite-aware engine."
-        case .v7: return "Legacy real-time engine."
+        case .v9: return "Cyclic-buffer scanner over the baro-centric v8 engine. Re-scans a rolling window and surfaces each jump once its accurate measurement settles."
         case .v8: return "Baro-centric engine (experimental)."
+        case .v7: return "Legacy real-time engine."
         }
     }
     var icon: String {
         switch self {
+        case .v11Buffered: return "tray.full"
+        case .v13Pure: return "square.stack.3d.up"
+        case .v12AppleSensorFusion: return "waveform.path.ecg"
         case .v10: return "checkmark.seal"
-        case .v7: return "clock.arrow.circlepath"
+        case .v9: return "arrow.triangle.2.circlepath"
         case .v8: return "sparkles"
+        case .v7: return "clock.arrow.circlepath"
         }
     }
 }

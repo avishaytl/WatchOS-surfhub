@@ -144,10 +144,222 @@ func testBackgroundNoiseGateRequiresAllNoiseSignals() {
     )
 }
 
+final class V12Probe: JumpPipelineV12Delegate {
+    var instant: [V12Jump] = []
+    var refined: [V12Jump] = []
+
+    func jumpDetected(_ jump: V12Jump) {
+        instant.append(jump)
+    }
+
+    func jumpRefined(_ jump: V12Jump) {
+        refined.append(jump)
+    }
+}
+
+func testV12PipelineEmitsInstantAndRefinedJump() {
+    let pipeline = JumpPipelineV12()
+    let probe = V12Probe()
+    pipeline.delegate = probe
+
+    for t in stride(from: 0.0, through: 4.9, by: 0.1) {
+        pipeline.addAccel(t: t, aMag: 0.08)
+    }
+    for t in stride(from: 0.0, through: 12.0, by: 1.0) {
+        pipeline.addLocation(t: t, lat: 32.0, lng: 34.0 + t * 0.00003, speedMs: 8.0)
+    }
+    for t in [0.0, 1.0, 2.0, 3.0, 4.0] {
+        pipeline.addBaro(t: t, relAltM: 0)
+    }
+
+    pipeline.addAccel(t: 5.0, aMag: 2.5)
+    pipeline.addBaro(t: 6.0, relAltM: 1.6)
+    pipeline.addBaro(t: 7.0, relAltM: 2.4)
+    pipeline.addBaro(t: 8.0, relAltM: 1.6)
+
+    for t in stride(from: 5.1, through: 8.1, by: 0.1) {
+        pipeline.addAccel(t: t, aMag: 0.03)
+    }
+    pipeline.addAccel(t: 8.2, aMag: 2.1)
+    pipeline.addBaro(t: 8.4, relAltM: 0.2)
+    pipeline.addBaro(t: 8.9, relAltM: 0.1)
+
+    expectEqual(probe.instant.count, 1, "V12 should emit one instant jump")
+    let instant = probe.instant[0]
+    expect(instant.heightM >= 1.5, "V12 instant jump should clear display height")
+    expect(abs(instant.airtimeSec - 3.2) < 0.11, "V12 instant airtime should use IMU landing evidence")
+    expect(instant.arcBaroPoints >= 2, "V12 should use barometer arc points for height")
+
+    pipeline.addBaro(t: 9.5, relAltM: 0.0)
+    pipeline.addBaro(t: 10.5, relAltM: 0.0)
+    pipeline.addAccel(t: 11.3, aMag: 0.06)
+
+    expectEqual(probe.refined.count, 1, "V12 should emit one refined jump")
+    expect(probe.refined[0].refined, "V12 refined emission should be marked refined")
+    expect(probe.refined[0].heightM >= 1.5, "V12 refined jump should remain valid")
+}
+
+func testV12RejectsSubMeterAbsoluteJump() {
+    let pipeline = JumpPipelineV12()
+    let probe = V12Probe()
+    pipeline.delegate = probe
+
+    for t in [0.0, 1.0, 2.0, 3.0] {
+        pipeline.addBaro(t: t, relAltM: 0)
+    }
+
+    pipeline.addAccel(t: 4.0, aMag: 2.4)
+    pipeline.addBaro(t: 4.4, relAltM: 0.35)
+    pipeline.addBaro(t: 5.0, relAltM: 0.80)
+    pipeline.addBaro(t: 5.6, relAltM: 0.20)
+    pipeline.addAccel(t: 5.7, aMag: 2.1)
+    pipeline.addBaro(t: 5.8, relAltM: 0.05)
+
+    expectEqual(probe.instant.count, 0, "V12 should reject absolute jumps below 1m")
+    expectEqual(probe.refined.count, 0, "V12 should not refine rejected sub-metre jumps")
+}
+
+// ── V13 pure engine (recall-first, post-landing classification) ───────────
+
+final class V13Probe: JumpEngineV13Delegate {
+    var jumps: [V13Jump] = []
+    func jumpDetected(_ jump: V13Jump) {
+        jumps.append(jump)
+    }
+}
+
+/// Feeds one synthetic kite jump: flat water at `base`, IMU pop at `takeoff`,
+/// a parabolic absolute-altitude arc peaking at `apexM`, an impact at `landing`,
+/// then flat water at `base + driftM` (linear drift across the flight).
+/// 25 Hz IMU, 3 Hz altimeter, deterministic integer-step timeline.
+func feedV13Arc(_ engine: JumpEngineV13,
+                takeoff: Double = 8.0,
+                landing: Double = 11.0,
+                apexM: Double = 2.6,
+                base: Double = 100.0,
+                driftM: Double = 0.0,
+                endT: Double = 16.0,
+                gyroTriggerOnly: Bool = false,
+                spikeOnlyAt: Double? = nil,
+                withGPS: Bool = false) {
+    let dt = 0.04
+    var nextAltT = 0.0
+    let steps = Int((endT / dt).rounded())
+    for i in 0...steps {
+        let t = Double(i) * dt
+
+        var accel = 0.1
+        var gyro = 0.3
+        if abs(t - takeoff) < dt / 2 {
+            accel = gyroTriggerOnly ? 0.1 : 2.6
+            gyro = 5.0
+        } else if abs(t - landing) < dt / 2 {
+            accel = gyroTriggerOnly ? 0.1 : 2.9
+            gyro = 2.0
+        } else if t > takeoff, t < landing {
+            accel = 0.05
+            gyro = 1.0
+        }
+        engine.addIMU(t: t, accelG: accel, gyroRadS: gyro)
+
+        if t + 1e-9 >= nextAltT {
+            let alt: Double
+            if let spikeT = spikeOnlyAt {
+                // Flat water with one glitched altimeter reading.
+                alt = abs(t - spikeT) <= 1.0 / 6.0 ? base + 3.0 : base
+            } else if t > takeoff, t < landing {
+                let p = (t - takeoff) / (landing - takeoff)
+                alt = base + driftM * p + apexM * 4 * p * (1 - p)
+            } else if t >= landing {
+                alt = base + driftM
+            } else {
+                alt = base
+            }
+            engine.addAltitude(t: t, altitudeM: alt)
+            nextAltT += 1.0 / 3.0
+        }
+
+        if withGPS, i % 25 == 0 {
+            engine.addGPS(t: t, lat: 32.0, lng: 34.0 + t * 0.00003, speedMS: 9.0)
+        }
+    }
+}
+
+func testV13DetectsCleanJumpAfterLanding() {
+    let engine = JumpEngineV13()
+    let probe = V13Probe()
+    engine.delegate = probe
+
+    feedV13Arc(engine, withGPS: true)
+
+    expectEqual(probe.jumps.count, 1, "V13 should classify exactly one jump after landing")
+    guard let jump = probe.jumps.first else { return }
+    expect(abs(jump.heightM - 2.57) <= 0.3, "V13 height should match the synthetic apex, got \(jump.heightM)")
+    expect(abs(jump.airtimeSec - 3.6) <= 0.5, "V13 airtime should span the takeoff window start to stable landing, got \(jump.airtimeSec)")
+    expect(jump.emittedAtT - jump.landingT <= 5.0, "V13 must emit within 5 s of landing (§1), got \(jump.emittedAtT - jump.landingT)")
+    expect(jump.emittedAtT >= jump.landingT, "V13 classification must run after landing")
+    expect(jump.baselinePostM != nil, "V13 should compute a post-landing baseline")
+    expect(jump.triggerSource == .altitude, "V13 candidate should be opened by absolute-altitude rise")
+    expect(jump.confidence >= 0.7, "V13 clean arc should be high confidence, got \(jump.confidence)")
+    expect((jump.distanceM ?? 0) > 2, "V13 should derive horizontal distance from GPS")
+    expect(jump.altitudePointCount >= 3, "V13 should keep the altitude arc points, got \(jump.altitudePointCount)")
+}
+
+func testV13RequiresConfiguredTakeoffWindow() {
+    let engine = JumpEngineV13()
+    let probe = V13Probe()
+    engine.delegate = probe
+
+    engine.addAltitude(t: 0.00, altitudeM: 100.0)
+    engine.addAltitude(t: 0.33, altitudeM: 103.0)
+    engine.addAltitude(t: 0.66, altitudeM: 100.0)
+    engine.addAltitude(t: 0.99, altitudeM: 100.0)
+
+    expectEqual(probe.jumps.count, 0, "V13 must not open a jump before the configured takeoff window elapsed")
+}
+
+func testV13CompensatesBaselineDriftAcrossJump() {
+    let engine = JumpEngineV13()
+    let probe = V13Probe()
+    engine.delegate = probe
+
+    // Water level drifts +0.9 m during the flight (swell). V13 simple mode
+    // subtracts the stable landing baseline measured over the 2 s landing window.
+    feedV13Arc(engine, driftM: 0.9)
+
+    expectEqual(probe.jumps.count, 1, "V13 should land the drifted jump on the shifted baseline")
+    guard let jump = probe.jumps.first else { return }
+    expect(jump.baselineShifted, "V13 should flag the shifted landing baseline")
+    expect(!jump.driftSuspect, "0.9 m of drift is within the plausible-drift budget")
+    expect(abs((jump.baselinePostM ?? 0) - 100.9) <= 0.15, "V13 post baseline should sit on the new level, got \(String(describing: jump.baselinePostM))")
+    expect(jump.heightM < 2.6, "V13 height must be measured against the landing baseline, got \(jump.heightM)")
+    expect(jump.heightM > 2.0, "V13 drift compensation should preserve the real jump scale, got \(jump.heightM)")
+}
+
+func testV13FlushDoesNotEmitBeforeLandingWindow() {
+    let engine = JumpEngineV13()
+    let probe = V13Probe()
+    engine.delegate = probe
+
+    // Session ends about 1 s after touchdown. The new simple V13 contract needs
+    // a full 2 s stable landing window, so this must not emit a final jump yet.
+    feedV13Arc(engine, endT: 12.0)
+    let late = engine.flush(now: 12.0)
+
+    expectEqual(probe.jumps.count, 0, "V13 should not have emitted before the settle window closed")
+    expectEqual(late.count, 0, "V13 flush must wait for the full 2 s landing stability window")
+}
+
 testStartIsDedupedAndRetriesAfterFailureWindow()
 testFallbackStartUsesZeroCoordinateAndAcceptsLateServerId()
 testPingTrackAndRecordGatingMatchLiveSessionContract()
 testJumpRecordsQueueAndFlushOnlySessionBests()
 testGPSStationaryGateOnlyAppliesWhenReliableGPSExists()
 testBackgroundNoiseGateRequiresAllNoiseSignals()
+testV12PipelineEmitsInstantAndRefinedJump()
+testV12RejectsSubMeterAbsoluteJump()
+testV13DetectsCleanJumpAfterLanding()
+testV13RequiresConfiguredTakeoffWindow()
+testV13CompensatesBaselineDriftAcrossJump()
+testV13FlushDoesNotEmitBeforeLandingWindow()
 print("WatchLiveSessionCoreChecks passed")

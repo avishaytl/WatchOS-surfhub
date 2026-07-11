@@ -55,7 +55,7 @@ struct ContentView: View {
         .alert(
             L(sessionManager.sessionNotice?.titleKey ?? "common.ok"),
             isPresented: Binding(
-                get: { sessionManager.sessionNotice != nil },
+                get: { sessionManager.sessionNotice != nil && !sessionManager.isRecording },
                 set: { isPresented in
                     if !isPresented {
                         sessionManager.sessionNotice = nil
@@ -74,7 +74,7 @@ struct ContentView: View {
         .alert(
             L(authService.launchNotice?.titleKey ?? "common.ok"),
             isPresented: Binding(
-                get: { authService.launchNotice != nil },
+                get: { authService.launchNotice != nil && !sessionManager.isRecording },
                 set: { isPresented in
                     if !isPresented {
                         authService.launchNotice = nil

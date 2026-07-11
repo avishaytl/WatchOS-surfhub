@@ -1,0 +1,11 @@
+{
+  "source": "Surfr — Itai Hershko, 12 Jun 2026 (docs/WhatsApp 23.59.59 screenshot)",
+  "log": "log2.json (log_20260612_121459_4173200D)",
+  "sensorOnly": false,
+  "jumps": [
+    { "id": 1, "elapsedSec": 558,  "height": 3.17, "airtime": 4.59, "distance": 7 },
+    { "id": 2, "elapsedSec": 735,  "height": 3.45, "airtime": 4.12, "distance": 24 },
+    { "id": 3, "elapsedSec": 958,  "height": 3.14, "airtime": 4.37, "distance": 10 },
+    { "id": 4, "elapsedSec": 1333, "height": 3.77, "airtime": 4.33, "distance": 20 }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "detectedRateHz" : 49.91745908881654,
+  "detectionMode" : "standard",
+  "durationSec" : 353.76400005817413,
+  "file" : "log_20260703_150232_F8142B34.kslog",
+  "format" : "onDevice",
+  "jumps" : [
+    {
+      "accepted" : true,
+      "airtime" : 3.2,
+      "apexTime" : 0.06,
+      "confidence" : 83.5,
+      "height" : 3.63,
+      "heightSource" : "unknown",
+      "index" : 0,
+      "jumpDistance" : 22.5,
+      "physicalAirtime" : 3.2050000429153442,
+      "rotations" : 1,
+      "takeoffOffsetSec" : 146.24699997901917
+    },
+    {
+      "accepted" : true,
+      "airtime" : 3.02,
+      "apexTime" : 1.08,
+      "confidence" : 69.6,
+      "height" : 4.99,
+      "heightSource" : "unknown",
+      "index" : 1,
+      "jumpDistance" : 19.6,
+      "physicalAirtime" : 3.024999976158142,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 166.9430000782013
+    },
+    {
+      "accepted" : true,
+      "airtime" : 2.14,
+      "apexTime" : 0.38,
+      "confidence" : 69.1,
+      "height" : 2.09,
+      "heightSource" : "unknown",
+      "index" : 2,
+      "jumpDistance" : 11.3,
+      "physicalAirtime" : 2.1920000314712524,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 190.10199999809265
+    },
+    {
+      "accepted" : true,
+      "airtime" : 3.48,
+      "apexTime" : 0.24,
+      "confidence" : 69.39999999999999,
+      "height" : 1.65,
+      "heightSource" : "unknown",
+      "index" : 3,
+      "jumpDistance" : 5.5,
+      "physicalAirtime" : 3.50600004196167,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 277.3109999895096
+    },
+    {
+      "accepted" : true,
+      "airtime" : 4.32,
+      "apexTime" : 2.24,
+      "confidence" : 100,
+      "height" : 9.99,
+      "heightSource" : "unknown",
+      "index" : 4,
+      "jumpDistance" : 28.4,
+      "physicalAirtime" : 4.327999949455261,
+      "rotations" : 1,
+      "takeoffOffsetSec" : 294.42000007629395
+    },
+    {
+      "accepted" : true,
+      "airtime" : 3.5,
+      "apexTime" : 0.8,
+      "confidence" : 69.69999999999999,
+      "height" : 1.76,
+      "heightSource" : "unknown",
+      "index" : 5,
+      "jumpDistance" : 11.9,
+      "physicalAirtime" : 3.5059999227523804,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 310.9480000734329
+    }
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 17660
+}

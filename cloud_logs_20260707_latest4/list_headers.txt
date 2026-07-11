@@ -1,0 +1,22 @@
+HTTP/2 200 
+date: Tue, 07 Jul 2026 10:06:25 GMT
+content-type: application/json
+cf-ray: a176094dceeb0dd4-TLV
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+set-cookie: __cf_bm=joyIt.WdWTNUBwuX9GY9F8_YbpVm1269FAKnk1lSbqk-1783418784.9279203-1.0.1.1-h0Mv4UZ.CSmIyNfJNuPbxJKKOxqFtCfcWzXZMQs0Co9l4G5sKKksC2sAM9BPavsfMNjvor7_Sab9rlHE3C5eXp2QaS4QU3ehhqrk7mp4KIlxC8bN7TBEjgBrb2CdMxVS; HttpOnly; SameSite=None; Secure; Path=/; Domain=supabase.co; Expires=Tue, 07 Jul 2026 10:36:25 GMT
+server: cloudflare
+vary: Accept-Encoding
+x-content-type-options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-calib-token
+access-control-allow-methods: GET, POST, OPTIONS
+endpoint-load-metrics: application_utilization:8,named_metrics.queue_depth:8
+sb-gateway-version: 1
+sb-project-ref: vvowvcdylztsqpzifdqc
+sb-request-id: 019f3c0b-0ca4-72ad-af2c-071e938a8a90
+x-deno-execution-id: 2606c21f-ea98-4888-9957-26c2ff8eb097
+x-sb-edge-region: eu-central-2
+x-served-by: supabase-edge-runtime
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+alt-svc: h3=":443"; ma=86400
+

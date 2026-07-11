@@ -22,6 +22,16 @@ struct CLIOptions {
     var surfrDistanceToleranceM: Double = 10.0
     var noGPS: Bool = false
     var noThrows: Bool = false         // v8: disable the ballistic throw path
+    var compareEngines: Bool = false   // run v10 + v11 and emit a diff report
+    var compareBaseline: String = "v10"
+    var compareCandidate: String = "v11"
+    var v11SelfTest: Bool = false      // run v11 unit assertions and exit
+    var engineE2ESelfTest: Bool = false // run watch-adapter E2E assertions and exit
+    var v11Debug: Bool = false         // write v11 accepted/rejected segment debug JSON
+    var dumpSamples: String? = nil     // write decoded per-sample CSV and exit
+    var evaluateLabels: String? = nil  // Surfr ground-truth JSON → evaluation harness
+    var evalTolerance: String = "normal" // strict|normal|loose
+    var evalOffsetSec: Double = 0      // shift ground-truth times to align with the log
 }
 
 func parseArgs() -> CLIOptions {
@@ -83,6 +93,32 @@ func parseArgs() -> CLIOptions {
             o.noGPS = true
         case "--no-throws":
             o.noThrows = true
+        case "--compare-engines":
+            o.compareEngines = true
+        case "--compare-baseline":
+            i += 1
+            o.compareBaseline = argv[i].lowercased()
+        case "--compare-candidate":
+            i += 1
+            o.compareCandidate = argv[i].lowercased()
+        case "--v11-selftest":
+            o.v11SelfTest = true
+        case "--engine-e2e-selftest":
+            o.engineE2ESelfTest = true
+        case "--v11-debug":
+            o.v11Debug = true
+        case "--dump-samples":
+            i += 1
+            o.dumpSamples = argv[i]
+        case "--evaluate":
+            i += 1
+            o.evaluateLabels = argv[i]
+        case "--eval-tolerance":
+            i += 1
+            o.evalTolerance = argv[i].lowercased()
+        case "--eval-offset":
+            i += 1
+            o.evalOffsetSec = Double(argv[i]) ?? 0
         case "-h", "--help":
             printUsage()
             exit(0)
@@ -95,7 +131,7 @@ func parseArgs() -> CLIOptions {
         }
         i += 1
     }
-    if o.inputs.isEmpty {
+    if o.inputs.isEmpty && !o.v11SelfTest && !o.engineE2ESelfTest {
         printUsage()
         exit(2)
     }
@@ -110,7 +146,13 @@ func printUsage() {
 
     Options:
       --format <coreMotion|android>   Force input format (default: auto)
-      --engine <v7|v8|v10>            Jump engine (default: v7). v8 = baro-centric batch; v10 = engine_v10 (sensor-grounded kite-aware) adapter.
+      --engine <v7|v8|v10|v11|v12|v13>  Jump engine (default: v7). v8 = baro-centric batch; v10 = sensor-grounded kite-aware; v11 = offline buffered; v12 = Apple sensor-fusion; v13 = recall-first pure (post-landing classification).
+      --compare-engines               Run two engines (default v10 vs v11) over each log and emit a diff + quality report.
+      --compare-baseline <eng>        Baseline engine for --compare-engines (default: v10).
+      --compare-candidate <eng>       Candidate engine for --compare-engines (default: v11).
+      --v11-debug                     Write v11 accepted/rejected segment debug JSON alongside the report.
+      --v11-selftest                  Run v11 core-calculation unit tests and exit.
+      --engine-e2e-selftest           Run exact watch-adapter E2E tests for v11, v12 and v13 and exit.
       --mode <standard|conservative|sensitive|custom>  Detection mode (default: standard, v7 only)
       --speed <m/s>                   Mock GPS speed (default: 8.0)
       --output <dir>                  Output directory (default: ./output)
@@ -152,6 +194,12 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 detector = JumpDetector()
             case "v10":
                 detector = JumpDetectorV10()
+            case "v11", "v11-buffered":
+                detector = JumpDetectorV11()
+            case "v12", "v12-apple-sensor-fusion":
+                detector = JumpDetectorV12()
+            case "v13", "v13-pure":
+                detector = JumpDetectorV13()
             default:
                 fputs("unknown engine: \(opts.engine)\n", stderr)
                 return false
@@ -160,8 +208,26 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
             // streaming analysis inline and deliver callbacks synchronously.
             detector.synchronousAnalysis = true
             var capturedJumps: [(Jump, Date)] = []
+            var richV11: [Double: JumpResultV11] = [:]
+            if let v11 = detector as? JumpDetectorV11 {
+                v11.onJumpResultV11 = { r in
+                    richV11[round(r.takeoffTimeSeconds * 100) / 100] = r
+                }
+            }
             detector.onJumpDetected = { jump in
                 capturedJumps.append((jump, log.samples.first?.timestamp ?? jump.startTime))
+            }
+            if let v12 = detector as? JumpDetectorV12 {
+                v12.onJumpUpdated = { jump in
+                    if let idx = capturedJumps.firstIndex(where: { $0.0.id == jump.id }) {
+                        capturedJumps[idx] = (jump, capturedJumps[idx].1)
+                    } else {
+                        capturedJumps.append((jump, log.samples.first?.timestamp ?? jump.startTime))
+                    }
+                }
+                v12.onJumpRetracted = { id in
+                    capturedJumps.removeAll { $0.0.id == id }
+                }
             }
 
             detector.reset(mode: opts.mode)
@@ -172,9 +238,40 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
 
             // Mock GPS that fires before each new sample — keeps state in RIDING.
             let gps = MockGPS(speed: opts.speed, detector: detector)
+            let absoluteAltitudes = log.absoluteAltitudes.sorted { $0.sensorT < $1.sensorT }
+            let firstAbsoluteAltitudeT = absoluteAltitudes.first?.sensorT
+            let receivedBaseT = log.samples.first?.motionTimestamp
+                ?? firstAbsoluteAltitudeT
+                ?? ProcessInfo.processInfo.systemUptime
+            var nextAbsoluteAltitudeIndex = 0
+
+            func feedAbsoluteAltitude(_ event: LoadedAbsoluteAltitude) {
+                let receivedT: TimeInterval
+                if let firstAbsoluteAltitudeT {
+                    receivedT = receivedBaseT + (event.sensorT - firstAbsoluteAltitudeT)
+                } else {
+                    receivedT = event.sensorT
+                }
+                detector.processAbsoluteAltitude(
+                    sensorT: event.sensorT,
+                    receivedT: receivedT,
+                    altitudeM: event.altitudeM,
+                    accuracyM: event.accuracyM,
+                    precisionM: event.precisionM
+                )
+            }
+
+            func feedAbsoluteAltitudes(upTo sampleT: TimeInterval) {
+                while nextAbsoluteAltitudeIndex < absoluteAltitudes.count,
+                      absoluteAltitudes[nextAbsoluteAltitudeIndex].sensorT <= sampleT {
+                    feedAbsoluteAltitude(absoluteAltitudes[nextAbsoluteAltitudeIndex])
+                    nextAbsoluteAltitudeIndex += 1
+                }
+            }
 
             // Drive samples through detector
             for (idx, sample) in log.samples.enumerated() {
+                feedAbsoluteAltitudes(upTo: sample.motionTimestamp ?? sample.timestamp.timeIntervalSince1970)
                 if hasLogSpeeds, idx < log.speeds.count, let spd = log.speeds[idx] {
                     detector.updateGPS(speed: spd, altitude: 0, latitude: 0, longitude: 0, course: -1, horizontalAccuracy: nil, timestamp: sample.timestamp)
                 } else if !opts.noGPS {
@@ -182,22 +279,50 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 }
                 detector.processSample(sample)
             }
+            while nextAbsoluteAltitudeIndex < absoluteAltitudes.count {
+                feedAbsoluteAltitude(absoluteAltitudes[nextAbsoluteAltitudeIndex])
+                nextAbsoluteAltitudeIndex += 1
+            }
+
+            // Buffered/refined engines need a final flush so the closing seconds
+            // are analysed and V12's delayed refinement is delivered. V13 hands
+            // back jumps still settling at the end of the log.
+            if opts.engine.hasPrefix("v11") || opts.engine.hasPrefix("v12") || opts.engine.hasPrefix("v13") {
+                let late = detector.endSession()
+                for jump in late {
+                    capturedJumps.append((jump, log.samples.first?.timestamp ?? jump.startTime))
+                }
+            }
+
+            // v11 segment-level debug JSON (accepted + rejected, with reason codes).
+            if opts.v11Debug, let v11 = detector as? JumpDetectorV11 {
+                let debugURL = opts.outputDir.appendingPathComponent("\(url.deletingPathExtension().lastPathComponent).v11debug.json")
+                try? FileManager.default.createDirectory(at: opts.outputDir, withIntermediateDirectories: true)
+                let enc = JSONEncoder()
+                enc.outputFormatting = [.prettyPrinted, .sortedKeys]
+                if let data = try? enc.encode(v11.debugSegments) {
+                    try? data.write(to: debugURL)
+                    print("→ wrote \(debugURL.path) (\(v11.debugSegments.count) segments)", to: &stdout)
+                }
+            }
 
             replayJumps = capturedJumps.enumerated().map { (i, pair) -> ReplayJump in
                 let (j, base) = pair
-                let baroUsed = (j.imuSamples.last?.pressure != nil)  // best-effort
+                let takeoff = j.startTime.timeIntervalSince(base)
+                let rich = richV11[round(takeoff * 100) / 100]
+                let accepted = (opts.engine.hasPrefix("v11") || opts.engine.hasPrefix("v12") || opts.engine.hasPrefix("v13")) ? true : j.confidence >= 50
                 return ReplayJump(
                     index: i,
-                    takeoffOffsetSec: j.startTime.timeIntervalSince(base),
+                    takeoffOffsetSec: takeoff,
                     airtime: j.airtime,
                     physicalAirtime: j.endTime.timeIntervalSince(j.startTime),
                     height: j.height,
-                    heightSource: baroUsed ? "baro" : "kin",
+                    heightSource: rich?.heightSource.rawValue ?? j.heightSource ?? "unknown",
                     apexTime: j.apexTime,
                     confidence: j.confidence,
                     rotations: j.rotations,
                     jumpDistance: j.jumpDistance,
-                    accepted: j.confidence >= 50
+                    accepted: accepted
                 )
             }
         }
@@ -301,6 +426,72 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
 let opts = parseArgs()
 var allOK = true
 var stdout = StdoutStream()
+
+// ── v11 core-calculation self-tests ──────────────────────────────────────
+if opts.v11SelfTest {
+    let ok = V11SelfTest.run(&stdout)
+    exit(ok ? 0 : 1)
+}
+
+// ── exact watch-adapter E2E self-tests for v11/v12 ───────────────────────
+if opts.engineE2ESelfTest {
+    let ok = EngineE2ESelfTest.run(&stdout)
+    exit(ok ? 0 : 1)
+}
+
+// ── decoded per-sample CSV dump (for offline signal analysis) ─────────────
+if let dumpPath = opts.dumpSamples, let url = opts.inputs.first {
+    do {
+        let log = try Loader.load(url, forceFormat: opts.format)
+        let base = log.samples.first?.timestamp ?? Date()
+        let baseMotionT = log.samples.first?.motionTimestamp
+        var out = "t,motionRel,baroRel,absAltRel,relAlt,absAlt,accelMag,vertG,signedLoadG,rotMag,gx,gy,gz,speed,baro\n"
+        for (idx, s) in log.samples.enumerated() {
+            let t = s.timestamp.timeIntervalSince(base)
+            let motionRel = relativeTime(s.motionTimestamp, base: baseMotionT)
+            let baroRel = relativeTime(s.barometerTimestamp, base: baseMotionT)
+            let absAltRel = relativeTime(s.absoluteAltitudeTimestamp, base: baseMotionT)
+            let relAlt = s.relativeAltitude.map { String($0) } ?? ""
+            let absAlt = s.absoluteAltitude.map { String($0) } ?? ""
+            let gx = s.gravity?.x ?? 0, gy = s.gravity?.y ?? 0, gz = s.gravity?.z ?? -1
+            let gMag = (gx*gx + gy*gy + gz*gz).squareRoot()
+            let signedLoad = gMag > 0.01 ? (s.accelerationX*gx + s.accelerationY*gy + s.accelerationZ*gz)/gMag + gMag : s.accelerationMagnitude
+            let vert = abs(signedLoad)
+            let spd = (idx < log.speeds.count ? log.speeds[idx] : nil).map { String($0) } ?? ""
+            let baro = s.pressure.map { String($0) } ?? ""
+            out += String(format: "%.3f,%@,%@,%@,%@,%@,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%@,%@\n",
+                          t, motionRel, baroRel, absAltRel, relAlt, absAlt,
+                          s.accelerationMagnitude, vert, signedLoad, s.rotationMagnitude,
+                          s.rotationX, s.rotationY, s.rotationZ, spd, baro)
+        }
+        try out.write(toFile: dumpPath, atomically: true, encoding: .utf8)
+        print("→ wrote \(dumpPath) (\(log.samples.count) samples)")
+        exit(0)
+    } catch {
+        fputs("dump error: \(error)\n", stderr); exit(1)
+    }
+}
+
+private func relativeTime(_ t: TimeInterval?, base: TimeInterval?) -> String {
+    guard let t, let base else { return "" }
+    return String(format: "%.3f", t - base)
+}
+
+// ── Surfr-calibrated evaluation harness ───────────────────────────────────
+if let labelsPath = opts.evaluateLabels, let url = opts.inputs.first {
+    let tol = JumpEvaluationHarness.Tolerance(rawValue: opts.evalTolerance) ?? .normal
+    let ok = JumpEvaluationHarness.run(log: url, labelsURL: URL(fileURLWithPath: labelsPath),
+                                       tolerance: tol, offsetSec: opts.evalOffsetSec,
+                                       opts: opts, stdout: &stdout)
+    exit(ok ? 0 : 1)
+}
+
+// ── v10-vs-v11 comparison runner ──────────────────────────────────────────
+if opts.compareEngines {
+    let ok = JumpComparisonRunner.run(opts: opts, stdout: &stdout)
+    exit(ok ? 0 : 1)
+}
+
 for url in opts.inputs {
     do {
         let ok = try runOne(url: url, opts: opts, stdout: &stdout)

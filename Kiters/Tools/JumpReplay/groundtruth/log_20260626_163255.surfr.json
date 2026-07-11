@@ -1,0 +1,17 @@
+{
+  "source": "Surfr app screenshot — session uploaded Today at 16:32 (WhatsApp 2026-06-26 17.57.34)",
+  "log": "log_20260626_163255_E04B8F70.kslog",
+  "sensorOnly": true,
+  "note": "elapsedSec = Surfr 'Time' column (mm:ss into the session). Distance 0 means Surfr showed 0m (no GPS route in this sensorOnly upload).",
+  "jumps": [
+    { "id": 1, "elapsedSec": 1078, "height": 1.26, "airtime": 2.11, "distance": 13 },
+    { "id": 2, "elapsedSec": 1311, "height": 1.90, "airtime": 2.41, "distance": 23 },
+    { "id": 3, "elapsedSec": 1569, "height": 1.71, "airtime": 2.27, "distance": 0 },
+    { "id": 4, "elapsedSec": 1599, "height": 2.03, "airtime": 2.62, "distance": 0 },
+    { "id": 5, "elapsedSec": 1753, "height": 2.16, "airtime": 3.61, "distance": 0 },
+    { "id": 6, "elapsedSec": 1837, "height": 2.49, "airtime": 3.41, "distance": 0 },
+    { "id": 7, "elapsedSec": 1945, "height": 1.86, "airtime": 2.95, "distance": 0 },
+    { "id": 8, "elapsedSec": 2144, "height": 2.03, "airtime": 2.81, "distance": 9 },
+    { "id": 9, "elapsedSec": 2477, "height": 1.96, "airtime": 2.55, "distance": 16 }
+  ]
+}

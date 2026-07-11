@@ -36,10 +36,29 @@ protocol JumpDetecting: AnyObject {
 
     func processSample(_ sample: IMUSample)
 
+    /// Direct CMAltimeter absolute-altitude samples. V13 consumes these so it
+    /// keeps detecting jumps even if the IMU stream stalls; older engines keep
+    /// the default no-op implementation.
+    func processAbsoluteAltitude(sensorT: TimeInterval,
+                                 receivedT: TimeInterval,
+                                 altitudeM: Double,
+                                 accuracyM: Double?,
+                                 precisionM: Double?)
+
     /// Final flush at session end. The streaming v7 engine has already emitted
     /// its jumps live and returns []. The batch v8 engine runs one last analysis
     /// over its buffer and returns any jumps found in the closing seconds that
     /// were not already emitted, so the caller can fold them into the session
     /// being saved (on the main thread, before it is captured).
     func endSession() -> [Jump]
+}
+
+extension JumpDetecting {
+    func processAbsoluteAltitude(sensorT: TimeInterval,
+                                 receivedT: TimeInterval,
+                                 altitudeM: Double,
+                                 accuracyM: Double?,
+                                 precisionM: Double?) {
+        _ = (sensorT, receivedT, altitudeM, accuracyM, precisionM)
+    }
 }
