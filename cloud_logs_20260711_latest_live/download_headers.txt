@@ -1,0 +1,22 @@
+HTTP/2 200 
+date: Sat, 11 Jul 2026 15:49:11 GMT
+content-type: application/octet-stream
+cf-ray: a198f4e99fde8e4e-TLV
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+server: cloudflare
+vary: Accept-Encoding
+x-content-type-options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-calib-token
+access-control-allow-methods: GET, POST, OPTIONS
+endpoint-load-metrics: application_utilization:4,named_metrics.queue_depth:4
+sb-gateway-version: 1
+sb-project-ref: vvowvcdylztsqpzifdqc
+sb-request-id: 019f51de-4e07-7970-b575-632843f9ec9e
+x-deno-execution-id: 2e744711-2c4f-47bf-a730-d913def24a4d
+x-sb-edge-region: eu-central-2
+x-served-by: supabase-edge-runtime
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+set-cookie: __cf_bm=hT_JKRFDxfMjXO5LhM1i0QtKzRSMyn3Us6Uw85NUWP0-1783784951.2978764-1.0.1.1-sjaGNMmZSthxPaw89FE40SZf50sAXJkdCeIn4onbhjqpYy.Lv_D.ag8FJPojGOMrdpFZFffYQVVLfqCRNxHRRJAptL1fbBf9vLsVdj8cKyx7qYTO9OkvzkTbxUh8m1Qt; HttpOnly; SameSite=None; Secure; Path=/; Domain=supabase.co; Expires=Sat, 11 Jul 2026 16:19:11 GMT
+alt-svc: h3=":443"; ma=86400
+

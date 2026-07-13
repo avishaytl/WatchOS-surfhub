@@ -445,7 +445,7 @@ if let dumpPath = opts.dumpSamples, let url = opts.inputs.first {
         let log = try Loader.load(url, forceFormat: opts.format)
         let base = log.samples.first?.timestamp ?? Date()
         let baseMotionT = log.samples.first?.motionTimestamp
-        var out = "t,motionRel,baroRel,absAltRel,relAlt,absAlt,accelMag,vertG,signedLoadG,rotMag,gx,gy,gz,speed,baro\n"
+        var out = "t,motionRel,baroRel,absAltRel,relAlt,absAlt,absAltAcc,absAltPrec,accelMag,vertG,signedLoadG,rotMag,gx,gy,gz,speed,baro\n"
         for (idx, s) in log.samples.enumerated() {
             let t = s.timestamp.timeIntervalSince(base)
             let motionRel = relativeTime(s.motionTimestamp, base: baseMotionT)
@@ -453,14 +453,16 @@ if let dumpPath = opts.dumpSamples, let url = opts.inputs.first {
             let absAltRel = relativeTime(s.absoluteAltitudeTimestamp, base: baseMotionT)
             let relAlt = s.relativeAltitude.map { String($0) } ?? ""
             let absAlt = s.absoluteAltitude.map { String($0) } ?? ""
+            let absAcc = s.absoluteAltitudeAccuracy.map { String($0) } ?? ""
+            let absPrec = s.absoluteAltitudePrecision.map { String($0) } ?? ""
             let gx = s.gravity?.x ?? 0, gy = s.gravity?.y ?? 0, gz = s.gravity?.z ?? -1
             let gMag = (gx*gx + gy*gy + gz*gz).squareRoot()
             let signedLoad = gMag > 0.01 ? (s.accelerationX*gx + s.accelerationY*gy + s.accelerationZ*gz)/gMag + gMag : s.accelerationMagnitude
             let vert = abs(signedLoad)
             let spd = (idx < log.speeds.count ? log.speeds[idx] : nil).map { String($0) } ?? ""
             let baro = s.pressure.map { String($0) } ?? ""
-            out += String(format: "%.3f,%@,%@,%@,%@,%@,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%@,%@\n",
-                          t, motionRel, baroRel, absAltRel, relAlt, absAlt,
+            out += String(format: "%.3f,%@,%@,%@,%@,%@,%@,%@,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%@,%@\n",
+                          t, motionRel, baroRel, absAltRel, relAlt, absAlt, absAcc, absPrec,
                           s.accelerationMagnitude, vert, signedLoad, s.rotationMagnitude,
                           s.rotationX, s.rotationY, s.rotationZ, spd, baro)
         }

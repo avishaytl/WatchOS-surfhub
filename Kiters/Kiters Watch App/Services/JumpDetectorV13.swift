@@ -75,6 +75,10 @@ final class JumpDetectorV13: JumpDetecting {
     private var activeAltitudeSource: AltitudeSource?
     private var independentAltitudeBaseSensorT: TimeInterval?
     private var independentAltitudeBaseReceivedT: TimeInterval?
+    private var lastAbsoluteAltitudeM: Double?
+    private var absoluteSentinelActive = false
+    private var absoluteAccuracyGateActive = false
+    private var hasDirectAbsoluteStream = false
 
     private let bootWallClock = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
 
@@ -89,7 +93,7 @@ final class JumpDetectorV13: JumpDetecting {
         var cfg = base
 
         cfg.minRiseM = doubleSetting(V13Settings.minRiseM, default: base.minRiseM, range: 0.3...5.0, defaults: defaults)
-        cfg.minGpsSpeedMS = doubleSetting(V13Settings.minGpsSpeedMS, default: base.minGpsSpeedMS, range: 0.0...20.0, defaults: defaults)
+        cfg.minGpsSpeedMS = doubleSetting(V13Settings.minGpsSpeedMS, default: base.minGpsSpeedMS, range: base.minGpsSpeedMS...20.0, defaults: defaults)
         cfg.minGpsDistanceM = doubleSetting(V13Settings.minGpsDistanceM, default: base.minGpsDistanceM, range: 0.0...200.0, defaults: defaults)
         cfg.triggerAccelG = doubleSetting(V13Settings.triggerAccelG, default: base.triggerAccelG, range: 0.5...6.0, defaults: defaults)
         cfg.triggerGyroRadS = doubleSetting(V13Settings.triggerGyroRadS, default: base.triggerGyroRadS, range: 1.0...12.0, defaults: defaults)
@@ -177,6 +181,10 @@ final class JumpDetectorV13: JumpDetecting {
             activeAltitudeSource = nil
             independentAltitudeBaseSensorT = nil
             independentAltitudeBaseReceivedT = nil
+            lastAbsoluteAltitudeM = nil
+            absoluteSentinelActive = false
+            absoluteAccuracyGateActive = false
+            hasDirectAbsoluteStream = false
         }
 
         setLatestSpeed(0)
@@ -185,7 +193,8 @@ final class JumpDetectorV13: JumpDetecting {
 
         let readiness = Self.readinessReport()
         logEvent("JumpDetector(v13) reset - ready=\(readiness.isReady) "
-            + "minRise=\(cfg.minRiseM)m gpsSpeedGate=\(cfg.minGpsSpeedMS)m/s gpsDistanceGate=\(cfg.minGpsDistanceM)m "
+            + "minRise=\(cfg.minRiseM)m baroBaselineAvg=\(cfg.baselineWindowSec)s "
+            + "warmup=\(cfg.startupWarmupSec)s gps=metricsOnly imu=metricsOnly "
             + "landing=\(cfg.landingStableSec)s±\(cfg.landingStableRangeM)m band=\(cfg.landingReturnBandM)m "
             + "maxDelay=\(cfg.maxResultDelaySec)s \(readiness.logDetails)")
     }
@@ -216,7 +225,6 @@ final class JumpDetectorV13: JumpDetecting {
         let accel = sample.accelerationMagnitude
         let gyro = sample.rotationMagnitude
         let submerged = sample.submerged
-        let altitudeFrame = altitudeFrame(from: sample, fallbackT: motionT)
 
         submitToEngine { [weak self] in
             guard let self = self else { return }
@@ -227,7 +235,13 @@ final class JumpDetectorV13: JumpDetecting {
                 self.engine.addSubmersion(t: motionT, submerged: submerged)
             }
 
-            if let altitudeFrame, self.shouldIngestAltitude(t: altitudeFrame.t, value: altitudeFrame.altitudeM) {
+            // Live sessions receive CMAbsoluteAltitudeData through the direct
+            // callback below. The IMU-carried snapshot is only an offline/legacy
+            // fallback; processing both paths duplicates work and ties altitude
+            // liveness back to the motion loop.
+            if !self.hasDirectAbsoluteStream,
+               let altitudeFrame = self.altitudeFrame(from: sample, fallbackT: motionT),
+               self.shouldIngestAltitude(t: altitudeFrame.t, value: altitudeFrame.altitudeM) {
                 self.noteAltitudeSource(altitudeFrame.source)
                 self.engine.addAltitude(t: altitudeFrame.t, altitudeM: altitudeFrame.altitudeM)
             }
@@ -256,15 +270,30 @@ final class JumpDetectorV13: JumpDetecting {
 
         submitToEngine { [weak self] in
             guard let self = self else { return }
+            self.hasDirectAbsoluteStream = true
+            guard self.gateAbsoluteAltitude(altitudeM: altitudeM, accuracyM: accuracyM) else { return }
             let t = self.alignedIndependentAltitudeTimestamp(sensorT: sensorT, receivedT: receivedT)
             guard self.shouldIngestAltitude(t: t, value: altitudeM) else { return }
             self.noteAltitudeSource(.absoluteAltitude)
             self.engine.addAltitude(t: t, altitudeM: altitudeM)
-            _ = (accuracyM, precisionM)
+            _ = precisionM
         }
 
         if currentState() == .idle {
             setState(.riding)
+        }
+    }
+
+    func absoluteAltitudeStreamDidRestart(reason: String) {
+        submitToEngine { [weak self] in
+            guard let self else { return }
+            // Keep the direct-path latch set while Core Motion re-anchors so a
+            // stale ZOH value on the IMU stream cannot repopulate the engine.
+            self.hasDirectAbsoluteStream = true
+            self.lastAbsoluteAltitudeM = nil
+            self.absoluteSentinelActive = false
+            self.absoluteAccuracyGateActive = false
+            self.resetAltitudeStream(reason: "acquisitionRestart \(reason)")
         }
     }
 
@@ -338,23 +367,74 @@ final class JumpDetectorV13: JumpDetecting {
         Date(timeIntervalSince1970: bootWallClock + monotonicTime)
     }
 
-    /// Height source per the spec is absolute altitude (~3 Hz). Older logs and
-    /// degraded sensors fall back to the relative-altitude channel, then to a
-    /// pressure-derived altitude — the engine only uses baseline-relative
-    /// differences, so the barometric-formula offset cancels.
+    /// Height source per the spec is absolute altitude (~3 Hz). V13 does not
+    /// fall back to relative altitude or pressure: those streams are useful for
+    /// diagnostics, but jump detection must stay on the absolute barometer.
+    ///
+    /// Must run on `engineQueue` — consults the calibration gate.
     private func altitudeFrame(from sample: IMUSample,
                                fallbackT: TimeInterval) -> (t: TimeInterval, altitudeM: Double, source: AltitudeSource)? {
-        if let absoluteAltitude = sample.absoluteAltitude {
+        if let absoluteAltitude = sample.absoluteAltitude,
+           gateAbsoluteAltitude(altitudeM: absoluteAltitude, accuracyM: sample.absoluteAltitudeAccuracy) {
             return (alignedAltitudeTimestamp(sample.absoluteAltitudeTimestamp, fallback: fallbackT), absoluteAltitude, .absoluteAltitude)
         }
-        if let relativeAltitude = sample.relativeAltitude {
-            return (alignedAltitudeTimestamp(sample.barometerTimestamp, fallback: fallbackT), relativeAltitude, .relativeAltitude)
-        }
-        if let pressureHPa = sample.pressure, pressureHPa > 300 {
-            let altitudeM = 44330.0 * (1.0 - pow(pressureHPa / 1013.25, 0.1903))
-            return (alignedAltitudeTimestamp(sample.barometerTimestamp, fallback: fallbackT), altitudeM, .pressure)
-        }
         return nil
+    }
+
+    /// Quality guard for the absolute-altitude channel. The calibration
+    /// re-anchor emits an accuracy-500 sentinel carrying garbage altitude, and
+    /// water/shore noise in the 2026-07-11 zero-jump log sits around
+    /// 17-18 m accuracy while the real one-minute jump logs are around 8-10 m.
+    /// V13 is barometer-first, but it should only consume the absolute barometer
+    /// when that channel reports usable quality.
+    ///
+    /// Must run on `engineQueue`.
+    private static let absoluteReanchorAccuracyM = 100.0
+    private static let absoluteUsableAccuracyM = 12.0
+    private static let absoluteDatumStepM = 12.0
+
+    private func gateAbsoluteAltitude(altitudeM: Double, accuracyM: Double?) -> Bool {
+        if let accuracyM, accuracyM.isFinite, accuracyM >= Self.absoluteReanchorAccuracyM {
+            if !absoluteSentinelActive {
+                absoluteSentinelActive = true
+                lastAbsoluteAltitudeM = nil
+                resetAltitudeStream(reason: "absoluteReanchorSentinel acc=\(fmt(accuracyM))")
+            }
+            return false
+        }
+        absoluteSentinelActive = false
+
+        if let accuracyM, accuracyM.isFinite, accuracyM > Self.absoluteUsableAccuracyM {
+            if !absoluteAccuracyGateActive {
+                absoluteAccuracyGateActive = true
+                lastAbsoluteAltitudeM = nil
+                resetAltitudeStream(reason: "absoluteAccuracy acc=\(fmt(accuracyM))")
+            }
+            return false
+        }
+        absoluteAccuracyGateActive = false
+
+        if let last = lastAbsoluteAltitudeM, abs(altitudeM - last) > Self.absoluteDatumStepM {
+            lastAbsoluteAltitudeM = altitudeM
+            resetAltitudeStream(reason: "absoluteDatumStep \(fmt(last))->\(fmt(altitudeM))")
+        } else {
+            lastAbsoluteAltitudeM = altitudeM
+        }
+        return true
+    }
+
+    /// The absolute-altitude datum just moved (re-anchor sentinel or a step of
+    /// tens of metres). History in the engine belongs to the old datum, so the
+    /// step would otherwise read as a giant (possibly negative) jump arc.
+    private func resetAltitudeStream(reason: String) {
+        engine.reset()
+        lastAltitudeT = nil
+        lastAltitudeValue = nil
+        logEvent("v13 altitudeStreamReset reason=\(reason)")
+    }
+
+    private func fmt(_ v: Double) -> String {
+        String(format: "%.2f", v)
     }
 
     private func alignedAltitudeTimestamp(_ sensorT: TimeInterval?, fallback: TimeInterval) -> TimeInterval {
@@ -386,12 +466,22 @@ final class JumpDetectorV13: JumpDetecting {
     /// Altimeter frames are ZOH-held onto every IMU row, so ingest only true
     /// altitude changes. Replaying the same held value would stretch peaks and
     /// landing windows beyond the actual altimeter cadence.
+    ///
+    /// The calibrated absolute altimeter can emit the exact same value for
+    /// minutes while still ticking at 1 Hz (measured: 339 s frozen at 1.04 m,
+    /// 22.6 of 48.5 min starved on the 2026-07-08 water log). Dropping every
+    /// repeat starves the engine of its time base — takeoff baselines go stale
+    /// and landing windows never fill. Repeated values are therefore let
+    /// through as a ~1 Hz heartbeat instead of being dropped outright.
+    private static let repeatedAltitudeHeartbeatSec = 0.9
+
     private func shouldIngestAltitude(t: TimeInterval, value: Double) -> Bool {
         guard t.isFinite, value.isFinite else { return false }
         if let last = lastAltitudeT, abs(t - last) < 0.001 {
             return false
         }
-        if let lastValue = lastAltitudeValue, value == lastValue {
+        if let last = lastAltitudeT, let lastValue = lastAltitudeValue,
+           value == lastValue, t - last < Self.repeatedAltitudeHeartbeatSec {
             return false
         }
         lastAltitudeT = t

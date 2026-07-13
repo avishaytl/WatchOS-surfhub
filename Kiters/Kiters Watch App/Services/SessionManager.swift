@@ -246,6 +246,10 @@ class SessionManager: ObservableObject {
             )
         }
 
+        motionManager.onAbsoluteAltitudeStreamRestart = { [weak self] reason in
+            self?.jumpDetector.absoluteAltitudeStreamDidRestart(reason: reason)
+        }
+
         waterSubmersionManager.onSnapshot = { [weak self] snapshot in
             self?.motionManager.updateSubmersion(snapshot)
         }

@@ -1,0 +1,8 @@
+════════════════════════════════════════════════
+File:    log_20260711_125607_91F05F7A.kslog
+Format:  onDevice  rate=199.7 Hz  samples=125418  dur=628.2s
+Mode:    standard  mockSpeed=8.0 m/s
+Jumps:   0 (accepted=0)
+  (no jumps detected)
+════════════════════════════════════════════════
+→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260711_latest_session/replay_v13_fixed/log_20260711_125607_91F05F7A.actual.json

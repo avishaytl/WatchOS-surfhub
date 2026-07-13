@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מנוע 13 - תיאור מקצה לקצה</title>
+  <script src="report-data.js"></script>
+  <style>
+    :root {
+      --ink: #172126;
+      --muted: #617076;
+      --paper: #f7f8f5;
+      --white: #ffffff;
+      --line: #d9dfdc;
+      --teal: #087f75;
+      --teal-soft: #dff2ef;
+      --lime: #b7d63d;
+      --lime-soft: #eff6d2;
+      --coral: #ef6b55;
+      --coral-soft: #fde7e2;
+      --yellow: #f0bf3f;
+      --yellow-soft: #fff3cc;
+      --navy: #1e3844;
+      --blue-soft: #e1edf1;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #cbd1cf; color: var(--ink); }
+    body {
+      font-family: "SF Hebrew", "Arial Hebrew", Arial, sans-serif;
+      font-size: 10.6pt;
+      line-height: 1.48;
+      letter-spacing: 0;
+    }
+    .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+    td.ltr, th.ltr { display: table-cell; }
+    .mono { font-family: "SF Mono", Menlo, monospace; font-size: .91em; direction: ltr; unicode-bidi: isolate; }
+    .page {
+      width: 210mm;
+      height: 297mm;
+      padding: 14mm 15mm 14mm;
+      position: relative;
+      overflow: hidden;
+      background: var(--paper);
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .page::after {
+      content: attr(data-page);
+      position: absolute;
+      bottom: 6.2mm;
+      left: 15mm;
+      color: #899591;
+      font-size: 8pt;
+      direction: ltr;
+      unicode-bidi: isolate;
+      white-space: nowrap;
+      width: 20mm;
+    }
+    .running-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 7mm;
+      margin-bottom: 7mm;
+      padding-bottom: 3mm;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 8.6pt;
+    }
+    .brandline { display: flex; align-items: center; gap: 2.2mm; color: var(--navy); font-weight: 700; }
+    .brandmark { width: 4mm; height: 4mm; background: var(--lime); border-radius: 1mm; transform: rotate(12deg); }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: 29pt; line-height: 1.12; margin-bottom: 4mm; color: var(--navy); }
+    h2 { font-size: 23pt; line-height: 1.16; margin-bottom: 5mm; color: var(--navy); }
+    h3 { font-size: 13.2pt; line-height: 1.25; margin-bottom: 2mm; color: var(--navy); }
+    p { margin-bottom: 3.3mm; }
+    .lead { font-size: 13pt; line-height: 1.52; max-width: 158mm; color: #314047; }
+    .small { font-size: 8.9pt; color: var(--muted); }
+    .micro { font-size: 7.8pt; color: var(--muted); line-height: 1.38; }
+    .strong { font-weight: 750; color: var(--ink); }
+    .eyebrow { color: var(--teal); font-size: 9pt; font-weight: 800; margin-bottom: 2.5mm; }
+    .section-number { direction: ltr; color: var(--coral); font-weight: 800; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4mm; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3mm; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.7mm; }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 2mm;
+      padding: 4mm;
+      min-width: 0;
+    }
+    .card.teal { border-top: 2.2mm solid var(--teal); }
+    .card.coral { border-top: 2.2mm solid var(--coral); }
+    .card.lime { border-top: 2.2mm solid var(--lime); }
+    .card.yellow { border-top: 2.2mm solid var(--yellow); }
+    .callout {
+      border-right: 2.2mm solid var(--teal);
+      background: var(--teal-soft);
+      padding: 3.5mm 4mm;
+      border-radius: 1.5mm;
+      margin: 4mm 0;
+    }
+    .callout.warn { border-color: var(--coral); background: var(--coral-soft); }
+    .callout.note { border-color: var(--yellow); background: var(--yellow-soft); }
+    .metric { padding: 3.2mm; background: var(--white); border: 1px solid var(--line); border-radius: 2mm; }
+    .metric .value { direction: ltr; unicode-bidi: isolate; font-size: 21pt; font-weight: 800; color: var(--navy); line-height: 1; }
+    .metric .label { margin-top: 1.7mm; color: var(--muted); font-size: 8.5pt; }
+    .pill { display: inline-block; border-radius: 999px; padding: 1mm 2.4mm; font-size: 7.8pt; font-weight: 750; background: var(--blue-soft); color: var(--navy); }
+    .pill.live { background: var(--lime-soft); color: #48600a; }
+    .pill.metric-only { background: var(--yellow-soft); color: #765900; }
+    .pill.block { background: var(--coral-soft); color: #963221; }
+    ul, ol { margin: 1.5mm 0 3mm; padding-right: 5mm; }
+    li { margin-bottom: 1.3mm; }
+    table { width: 100%; border-collapse: collapse; font-size: 8.8pt; background: var(--white); }
+    table.dense { font-size: 7.65pt; line-height: 1.32; }
+    table.dense th, table.dense td { padding: 1.55mm 1.9mm; }
+    th, td { border-bottom: 1px solid var(--line); padding: 2.2mm 2.5mm; text-align: right; vertical-align: top; }
+    th { color: var(--navy); background: #eef1ef; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .decision { color: var(--teal); font-weight: 800; }
+    .not-decision { color: #8a6500; font-weight: 750; }
+    .formula {
+      direction: ltr;
+      unicode-bidi: isolate;
+      text-align: center;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 13pt;
+      padding: 3.2mm;
+      margin: 3mm 0;
+      background: var(--navy);
+      color: white;
+      border-radius: 2mm;
+    }
+    .flow { display: grid; gap: 2.5mm; }
+    .flow-row { display: grid; grid-template-columns: 1fr 9mm 1fr 9mm 1fr; align-items: stretch; }
+    .flow-node {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 2mm;
+      padding: 3.2mm;
+      min-height: 26mm;
+    }
+    .flow-node .kicker { color: var(--teal); font-size: 7.6pt; font-weight: 800; margin-bottom: 1mm; }
+    .arrow { display: grid; place-items: center; color: var(--coral); font-size: 18pt; direction: ltr; }
+    .down-arrow { text-align: center; color: var(--coral); font-size: 17pt; height: 8mm; line-height: 8mm; }
+    .sensor {
+      display: grid;
+      grid-template-columns: 14mm 1fr;
+      gap: 3mm;
+      align-items: start;
+      padding: 3.2mm 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .sensor:last-child { border-bottom: 0; }
+    .sensor-icon { width: 11mm; height: 11mm; border-radius: 50%; display: grid; place-items: center; background: var(--teal-soft); color: var(--teal); font-weight: 900; font-size: 8pt; direction: ltr; }
+    .state-flow { display: grid; grid-template-columns: 1fr 18mm 1fr; align-items: center; margin: 8mm 0 5mm; }
+    .state { min-height: 50mm; border-radius: 2mm; padding: 5mm; background: var(--white); border: 1px solid var(--line); }
+    .state.idle { border-top: 3mm solid var(--teal); }
+    .state.air { border-top: 3mm solid var(--coral); }
+    .state-arrow { display: grid; gap: 4mm; text-align: center; color: var(--muted); font-size: 8pt; }
+    .state-arrow b { display: block; color: var(--coral); font-size: 18pt; direction: ltr; }
+    .timeline { display: grid; grid-template-columns: 24mm 1fr; gap: 3mm; margin-bottom: 2.7mm; align-items: center; }
+    .timeline .time { direction: ltr; unicode-bidi: isolate; font-weight: 800; color: var(--teal); }
+    .timeline .event { background: var(--white); border: 1px solid var(--line); border-radius: 1.5mm; padding: 2.4mm 3mm; }
+    .chart-shell { background: var(--white); border: 1px solid var(--line); border-radius: 2mm; padding: 3mm; }
+    .chart { width: 100%; height: 78mm; }
+    .chart.compact { height: 48mm; }
+    .legend { display: flex; flex-wrap: wrap; gap: 3mm; margin-top: 2mm; color: var(--muted); font-size: 8pt; }
+    .legend span::before { content: ""; display: inline-block; width: 4mm; height: 1.5mm; margin-left: 1.2mm; vertical-align: middle; background: currentColor; }
+    .legend .alt { color: var(--teal); }
+    .legend .base { color: var(--yellow); }
+    .legend .air { color: var(--coral); }
+    .event-grid { display: grid; grid-template-columns: 1fr; gap: 3mm; }
+    .event-row { display: grid; grid-template-columns: 30mm 1fr; gap: 3mm; align-items: stretch; }
+    .event-stats { background: var(--navy); color: white; border-radius: 2mm; padding: 3mm; display: flex; flex-direction: column; justify-content: center; }
+    .event-stats .n { font-size: 18pt; font-weight: 850; color: var(--lime); direction: ltr; }
+    .event-stats .s { font-size: 8pt; opacity: .78; }
+    .step-list { counter-reset: steps; display: grid; gap: 2mm; }
+    .step-item { counter-increment: steps; display: grid; grid-template-columns: 10mm 1fr; gap: 2.5mm; align-items: start; }
+    .step-item::before { content: counter(steps); width: 8mm; height: 8mm; display: grid; place-items: center; border-radius: 50%; background: var(--navy); color: white; font-size: 8pt; font-weight: 850; direction: ltr; }
+    .step-body { padding-top: .4mm; }
+    .code-map { display: grid; gap: 2.4mm; }
+    .code-file { display: grid; grid-template-columns: 60mm 1fr; gap: 3mm; background: white; border: 1px solid var(--line); border-radius: 1.5mm; padding: 2.8mm 3.2mm; }
+    .code-file code { direction: ltr; unicode-bidi: isolate; font-family: "SF Mono", Menlo, monospace; font-size: 8pt; color: var(--teal); overflow-wrap: anywhere; }
+    .cover { background: var(--navy); color: white; padding: 17mm; }
+    .cover::after { color: #91a5ad; left: 17mm; }
+    .cover h1 { color: white; font-size: 38pt; max-width: 160mm; margin-top: 30mm; }
+    .cover .lead { color: #d6e1e4; max-width: 150mm; }
+    .cover-rule { width: 34mm; height: 3mm; background: var(--lime); margin: 8mm 0; }
+    .cover-mandate { margin-top: 17mm; padding: 6mm; border: 1px solid #49616b; border-radius: 2mm; max-width: 160mm; background: #243f4a; }
+    .cover-mandate strong { color: var(--lime); }
+    .cover-meta { position: absolute; right: 17mm; left: 17mm; bottom: 18mm; display: flex; justify-content: space-between; color: #aabcc2; font-size: 8.8pt; }
+    .big-quote { font-size: 18pt; line-height: 1.42; color: var(--navy); margin: 6mm 0; max-width: 165mm; }
+    .split-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 6mm; }
+    .stamp { direction: ltr; unicode-bidi: isolate; border: 1px solid var(--teal); color: var(--teal); border-radius: 2mm; padding: 2mm 3mm; font-size: 8pt; font-weight: 800; white-space: nowrap; }
+    .check { color: var(--teal); font-weight: 900; }
+    .cross { color: var(--coral); font-weight: 900; }
+    .partial { color: #9b7100; font-weight: 900; }
+    .status-yes { color: var(--teal); font-weight: 850; }
+    .status-no { color: var(--coral); font-weight: 850; }
+    .status-partial { color: #9b7100; font-weight: 850; }
+    .schema {
+      direction: ltr;
+      unicode-bidi: isolate;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: var(--navy);
+      color: #eef6f7;
+      border-radius: 2mm;
+      padding: 3.4mm;
+      margin: 3mm 0;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 7.4pt;
+      line-height: 1.42;
+    }
+    .contract-row { display: grid; grid-template-columns: 31mm 1fr; gap: 3mm; margin-bottom: 2.6mm; }
+    .contract-tag { display: grid; place-items: center; text-align: center; padding: 2mm; border-radius: 2mm; color: white; background: var(--navy); font-size: 8.3pt; font-weight: 800; }
+    .contract-body { background: white; border: 1px solid var(--line); border-radius: 2mm; padding: 2.8mm 3.2mm; }
+    a { color: var(--teal); text-decoration: none; }
+    .footnote { position: absolute; bottom: 6mm; right: 15mm; color: #899591; font-size: 7.4pt; }
+    @page { size: A4; margin: 0; }
+    @media print { body { background: white; } }
+  </style>
+</head>
+<body>
+
+  <section class="page cover" data-page="01/14">
+    <div class="brandline" style="color:#dce8ea"><span class="brandmark"></span><span>KITERS · WATCHOS</span></div>
+    <h1>מנוע קפיצות 13<br>תיאור מקצה לקצה</h1>
+    <div class="cover-rule"></div>
+    <p class="lead">ארכיטקטורה ואלגוריתם, דלתא ודיוק absolute altitude, buffers, שעונים, Workout ו־Always On, תנאי נחיתה, ושלושת חוזי הנתונים — עד רמת שדה ויחידה.</p>
+    <div class="cover-mandate">
+      <strong>עקרון התכנון:</strong> החלטת הזיהוי מתקבלת מהגובה הברומטרי האבסולוטי בלבד. GPS ו־IMU מוסיפים מדדים לאירוע, אך אינם תנאי לפתיחה או לאישור קפיצה.
+    </div>
+    <div class="grid-3" style="margin-top:12mm;max-width:160mm">
+      <div class="metric" style="background:#203b46;border-color:#49616b"><div class="value" style="color:#b7d63d">4.0s</div><div class="label" style="color:#b8c8cd">חלון baseline</div></div>
+      <div class="metric" style="background:#203b46;border-color:#49616b"><div class="value" style="color:#b7d63d">1.0m</div><div class="label" style="color:#b8c8cd">סף עלייה ברירת מחדל</div></div>
+      <div class="metric" style="background:#203b46;border-color:#49616b"><div class="value" style="color:#b7d63d">0 GPS</div><div class="label" style="color:#b8c8cd">נדרש לצורך זיהוי</div></div>
+    </div>
+    <div class="cover-meta"><span>Audit לפי ה־working tree הנוכחי</span><span class="ltr">13.07.2026</span></div>
+  </section>
+
+  <section class="page" data-page="02/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>תקציר מנהלים</span></div>
+    <div class="split-title"><div><div class="eyebrow"><span class="section-number">01</span> · מה המנוע מבטיח</div><h2>המודל המנטלי בפסקה אחת</h2></div><span class="stamp">CURRENT IMPLEMENTATION</span></div>
+    <p class="big-quote">מנוע 13 מחפש קשת גובה אבסולוטית: בסיס שקט של ארבע שניות, עלייה חדה מעל הסף, שיא, ירידה וחזרה לאזור הבסיס. כאשר הרצף מושלם בזמן סביר, נוצר אירוע קפיצה.</p>
+    <div class="grid-2">
+      <div class="card teal">
+        <h3>מה קובע שקפיצה קרתה</h3>
+        <ul>
+          <li>רק <span class="mono">CMAltimeter absolute altitude</span>.</li>
+          <li>ממוצע baseline של <span class="ltr">4s</span> לפני ההמראה.</li>
+          <li>עלייה של לפחות <span class="ltr">minRiseM</span>.</li>
+          <li>ירידה מהשיא וחזרה עד <span class="ltr">baseline + 0.75m</span>.</li>
+          <li>זמן אוויר סופי בטווח <span class="ltr">1–12s</span>.</li>
+        </ul>
+      </div>
+      <div class="card yellow">
+        <h3>מה אינו רשאי לחסום קפיצה</h3>
+        <ul>
+          <li>מהירות GPS, מרחק GPS או היעדר מיקום.</li>
+          <li>פיק תאוצה, ג'יירו או impact.</li>
+          <li>מצב submerged.</li>
+          <li>relative altitude ולחץ גולמי.</li>
+          <li>חלון נחיתה יציב, כאשר כבר נמדדה חזרה לבסיס.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="strong">ללא GPS:</span> הסשן עדיין מתחיל, זרם הגובה האבסולוטי ממשיך להגיע ישירות למנוע, הקפיצה מזוהה, והמרחק ממופה ל־<span class="ltr">0m</span> כאשר אין נתון GPS זמין.
+    </div>
+    <div class="grid-4">
+      <div class="metric"><div class="value">2</div><div class="label">מצבים במכונה</div></div>
+      <div class="metric"><div class="value">8s</div><div class="label">warmup בתחילת הסשן</div></div>
+      <div class="metric"><div class="value">20s</div><div class="label">מקסימום candidate פתוח</div></div>
+      <div class="metric"><div class="value">60s</div><div class="label">היסטוריה למדדים</div></div>
+    </div>
+    <div class="callout note small"><span class="strong">גבול המסמך:</span> זהו תיאור של הנתיב החי הפעיל בקוד. קיימים שדות תאימות ופונקציות buffered ישנות, אך הן אינן נקראות מתוך <span class="mono">addAltitude</span> ולכן אינן משתתפות בהחלטה בזמן אמת.</div>
+  </section>
+
+  <section class="page" data-page="03/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>ארכיטקטורה</span></div>
+    <div class="eyebrow"><span class="section-number">02</span> · זרימת המידע</div>
+    <h2>מהשעון ועד אירוע קפיצה</h2>
+    <div class="flow">
+      <div class="flow-row">
+        <div class="flow-node"><div class="kicker">APPLE SENSOR</div><h3>CMAltimeter</h3><p class="small">גובה אבסולוטי, accuracy, precision וזמן חיישן.</p></div>
+        <div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">SENSOR OWNER</div><h3>MotionManager</h3><p class="small">מפעיל stream ישיר, שומר snapshot וכותב ללוג.</p></div>
+        <div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">SESSION ROUTING</div><h3>SessionManager</h3><p class="small">מעביר כל דגימה ל־detector גם בלי GPS.</p></div>
+      </div>
+      <div class="down-arrow">↓</div>
+      <div class="flow-row">
+        <div class="flow-node"><div class="kicker">ADAPTER</div><h3>JumpDetectorV13</h3><p class="small">איכות, תזמון, dedup, config ומיפוי UI.</p></div>
+        <div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">PURE CORE</div><h3>JumpEngineV13</h3><p class="small">baseline, state machine, נחיתה וחישובים.</p></div>
+        <div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">APP MODEL</div><h3>Jump</h3><p class="small">גובה, זמן אוויר, מרחק, confidence ומשוב.</p></div>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-top:5mm">
+      <div class="card teal"><h3>בידוד ליבה</h3><p class="small">המנוע הטהור מקבל מספרים וזמנים בלבד ואינו תלוי ב־CoreMotion, WatchKit או UI. לכן אותו קוד רץ גם ב־replay.</p></div>
+      <div class="card coral"><h3>תור סדרתי</h3><p class="small"><span class="mono">engineQueue</span> מסדר את זרמי altitude, IMU ו־GPS ומונע שינוי state במקביל.</p></div>
+      <div class="card lime"><h3>שני מסלולי altitude</h3><p class="small">הזרם הישיר מבטיח עבודה גם אם IMU נתקע; snapshot בתוך IMUSample משמש נתיב נוסף עם dedup.</p></div>
+    </div>
+    <div class="callout warn small"><span class="strong">החלטת selection:</span> כאשר המשתמש בוחר <span class="mono">v13Pure</span>, בדיקת readiness נרשמת לצורכי אבחון. גם אם היא מדווחת בעיה, <span class="mono">SessionManager</span> משאיר את V13 פעיל ואינו מחליף אותו אוטומטית במנוע אחר.</div>
+  </section>
+
+  <section class="page" data-page="04/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>חיישנים</span></div>
+    <div class="eyebrow"><span class="section-number">03</span> · מקורות נתונים</div>
+    <h2>חיישן החלטה מול חיישני העשרה</h2>
+    <div class="card" style="padding:5mm">
+      <div class="sensor">
+        <div class="sensor-icon">ALT</div>
+        <div><h3>Absolute altitude <span class="pill live">מקור החלטה</span></h3><p class="small">פותח candidate, מעדכן שיא, מזהה חזרה לבסיס וקובע height/airtime. אין fallback ל־relative altitude או pressure.</p></div>
+      </div>
+      <div class="sensor">
+        <div class="sensor-icon" style="background:var(--yellow-soft);color:#765900">GPS</div>
+        <div><h3>GPS <span class="pill metric-only">מדדים בלבד</span></h3><p class="small">מהירות המראה/נחיתה, קואורדינטות ומרחק. דגימה חסרה אינה פוסלת קפיצה.</p></div>
+      </div>
+      <div class="sensor">
+        <div class="sensor-icon" style="background:var(--coral-soft);color:var(--coral)">IMU</div>
+        <div><h3>Accelerometer + gyroscope <span class="pill metric-only">מדדים בלבד</span></h3><p class="small">פיקי תאוצה, אנרגיית impact, מהירות סיבוב ואינטגרל סיבוב. אינם evidence ואינם gate.</p></div>
+      </div>
+      <div class="sensor">
+        <div class="sensor-icon" style="background:var(--blue-soft);color:var(--navy)">H₂O</div>
+        <div><h3>Submersion <span class="pill">ללא השפעה</span></h3><p class="small"><span class="mono">addSubmersion</span> הוא no-op במצב V13 הפשוט. מים אינם תנאי לפתיחה או סגירה.</p></div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:5mm">
+      <div>
+        <h3>תלות אמיתית לצורך זיהוי</h3>
+        <table>
+          <tr><th>רכיב</th><th>נדרש?</th><th>התנהגות בהיעדרו</th></tr>
+          <tr><td>Absolute altitude</td><td class="cross">כן</td><td>אין מקור גובה, אין זיהוי.</td></tr>
+          <tr><td>GPS</td><td class="check">לא</td><td>מרחק/מהירות חסרים בלבד.</td></tr>
+          <tr><td>IMU</td><td class="check">לא לזיהוי</td><td>מדדי תנועה נשארים אפסיים/חלקיים.</td></tr>
+          <tr><td>מים</td><td class="check">לא</td><td>אין שינוי באלגוריתם.</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>קצב ותזמון</h3>
+        <ul class="small">
+          <li>הגובה מגיע בקצב חיישן עצמאי, בפועל סביב <span class="ltr">1–3Hz</span>.</li>
+          <li>IMU יכול להגיע סביב <span class="ltr">50Hz</span>, אך אינו מכתיב את זמן הגובה.</li>
+          <li>זמני חיישן מיושרים לשעון monotonic משותף.</li>
+          <li>ערך altitude מוחזק בתוך IMUSample; dedup מונע ממנו להפוך לעשרות דגימות מזויפות.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout note small"><span class="strong">ניואנס readiness:</span> הבדיקה הנוכחית עדיין בוחנת זמינות device motion, אף שהליבה יכולה לזהות לפי הזרם הישיר של absolute altitude. זהו פער ארכיטקטוני לתיעוד/ניקוי עתידי, לא gate בתוך האלגוריתם.</div>
+  </section>
+
+  <section class="page" data-page="05/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>סינון קלט</span></div>
+    <div class="eyebrow"><span class="section-number">04</span> · לפני מכונת המצבים</div>
+    <h2>איזו דגימת גובה בכלל נכנסת למנוע</h2>
+    <div class="step-list">
+      <div class="step-item"><div class="step-body"><h3>בדיקת ערך סופי</h3><p class="small"><span class="mono">altitudeM</span> חייב להיות מספר תקין. NaN/Infinity נזרקים.</p></div></div>
+      <div class="step-item"><div class="step-body"><h3>Sentinel של re-anchor</h3><p class="small">כאשר <span class="ltr">accuracy ≥ 100m</span>, הדגימה נחשבת sentinel של כיול. היסטוריית altitude מתאפסת כדי שלא לפרש datum חדש כקפיצה.</p></div></div>
+      <div class="step-item"><div class="step-body"><h3>שער איכות</h3><p class="small">כאשר <span class="ltr">accuracy &gt; 12m</span>, הזרם נפסל ומתאפס. בלוג החי התקין הדיוק היה סביב <span class="ltr">11.1m</span>.</p></div></div>
+      <div class="step-item"><div class="step-body"><h3>קפיצת datum</h3><p class="small">שינוי מיידי גדול מ־<span class="ltr">12m</span> מאפס את ההיסטוריה ומתחיל בסיס חדש.</p></div></div>
+      <div class="step-item"><div class="step-body"><h3>יישור זמן</h3><p class="small">אם זמן החיישן קרוב לזמן הקבלה משתמשים בו; אחרת נבנה offset יציב בין שני השעונים.</p></div></div>
+      <div class="step-item"><div class="step-body"><h3>Dedup + heartbeat</h3><p class="small">timestamp זהה נזרק. ערך מוחזק זהה עובר לכל היותר פעם ב־<span class="ltr">0.9s</span>, כדי לשמור time base בלי לנפח את החלונות.</p></div></div>
+      <div class="step-item"><div class="step-body"><h3>סדר עולה בלבד</h3><p class="small"><span class="mono">JumpEngineV13</span> מקבל רק זמנים חדשים יותר מהדגימה הקודמת.</p></div></div>
+    </div>
+    <div class="callout warn">
+      <span class="strong">למה reset ולא רק drop?</span> שינוי datum משאיר מספרים חוקיים אך בבסיס גובה אחר. ערבוב שתי נקודות ייחוס באותו חלון יכול לייצר קפיצה ענקית מזויפת; לכן מחיקת ההיסטוריה היא הגנה חיונית.
+    </div>
+    <div class="grid-3">
+      <div class="metric"><div class="value">12m</div><div class="label">מקסימום accuracy שימושי</div></div>
+      <div class="metric"><div class="value">12m</div><div class="label">סף שינוי datum</div></div>
+      <div class="metric"><div class="value">0.9s</div><div class="label">heartbeat לערך זהה</div></div>
+    </div>
+  </section>
+
+  <section class="page" data-page="06/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>Baseline והמראה</span></div>
+    <div class="eyebrow"><span class="section-number">05</span> · מצב idle</div>
+    <h2>בניית בסיס ופתיחת candidate</h2>
+    <div class="grid-2">
+      <div class="card teal">
+        <h3>חלון baseline</h3>
+        <p>ממוצע כל דגימות הגובה בארבע השניות שלפני נקודת תחילת העלייה.</p>
+        <div class="formula">baseline = average(altitude[t₀-4s .. t₀))</div>
+        <ul class="small">
+          <li>לפחות 3 דגימות.</li>
+          <li>טווח פנימי לכל היותר <span class="ltr">1.0m</span>.</li>
+          <li>אין שימוש במינימום או בדגימה יחידה כבסיס.</li>
+        </ul>
+      </div>
+      <div class="card coral">
+        <h3>חלון עלייה</h3>
+        <p>משך החלון נגזר מסף הגובה: <span class="ltr">1m→1s</span>, <span class="ltr">1.5m→1.5s</span>, <span class="ltr">2m→2s</span>.</p>
+        <div class="formula">rise = currentAlt - baseline ≥ minRiseM</div>
+        <ul class="small">
+          <li>גם העלייה מהנקודה הראשונה חייבת לעבור את הסף.</li>
+          <li>נבדק לאחר לפחות 80% ממשך החלון.</li>
+          <li>הדגימה הראשונה לא יכולה להיות נמוכה מדי מהבסיס.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout note"><span class="strong">הגנת dip-recovery:</span> שלושת התנאים יחד מונעים משקע לחץ רגעי ואחריו התאוששות להיראות כהמראה: baseline שקט, נקודת התחלה קרובה לבסיס, ועלייה אמיתית בתוך החלון הקצר.</div>
+    <h3 style="margin-top:5mm">כל התנאים לפתיחה</h3>
+    <table>
+      <tr><th>בדיקה</th><th>ברירת מחדל</th><th>סיבת דחייה בלוג</th></tr>
+      <tr><td>Warmup הסתיים</td><td class="ltr">8s</td><td class="mono">sensorWarmup</td></tr>
+      <tr><td>Baseline מוכן</td><td class="ltr">≥3 samples / 4s</td><td class="mono">baselineNotReady</td></tr>
+      <tr><td>Baseline שקט</td><td class="ltr">range ≤1.0m</td><td class="mono">baselineNoisy</td></tr>
+      <tr><td>התחלה ליד baseline</td><td class="ltr">first ≥ baseline−0.4875m</td><td class="mono">takeoffBelowBaseline</td></tr>
+      <tr><td>עלייה בחלון</td><td class="ltr">current−first ≥1.0m</td><td class="mono">shortWindowRise</td></tr>
+      <tr><td>עלייה מעל הממוצע</td><td class="ltr">current−baseline ≥1.0m</td><td>נשאר ב־idle</td></tr>
+    </table>
+  </section>
+
+  <section class="page" data-page="07/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>מכונת מצבים</span></div>
+    <div class="eyebrow"><span class="section-number">06</span> · Candidate, שיא ונחיתה</div>
+    <h2>שני מצבים, מעבר אחד לכל כיוון</h2>
+    <div class="state-flow">
+      <div class="state idle"><h3>IDLE</h3><p class="small">אוסף history, בונה baseline וחלון עלייה. לא נוצר אירוע עד שכל תנאי ההמראה מתקיימים.</p><span class="pill live">רכיבה / המתנה</span></div>
+      <div class="state-arrow"><div><b>←</b>עלייה תקינה</div><div><b>→</b>נחיתה או reject</div></div>
+      <div class="state air"><h3>AIRBORNE</h3><p class="small">שומר baseline קבוע, מעדכן max altitude ו־apex, מודד rates ואוסף metrics אופציונליים.</p><span class="pill block">candidate פתוח</span></div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h3>נתיב הנחיתה הראשי</h3>
+        <ol class="small">
+          <li>נמדדה ירידה מהשיא של לפחות <span class="ltr">max(0.25m, 0.5×minRise)</span>.</li>
+          <li>הגובה חזר אל או מתחת ל־<span class="ltr">baseline + 0.75m</span>.</li>
+          <li>השיא אכן עבר את baseline בסף הנדרש.</li>
+          <li>האירוע מחושב ומופץ מיד, ללא המתנה נוספת.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>נתיב fallback יציב</h3>
+        <ol class="small">
+          <li>אוסף חלון לאחר ירידה מהשיא.</li>
+          <li>דורש משך של <span class="ltr">2s</span>.</li>
+          <li>שינוי ראשון־אחרון עד <span class="ltr">0.25m</span>.</li>
+          <li>טווח כל החלון עד <span class="ltr">0.6m</span>.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="formula">landing = returnedToBaseline ∧ descendedFromPeak ∧ clearedThreshold</div>
+    <div class="callout warn"><span class="strong">Timeouts:</span> candidate שנשאר פתוח מעל <span class="ltr">20s</span> נדחה. ב־session end, flush יפלוט אירוע רק אם כבר קיים חלון נחיתה יציב; אחרת הוא נדחה כ־<span class="mono">sessionEndedBeforeStableLanding</span>.</div>
+    <div class="callout"><span class="strong">לאחר emit:</span> זמן הנחיתה נשמר, מנגנון retrigger ממתין <span class="ltr">0.8s</span>, ונקודת הנחיתה הופכת להתחלה אפשרית לחלון הבא.</div>
+  </section>
+
+  <section class="page" data-page="08/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>חישובי תוצאה</span></div>
+    <div class="eyebrow"><span class="section-number">07</span> · מאירוע פנימי ל־Jump</div>
+    <h2>גובה, זמן אוויר, מרחק וביטחון</h2>
+    <div class="grid-2">
+      <div class="card teal"><h3>גובה</h3><div class="formula">height = min(peakAlt − preBaseline, 30m)</div><p class="small">baseline הנחיתה נשמר לאבחון בלבד. נקודת הייחוס לגובה היא תמיד ממוצע ארבע השניות שלפני הקפיצה.</p></div>
+      <div class="card coral"><h3>זמן אוויר</h3><div class="formula">airtime = landingT − takeoffT</div><p class="small">תוצאה תקינה רק בטווח <span class="ltr">1–12s</span>. אין מודל בליסטי ואין תיקון לפי IMU.</p></div>
+      <div class="card yellow"><h3>מרחק</h3><div class="formula">GPS pair ? haversine : speed × airtime</div><p class="small">ללא GPS מוחזר nil בליבה וממופה ל־<span class="ltr">0m</span> במודל האפליקציה.</p></div>
+      <div class="card lime"><h3>סיבובים ומדדי IMU</h3><div class="formula">turns = ∫|gyro|dt / 2π</div><p class="small">זהו מדד משלים המבוסס על magnitude, לא שחזור orientation מלא ולא תנאי לקבלת הקפיצה.</p></div>
+    </div>
+    <h3 style="margin-top:5mm">Confidence בנתיב החי</h3>
+    <table>
+      <tr><th>רכיב</th><th>השפעה</th><th>פירוש</th></tr>
+      <tr><td>בסיס</td><td class="ltr">+65%</td><td>candidate השלים קשת גובה תקינה.</td></tr>
+      <tr><td>נחיתה בטווח שקט</td><td class="ltr">+10%</td><td>ב־baseline return הטווח הוא אפס ולכן התוספת מתקבלת.</td></tr>
+      <tr><td>GPS בהמראה</td><td class="ltr">+10%</td><td>העשרה בלבד, לא gate.</td></tr>
+      <tr><td>מרחק מחושב</td><td class="ltr">+5%</td><td>יש זוג נקודות או speed.</td></tr>
+      <tr><td>Drift מעל 2m</td><td class="ltr">−15%</td><td>פער חריג בין baseline לפני ואחרי.</td></tr>
+    </table>
+    <div class="callout note small">בסשן ללא GPS שבמסמך התקבל confidence של <span class="ltr">75%</span> לכל שלוש הקפיצות: <span class="ltr">65% + 10%</span>. המשמעות היא “קשת altitude תקינה ללא העשרת GPS”, לא ודאות סטטיסטית מכוילת.</div>
+    <div class="grid-3">
+      <div class="metric"><div class="value">3 pts</div><div class="label">פרופיל: takeoff, apex, landing</div></div>
+      <div class="metric"><div class="value">2s</div><div class="label">הפרדת apex כפול</div></div>
+      <div class="metric"><div class="value">0s</div><div class="label">latency ב־baseline return</div></div>
+    </div>
+  </section>
+
+  <section class="page" data-page="09/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>תשובות לשאלות</span></div>
+    <div class="eyebrow"><span class="section-number">08</span> · מצב קיים מול הדרישה</div>
+    <h2>התשובה הקצרה לפני שנכנסים לפרטים</h2>
+    <table>
+      <tr><th>שאלה</th><th>האם קיים כיום?</th><th>תשובה מדויקת</th></tr>
+      <tr><td>דלתא ולא datum אבסולוטי</td><td class="status-yes">כן</td><td>פתיחה וגובה מחושבים כהפרשים מול baseline מקומי; ערך שלילי תקין.</td></tr>
+      <tr><td>שימוש ברזולוציית <span class="mono">precision</span></td><td class="status-no">לא</td><td>הערך נכתב ל־KSLG, אך נזרק לפני הליבה ואינו משפיע על סף או confidence.</td></tr>
+      <tr><td>טיפול ב־<span class="mono">accuracy</span></td><td class="status-partial">כן, קשיח</td><td>מעל <span class="ltr">12m</span> הדגימה נחסמת והמנוע מתאפס; זה עלול לחסום דלתא מקומית טובה.</td></tr>
+      <tr><td>Buffer</td><td class="status-partial">כן, חלקית</td><td>יש history של <span class="ltr">60s</span> וחלונות קצרים; סריקה רטרואקטיבית קיימת אך כבויה.</td></tr>
+      <tr><td>שני השעונים</td><td class="status-yes">כן</td><td>גם שני timeouts אלגוריתמיים וגם שני תחומי זמן טכניים; שניהם מוסברים בהמשך.</td></tr>
+      <tr><td>Workout וריצה ברקע</td><td class="status-yes">כן</td><td><span class="mono">HKWorkoutSession</span>, builder ו־<span class="mono">workout-processing</span> קיימים.</td></tr>
+      <tr><td>“מקסימום ביצועים”</td><td class="status-partial">חלקי</td><td>יש Batched IMU ו־QoS גבוה; watchOS עדיין שולט בקצב, CPU, חום וסוללה.</td></tr>
+      <tr><td>Always On</td><td class="status-partial">חלקי</td><td>מופעל כברירת מחדל, אך התאמת ה־UI למצב עמום אינה מלאה.</td></tr>
+      <tr><td>נחיתה: <span class="ltr">2s</span> + <span class="ltr">3–4</span> דגימות</td><td class="status-no">לא בנתיב הראשי</td><td>הנתיב הראשי סוגר על דגימה אחת; fallback של <span class="ltr">2s</span> קיים ללא מינימום דגימות.</td></tr>
+      <tr><td>לוג מאוחד jumps+GPS+IMU</td><td class="status-no">לא</td><td>המידע מפוצל בין Session JSON, ‏KSLG ו־Live KLOG.</td></tr>
+    </table>
+    <div class="callout"><span class="strong">השורה התחתונה:</span> העיקרון הנכון — דלתא מקומית של absolute altitude — כבר בליבה. הפערים המרכזיים הם שימוש חסר ב־precision, שער accuracy קשיח, נחיתה מיידית ללא אישור רצף, וחוזי נתונים מפוצלים.</div>
+  </section>
+
+  <section class="page" data-page="10/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>Absolute altitude</span></div>
+    <div class="eyebrow"><span class="section-number">09</span> · Datum, דלתא ורזולוציה</div>
+    <h2>הערך האבסולוטי יכול להיות כל מספר</h2>
+    <div class="formula">baseline = −18.40m · peak = −16.25m · height = 2.15m</div>
+    <p class="lead">אין בקוד דרישה שהגובה יהיה חיובי. ה־datum יכול להתחיל מתחת לאפס, לזוז בין סשנים או להיות רחוק מגובה פני הים; כל עוד הוא רציף בתוך הקפיצה, החיסור מבטל את ה־offset.</p>
+    <div class="grid-3">
+      <div class="card teal"><h3>Altitude</h3><p class="small">הקריאה האבסולוטית במטרים. משמשת לבניית baseline, שיא וחזרה.</p></div>
+      <div class="card yellow"><h3>Accuracy</h3><p class="small">אי־ודאות מוערכת של הגובה האבסולוטי, סטיית תקן אחת. אינה זהה לרעש הדלתא המקומי.</p></div>
+      <div class="card coral"><h3>Precision</h3><p class="small">הרזולוציה המומלצת של הקריאה במטרים. זה הנתון הרלוונטי ביותר לשאלה “באיזה שינוי קטן אפשר להבחין”.</p></div>
+    </div>
+    <h3 style="margin-top:5mm">מה קורה כיום לפני שהדגימה מגיעה למנוע</h3>
+    <table>
+      <tr><th>תנאי</th><th>פעולה</th><th>משמעות לדלתא</th></tr>
+      <tr><td class="ltr">accuracy ≥ 100m</td><td>דחייה + reset</td><td>Sentinel של re-anchor; הגנה נכונה.</td></tr>
+      <tr><td class="ltr">accuracy &gt; 12m</td><td>דחייה + reset</td><td>Hard gate אמפירי; דגימה אחת יוצרת גם warmup חדש.</td></tr>
+      <tr><td class="ltr">|alt − previous| &gt; 12m</td><td>reset והתחלת datum חדש</td><td>מונע חיבור שתי נקודות ייחוס לקשת אחת.</td></tr>
+      <tr><td class="mono">precisionM</td><td>לא נצרך</td><td>נשמר רק בלוג; אין יחס rise/precision.</td></tr>
+      <tr><td class="ltr">baseline range ≤ 1m</td><td>Gate מקומי</td><td>מודד שקט אמיתי בחלון של <span class="ltr">4s</span>.</td></tr>
+    </table>
+    <div class="callout warn"><span class="strong">הפער:</span> אחסון באלפיות מטר ועיגול תוצאה ל־<span class="ltr">0.01m</span> אינם הוכחה לדיוק של סנטימטר. כיום ה־UI/מודל יכולים להציג יותר ספרות ממה שה־precision וה־cadence מצדיקים.</div>
+    <div class="callout note small"><span class="strong">המלצה:</span> להשאיר sentinel ו־datum reset; להפוך <span class="ltr">accuracy&gt;12m</span> לדגל איכות או לדרוש רצף דגימות גרועות; לחשב ולדווח <span class="mono">medianPrecisionM</span>,‏ <span class="mono">baselineSpreadM</span> ו־<span class="mono">riseToResolutionRatio</span>. מקור מונחים: <a href="https://developer.apple.com/documentation/coremotion/cmabsolutealtitudedata/accuracy">Apple accuracy</a> ו־<a href="https://developer.apple.com/documentation/coremotion/cmabsolutealtitudedata/precision">precision</a>.</div>
+    <div class="footnote mono">JumpDetectorV13.swift:363–403 · JumpEngineV13.swift:342–373, 720–725</div>
+  </section>
+
+  <section class="page" data-page="11/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>Buffer</span></div>
+    <div class="eyebrow"><span class="section-number">10</span> · האם buffer יעזור?</div>
+    <h2>כן — אם הוא קצר ומוגדר; לא — אם הוא מחפש פסגות חופשית</h2>
+    <table>
+      <tr><th>Buffer קיים</th><th>גודל</th><th>שימוש אמיתי</th></tr>
+      <tr><td><span class="mono">altitudeHistory</span></td><td class="ltr">60s</td><td>Baseline של <span class="ltr">4s</span>, הקשר ו־duplicate-apex guard.</td></tr>
+      <tr><td><span class="mono">imuHistory</span> / <span class="mono">gpsHistory</span></td><td class="ltr">60s</td><td>IMU metrics והתאמת GPS סמוך להמראה/נחיתה.</td></tr>
+      <tr><td><span class="mono">takeoffWindow</span></td><td class="ltr">≈1–2s + 0.15s</td><td>דורש עלייה מקומית בזמן קצר.</td></tr>
+      <tr><td><span class="mono">landingWindow</span></td><td class="ltr">2s</td><td>Fallback של יציבות; הנתיב הראשי יכול לעקוף אותו.</td></tr>
+      <tr><td>GPS speed smoothing</td><td class="ltr">5 fixes</td><td>מחליק speed לפני detector; אינו gate ב־V13.</td></tr>
+      <tr><td>Motion batch</td><td class="ltr">250 samples</td><td>נבנה כל <span class="ltr">≈5s</span> ב־50Hz, אך callback הסשן זורק אותו.</td></tr>
+      <tr><td>Logger write buffer</td><td class="ltr">250 records</td><td>הפחתת I/O; flush בערך כל <span class="ltr">5s</span> בקצב 50Hz.</td></tr>
+    </table>
+    <div class="grid-2" style="margin-top:5mm">
+      <div class="card coral"><h3>מה לא להפעיל</h3><p class="small"><span class="mono">scanBufferedAltitude</span> קיים אך אינו נקרא. הסריקה הישנה של פסגות שרירותיות יצרה <span class="ltr">14/14</span> false FINALs בלוג ללא קפיצות, לעיתים עשרות שניות מאוחר.</p></div>
+      <div class="card teal"><h3>מה כן יכול לעזור</h3><p class="small">Pending buffer של <span class="ltr">2s</span> עם timestamps נפרדים: לאישור <span class="ltr">3–4</span> דגימות נחיתה, מדידת slope וזיהוי glitch יחיד. הוא מוסיף latency, לא רזולוציית חיישן.</p></div>
+    </div>
+    <div class="callout"><span class="strong">פסק דין:</span> buffer הוא זיכרון והקשר, לא פילטר קסם. לשמור את ה־FSM streaming, להשתמש בחלון אישור קצר, ולא להחזיר חיפוש post‑hoc לאורך דקה.</div>
+    <div class="callout note small"><span class="strong">שיפור ביצועים:</span> היסטוריית IMU של כ־<span class="ltr">3,000–12,000</span> נקודות נחתכת כיום עם <span class="mono">removeFirst()</span>. Ring buffer אמיתי ימנע הזזות מערך חוזרות על השעון.</div>
+    <div class="footnote mono">JumpEngineV13.swift:243–300, 464–519, 842–857</div>
+  </section>
+
+  <section class="page" data-page="12/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>“שני השעונים”</span></div>
+    <div class="eyebrow"><span class="section-number">11</span> · שתי משמעויות שונות</div>
+    <h2>Timeouts של האלגוריתם ותחומי הזמן של המערכת</h2>
+    <div class="grid-2">
+      <div class="card coral">
+        <h3>1 · שני timeouts אלגוריתמיים</h3>
+        <p class="small"><span class="mono">maxAirtimeSec = 12s</span> נבדק אחרי שנמצאה נחיתה וקובע אם התוצאה סבירה.</p>
+        <p class="small"><span class="mono">maxFlightSec = 20s</span> הוא watchdog בזמן שה־candidate עדיין פתוח; הוא משחרר <span class="mono">airborne</span> אם אין נחיתה.</p>
+        <p class="small">יש גם <span class="mono">maxResultDelaySec = 2.5s</span> נגד emit ישן.</p>
+      </div>
+      <div class="card teal">
+        <h3>2 · שני תחומי זמן טכניים</h3>
+        <p class="small"><span class="mono">sensor/monotonic</span>: שניות מאז boot; מתאים לדלתאות, cadence וסדר אירועים.</p>
+        <p class="small"><span class="mono">wall clock / Date</span>: תאריך Unix; מתאים ל־UI, שרת וסנכרון בין מכשירים.</p>
+        <p class="small"><span class="mono">receivedT</span> הוא עוגן מונוטוני נוסף כאשר epoch החיישן אינו מיושר.</p>
+      </div>
+    </div>
+    <div class="formula">maxFlight ≥ maxAirtime + landingConfirmation + cadenceMargin</div>
+    <table>
+      <tr><th>למה צריך</th><th>איזה זמן משמש</th><th>מה קורה בקוד</th></tr>
+      <tr><td>פיזיקה של קפיצה</td><td>Monotonic</td><td>Altitude, IMU ו־GPS מיושרים לציר שאינו קופץ בשינוי שעה.</td></tr>
+      <tr><td>Absolute callback מאוחר</td><td>sensorT + receivedT</td><td>אם ההפרש קטן מ־<span class="ltr">60s</span> משתמשים בזמן החיישן; אחרת שומרים offset התחלתי.</td></tr>
+      <tr><td>תאריכי Jump</td><td>Wall clock</td><td>ממירים takeoff/landing מונוטוניים חזרה ל־<span class="mono">Date</span> רק בפלט.</td></tr>
+      <tr><td>משך Session</td><td>Wall clock כיום</td><td><span class="mono">Date() − startTime</span>; שינוי שעון יכול להשפיע על משך וסף דקה.</td></tr>
+    </table>
+    <div class="callout note"><span class="strong">אין כאן שני Apple Watches.</span> מדובר בשתי מגבלות זמן ושני clocks לוגיים. אם מוסיפים אישור נחיתה של <span class="ltr">2s</span>, חובה להגדיל/לקשור את timeouts; אחרת האישור עצמו עלול לייצר reject.</div>
+    <div class="footnote mono">JumpEngineV13.swift:42–45, 441–445, 725–740 · JumpDetectorV13.swift:341–443</div>
+  </section>
+
+  <section class="page" data-page="13/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>watchOS</span></div><span>Workout וביצועים</span></div>
+    <div class="eyebrow"><span class="section-number">12</span> · ריצה רציפה וחיישנים</div>
+    <h2>Workout קיים; “מקסימום ביצועים” אינו הבטחה</h2>
+    <div class="flow">
+      <div class="flow-row">
+        <div class="flow-node"><div class="kicker">SESSION START</div><h3>V13 מתחיל מיד</h3><p class="small">Motion ב־50Hz fallback, absolute altitude ו־GPS מתחילים בלי להמתין ל־Workout.</p></div>
+        <div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">HEALTHKIT</div><h3>HKWorkoutSession</h3><p class="small"><span class="mono">surfingSports</span>,‏ <span class="mono">outdoor</span>, builder, heart rate וקלוריות.</p></div>
+        <div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">RUNNING</div><h3>Batched upgrade</h3><p class="small">כשה־Workout פעיל, נעשה ניסיון לעבור ל־CMBatched בתדר שהחומרה מדווחת.</p></div>
+      </div>
+    </div>
+    <h3 style="margin-top:5mm">מה קיים בפועל</h3>
+    <table>
+      <tr><th>רכיב</th><th>מצב</th><th>השפעה</th></tr>
+      <tr><td>HealthKit capability</td><td class="check">קיים</td><td>Entitlement, תיאורי הרשאה ו־<span class="mono">workout-processing</span>.</td></tr>
+      <tr><td>Background execution</td><td class="check">קיים בזמן Workout</td><td>היישום ממשיך לקבל חיישנים גם כשהיד יורדת.</td></tr>
+      <tr><td>Motion QoS</td><td class="check">גבוה</td><td><span class="mono">userInitiated</span>; altimeter queue ב־<span class="mono">userInteractive</span>.</td></tr>
+      <tr><td>IMU rate</td><td class="partial">משתנה</td><td>בקשה ל־50Hz fallback; Batched לרוב גבוה יותר, אך לא מובטח 200Hz.</td></tr>
+      <tr><td>Absolute altitude rate</td><td class="partial">בשליטת watchOS</td><td>אין API לקביעת interval; בפועל נצפה סביב <span class="ltr">1–3Hz</span>.</td></tr>
+      <tr><td>Logger</td><td class="check">אסינכרוני</td><td>כתיבה בתור utility, בלי חסימת sensor thread.</td></tr>
+      <tr><td>Raw IMU בתוך Session</td><td class="cross">לא</td><td>נמנע copy של struct ב־main thread; raw נשמר רק ב־KSLG.</td></tr>
+    </table>
+    <div class="callout warn"><span class="strong">ניסוח נכון:</span> Workout מעניק background execution ומכוונן חיישנים לפעילות; הוא אינו נותן CPU בלתי מוגבל. watchOS יכול להוריד cadence או להשעות עבודה כבדה עקב חום, צריכת CPU או סוללה.</div>
+    <p class="micro">מקור פלטפורמה: <a href="https://developer.apple.com/documentation/healthkit/running-workout-sessions">Apple · Running workout sessions</a>.</p>
+  </section>
+
+  <section class="page" data-page="14/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>watchOS</span></div><span>Always On ו־runtime</span></div>
+    <div class="eyebrow"><span class="section-number">13</span> · מה קיים ומה עדיין חסר</div>
+    <h2>Always On פעיל, אבל לא מותאם מקצה לקצה</h2>
+    <div class="grid-2">
+      <div class="card teal"><h3>קיים</h3><ul class="small"><li>אין opt-out של <span class="mono">WKSupportsAlwaysOnDisplay</span>; ברירת המחדל היא כן.</li><li>Workout פעיל משאיר את האפליקציה זמינה במסך וברקע.</li><li><span class="mono">isLuminanceReduced</span> עוצר אנימציית GPS אחת.</li><li>מצב thermal, ‏Low Power וסוללה נרשמים כל <span class="ltr">2s</span>.</li></ul></div>
+      <div class="card coral"><h3>חלקי או לא קיים</h3><ul class="small"><li>שתי אנימציות נוספות אינן מכבדות ambient.</li><li>המסך הראשי אינו מפחית shadow/gradient/content.</li><li>Timer של שנייה במקום <span class="mono">TimelineView</span>.</li><li>אין recovery של Workout וסשן אחרי crash.</li><li>אין תגובה ל־thermal/Low Power; רק לוג.</li></ul></div>
+    </div>
+    <table style="margin-top:5mm">
+      <tr><th>מנגנון</th><th>Audit</th><th>מסקנה</th></tr>
+      <tr><td><span class="mono">isFrontmostTimeoutExtended</span></td><td>נקרא בתחילת סשן</td><td>Deprecated וללא השפעה מאז watchOS 7; לא לספור כמנגנון ביצועים.</td></tr>
+      <tr><td><span class="mono">WKExtendedRuntimeSession</span></td><td>מתחיל לפני Workout</td><td>אינו “רישיון רשת” כללי; סוג session מתאים אינו מוגדר במפורש. Workout הוא עוגן הרקע העיקרי.</td></tr>
+      <tr><td>Location fallback</td><td><span class="mono">BestForNavigation</span></td><td>אין <span class="mono">allowsBackgroundLocationUpdates=true</span>; ללא Workout רציף לא מובטח.</td></tr>
+      <tr><td>Crash recovery</td><td>אין delegate recovery</td><td>Workout פעיל אינו משוחזר, ו־<span class="mono">currentSession</span> הוא state בזיכרון.</td></tr>
+      <tr><td>Performance metadata</td><td><span class="ltr">200Hz</span> hard-coded</td><td>הכותרת אינה משקפת מעבר אמיתי מ־50Hz ל־Batched.</td></tr>
+    </table>
+    <div class="callout"><span class="strong">פסק דין:</span> ניתן לומר “Workout ו־Always On קיימים”. אי אפשר לומר “האפליקציה מבטיחה מקסימום ביצועים תמיד”. נדרש telemetry של cadence בפועל, recovery, UI ambient מלא ובדיקות thermal על מכשיר.</div>
+    <p class="micro">מקורות: <a href="https://developer.apple.com/documentation/watchos-apps/designing-your-app-for-the-always-on-state">Apple · Always On</a> · <a href="https://developer.apple.com/documentation/watchkit/wkextension/isfrontmosttimeoutextended">frontmostTimeoutExtended</a>.</p>
+  </section>
+
+  <section class="page" data-page="15/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>תנאי נחיתה</span></div>
+    <div class="eyebrow"><span class="section-number">14</span> · יציבות או הפסקת ירידה</div>
+    <h2>הדרישה של 2 שניות ו־3–4 דגימות אינה קיימת כיום</h2>
+    <table>
+      <tr><th>בדיקה</th><th>נתיב ראשי כיום</th><th>Fallback כיום</th><th>הדרישה</th></tr>
+      <tr><td>חזרה לבסיס</td><td class="check">כן, <span class="ltr">baseline+0.75m</span></td><td>לא חובה</td><td>Evidence לפתיחת pending</td></tr>
+      <tr><td>ירידה מהשיא</td><td class="check">כן</td><td class="check">כן לפני בניית חלון</td><td>כן</td></tr>
+      <tr><td>משך חלון</td><td class="cross">דגימה אחת</td><td class="check"><span class="ltr">≈2s</span></td><td class="ltr">≥2.0s</td></tr>
+      <tr><td>מספר דגימות</td><td class="cross">1</td><td class="cross">אין minimum</td><td class="ltr">≥4 distinct timestamps</td></tr>
+      <tr><td>יציבות range</td><td class="cross">range=0 מלאכותי</td><td class="check">≤0.6m</td><td>אחד משני מסלולים</td></tr>
+      <tr><td>הפסקת ירידה / slope</td><td class="cross">לא</td><td class="cross">לא</td><td class="ltr">slope ≥ −0.10m/s</td></tr>
+    </table>
+    <h3 style="margin-top:5mm">מפרט מוצע לחלון אישור</h3>
+    <div class="schema">arm = descendedFromPeak &amp;&amp; (nearPreBaseline || descendedAtLeast80Percent)
+window = distinctAltitudeSamples(last 2.0s)
+enough = window.duration &gt;= 2.0s &amp;&amp; window.count &gt;= 4
+stable = range(window.alt) &lt;= 0.60m &amp;&amp; abs(last-first) &lt;= 0.25m
+stoppedDescending = leastSquaresSlope(window) &gt;= -0.10m/s
+confirm = arm &amp;&amp; enough &amp;&amp; (stable || stoppedDescending)
+landingT = window.first.timestamp</div>
+    <div class="grid-2">
+      <div class="card teal"><h3>מומלץ ל־V13 recall-first</h3><p class="small">חזרה לבסיס יוצרת <span class="mono">pendingLanding</span>. אחרי <span class="ltr">2s</span> האישור מעלה quality/confidence; אם הוא נכשל, לא למחוק אוטומטית קשת שכבר חזרה לבסיס.</p></div>
+      <div class="card coral"><h3>אם הופכים ל־hard gate</h3><p class="small">מקבלים <span class="ltr">≈2–3s</span> latency ועלולים להחזיר את הבאג שבו post‑landing barometer dip משאיר candidate פתוח. נדרש regression על הלוג האחרון.</p></div>
+    </div>
+    <div class="callout warn small"><span class="strong">ניואנס cadence:</span> heartbeat של ערך זהה עובר בערך פעם ב־<span class="ltr">0.9s</span>. בקצב אפקטיבי של 1Hz, ארבע דגימות משתרעות לרוב על כ־3 שניות; לכן <span class="mono">maxResultDelay</span> ו־<span class="mono">maxFlight</span> חייבים להשתנות יחד.</div>
+    <div class="footnote mono">JumpEngineV13.swift:428–459, 694–714 · JumpDetectorV13.swift:445–468</div>
+  </section>
+
+  <section class="page" data-page="16/30">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>נתונים</span></div><span>שלושת התוצרים</span></div>
+    <div class="eyebrow"><span class="section-number">15</span> · מפת דיווח מקצה לקצה</div>
+    <h2>אין כיום “לוג אחד”; יש שלושה חוזים שונים</h2>
+    <table>
+      <tr><th>תוצר</th><th>פורמט</th><th>מכיל</th><th>לא מכיל / מגבלה</th></tr>
+      <tr><td><b>1. לוג סשן</b></td><td><span class="mono">Session JSON</span><br>קובץ מקומי</td><td>קפיצות מובנות, כל GPS מסונן, metadata של הסשן.</td><td>מערכי IMU ריקים; מדדי V13 רבים נזרקים; HR/קלוריות לא נשמרים.</td></tr>
+      <tr><td><b>2. לוג הקלטה</b></td><td><span class="mono">KSLG v2</span><br>בינארי tagged</td><td>Motion, relative/absolute baro, GPS, מים, events, sync ו־status.</td><td>קפיצת V13 היא טקסט חופשי; config V13 אינו מובנה; Replay זורק חלק מהערוצים.</td></tr>
+      <tr><td><b>3. דיווח Live</b></td><td><span class="mono">KLOG v1</span><br>HTTP binary</td><td>start, heartbeat, שיאי סשן, summary, track ו־jData קומפקטי.</td><td>לא שולח כל קפיצה בזמן אמת; אין raw sensors, confidence או baseline.</td></tr>
+    </table>
+    <div class="grid-3" style="margin-top:6mm">
+      <div class="card teal"><h3>Structured truth</h3><p class="small">Session JSON הוא מקור האמת המקומי לקפיצות, אבל לא לפורנזיקה.</p></div>
+      <div class="card yellow"><h3>Forensic truth</h3><p class="small">KSLG הוא מקור האמת לחיישנים, אבל jump result אינו schema בינארי יציב.</p></div>
+      <div class="card coral"><h3>Product truth</h3><p class="small">Live הוא חוזה מוצר מצומצם; rounding ו־units שונים מהקובץ המקומי.</p></div>
+    </div>
+    <div class="callout warn"><span class="strong">ממצא מרכזי:</span> אי אפשר כיום לקחת ארטיפקט יחיד ולענות יחד “איזו קפיצה זוהתה, מה היה המסלול, מה היה raw IMU, ומה מצב הביצועים של השעון”. לצורך ניתוח מלא צריך לצרף Session JSON + KSLG + תגובות Live.</div>
+    <div class="callout note small"><span class="strong">Lifecycle:</span> KSLG נפתח מיד בתחילת הסשן, אך בסשן קצר מדקה הוא נמחק בסוף. Live metadata עשוי כבר להישלח לשרת לפני בדיקת הדקה.</div>
+  </section>
+
+  <section class="page" data-page="17/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 1</span></div><span>Session JSON</span></div>
+    <div class="eyebrow"><span class="section-number">16</span> · פורמט הסשן המקומי</div>
+    <h2>קפיצות ו־GPS מובנים; IMU ריק</h2>
+    <div class="schema">Documents/sessions/&lt;session-uuid&gt;.json
+JSONEncoder.dateEncodingStrategy = .iso8601
+
+{
+  "id": "UUID",
+  "startTime": "ISO-8601",
+  "endTime": "ISO-8601 | null",
+  "sport": "kiteboarding",
+  "status": "active | paused | completed",
+  "gpsPoints": [ GPSPoint ],
+  "imuSamples": [],
+  "jumps": [ Jump ],
+  "cachedDistance": 1234.5
+}</div>
+    <table class="dense">
+      <tr><th>שדה Session</th><th>טיפוס</th><th>יחידה / פירוש</th><th>הערה</th></tr>
+      <tr><td class="mono">id</td><td>String</td><td>UUID מקומי</td><td>גם שם הקובץ.</td></tr>
+      <tr><td class="mono">startTime/endTime</td><td>ISO‑8601</td><td>זמן קיר</td><td>לא monotonic.</td></tr>
+      <tr><td class="mono">sport</td><td>enum String</td><td>כרגע <span class="mono">kiteboarding</span></td><td>HealthKit ממופה ל־surfingSports.</td></tr>
+      <tr><td class="mono">status</td><td>enum String</td><td>active / paused / completed</td><td>בסיום נשמר completed.</td></tr>
+      <tr><td class="mono">gpsPoints</td><td>Array</td><td>כל fix שעבר <span class="ltr">0&lt;hAcc&lt;20m</span></td><td>לא decimated בקובץ המקומי.</td></tr>
+      <tr><td class="mono">imuSamples</td><td>Array</td><td>אמור להיות IMU</td><td class="cross">בפועל ריק בכוונה.</td></tr>
+      <tr><td class="mono">jumps</td><td>Array</td><td>תוצאות Jump מובנות</td><td>כל jump שהמנוע פלט.</td></tr>
+      <tr><td class="mono">cachedDistance</td><td>Double</td><td>מטרים</td><td>סכום מרחק GPS מצטבר.</td></tr>
+    </table>
+    <div class="callout note small"><span class="strong">לא מקודדים:</span> <span class="mono">duration</span>,‏ <span class="mono">distance</span>,‏ <span class="mono">maxSpeed</span> ו־<span class="mono">avgSpeed</span> הם computed properties. דופק וקלוריות מוצגים בזמן אמת אך אינם חלק מה־Session.</div>
+    <div class="callout warn small"><span class="strong">Persistence:</span> הקובץ נשמר רק לסשן של לפחות דקה. “סנכרון לטלפון” עדיין TODO; אין העברת WatchConnectivity פעילה.</div>
+    <div class="footnote mono">Session.swift:12–75 · StorageManager.swift:41–57, 136–145</div>
+  </section>
+
+  <section class="page" data-page="18/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 1</span></div><span>Jump + GPS</span></div>
+    <div class="eyebrow"><span class="section-number">17</span> · כל שדה וכל יחידה</div>
+    <h2>מה נשמר בתוך הקפיצה ומה הולך לאיבוד</h2>
+    <div class="grid-2">
+      <div>
+        <h3>Jump</h3>
+        <table class="dense">
+          <tr><th>שדה</th><th>יחידה / פורמט</th></tr>
+          <tr><td class="mono">id, sessionId</td><td>String UUID</td></tr>
+          <tr><td class="mono">startTime, endTime</td><td>ISO‑8601; המראה/נחיתה</td></tr>
+          <tr><td class="mono">height</td><td>מטרים</td></tr>
+          <tr><td class="mono">airtime</td><td>שניות</td></tr>
+          <tr><td class="mono">jumpDistance</td><td>מטרים; <span class="ltr">0</span> אם אין GPS</td></tr>
+          <tr><td class="mono">rotations</td><td>סיבובים שלמים, rounded</td></tr>
+          <tr><td class="mono">confidence</td><td>אחוז, <span class="ltr">0–100</span></td></tr>
+          <tr><td class="mono">imuSamples</td><td class="cross">Array ריק ב־V13</td></tr>
+          <tr><td class="mono">apexTime</td><td>שניות מההמראה</td></tr>
+          <tr><td class="mono">heightSource</td><td>String; absoluteAltitude</td></tr>
+          <tr><td class="mono">absoluteTakeoff/Apex/LandingAltitude</td><td>מטרים; optional</td></tr>
+          <tr><td class="mono">takeoffSpeed/landingSpeed</td><td>m/s; optional</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>GPSPoint</h3>
+        <table class="dense">
+          <tr><th>שדה</th><th>יחידה / פורמט</th></tr>
+          <tr><td class="mono">timestamp</td><td>ISO‑8601 Date</td></tr>
+          <tr><td class="mono">latitude/longitude</td><td>מעלות WGS‑84</td></tr>
+          <tr><td class="mono">altitude</td><td>מטרים, GPS altitude</td></tr>
+          <tr><td class="mono">speed</td><td>m/s; invalid נחתך ל־0</td></tr>
+          <tr><td class="mono">course</td><td>מעלות; 0° צפון</td></tr>
+          <tr><td class="mono">horizontalAccuracy</td><td>מטרים</td></tr>
+          <tr><td class="mono">verticalAccuracy</td><td>מטרים</td></tr>
+        </table>
+        <h3 style="margin-top:5mm">V13 מחשב — אך Session אינו שומר</h3>
+        <table class="dense">
+          <tr><th>מדד פנימי</th><th>יחידה</th></tr>
+          <tr><td class="mono">takeoffG, landingG, peakG</td><td>g</td></tr>
+          <tr><td class="mono">maxRotationRadS</td><td>rad/s</td></tr>
+          <tr><td class="mono">rotationTurns</td><td>turns; רק rounded נשמר</td></tr>
+          <tr><td class="mono">impactEnergy</td><td>מדד יחסי <span class="ltr">(g−1)²·s</span></td></tr>
+          <tr><td class="mono">maxAscent/DescentRate</td><td>m/s</td></tr>
+          <tr><td class="mono">altitudePointCount</td><td>count</td></tr>
+          <tr><td class="mono">baselineShifted/driftSuspect</td><td>Bool</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="callout warn small"><span class="strong">פער בחוזה:</span> “לוג סשן עם ביצועים מ־IMU” אינו מתקיים. חלק מהמדדים מופיעים רק בטקסט EVENT של KSLG, וחלקם אינם נשמרים בשום פלט מוצר.</div>
+    <div class="footnote mono">Session.swift:77–245 · JumpDetectorV13.swift:477–493</div>
+  </section>
+
+  <section class="page" data-page="19/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 2</span></div><span>KSLG v2</span></div>
+    <div class="eyebrow"><span class="section-number">18</span> · מעטפת וקובץ header</div>
+    <h2>פורמט בינארי קטן עם records מתויגים</h2>
+    <div class="formula">"KSLG" · version UInt8=2 · headerLen UInt16 LE · header JSON · records…</div>
+    <table class="dense">
+      <tr><th>שדה Header</th><th>טיפוס / יחידה</th><th>ערך נוכחי או משמעות</th></tr>
+      <tr><td class="mono">app, format, version</td><td>String / Int</td><td>Kiters / kslog / 2</td></tr>
+      <tr><td class="mono">session</td><td>UUID String</td><td>מזהה הסשן המקומי.</td></tr>
+      <tr><td class="mono">date</td><td><span class="ltr">yyyyMMdd_HHmmss</span></td><td>זמן מקומי בשם הקובץ; ללא timezone מפורש.</td></tr>
+      <tr><td class="mono">mode</td><td>String</td><td>Standard / Custom; אינו שם המנוע.</td></tr>
+      <tr><td class="mono">schemaVersion/engineVersion/sensorOnly</td><td>Int / String / Bool</td><td>2 / למשל v13-pure / true.</td></tr>
+      <tr><td class="mono">sampleRateHz</td><td>Hz Int</td><td class="partial">200 hard-coded; לא cadence נמדד.</td></tr>
+      <tr><td class="mono">parameters</td><td>m/s, g, seconds</td><td>ספי DetectionMode ישנים; לא snapshot מלא של V13Config.</td></tr>
+      <tr><td class="mono">t0BootUs</td><td>µs מאז boot</td><td>עוגן monotonic שממנו כל <span class="mono">tUs</span> יחסי.</td></tr>
+      <tr><td class="mono">wallClockAtT0Ms</td><td>Unix milliseconds</td><td>עוגן לקורלציה עם זמן קיר.</td></tr>
+      <tr><td class="mono">device</td><td>Strings</td><td>model, watchOS, appVersion.</td></tr>
+      <tr><td class="mono">engines</td><td>object</td><td>active + candidates hard-coded.</td></tr>
+      <tr><td class="mono">streams</td><td>Hz / Bool</td><td>motion=200, rawAcc=0, baroExpected=3 ב־V13, gps=1, submersion=true.</td></tr>
+      <tr><td class="mono">reference</td><td>object</td><td>surfr=false, watch ריק, syncMethod טקסט קבוע.</td></tr>
+      <tr><td class="mono">columns</td><td>String array</td><td>עמודות CSV legacy/V12; אינן schema של records v2.</td></tr>
+    </table>
+    <div class="callout warn"><span class="strong">אי־דיוק telemetry:</span> הסשן מתחיל ב־50Hz ויכול לעבור ל־Batched. הכותרת עדיין מצהירה 200Hz. גם <span class="mono">submersion=true</span> מציין יכולת רצויה, לא availability שנמדד.</div>
+    <div class="callout note small"><span class="strong">מה צריך להוסיף:</span> snapshot מלא של V13Config, תדרים נמדדים לכל stream, סיבת מעבר 50→Batched, dropped samples וגרסת schema עצמאית משדות CSV הישנים.</div>
+    <div class="footnote mono">SessionLogger.swift:63–117, 533–587</div>
+  </section>
+
+  <section class="page" data-page="20/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 2</span></div><span>רשומות חיישן</span></div>
+    <div class="eyebrow"><span class="section-number">19</span> · Tags 3, 5, 6, 7</div>
+    <h2>השדות, הסקייל והיחידות על הדיסק</h2>
+    <p class="small">כל המספרים little‑endian. בכל record, ‏<span class="mono">tUs</span> הוא UInt64 במיקרו־שניות יחסית ל־<span class="mono">t0BootUs</span>. “Quantum” הוא רזולוציית האחסון בלבד.</p>
+    <table class="dense">
+      <tr><th>Tag / גודל</th><th>שדות בסדר הכתיבה</th><th>יחידה ו־quantum</th><th>קצב</th></tr>
+      <tr><td class="ltr">3 · MOTION<br>29 bytes</td><td><span class="mono">tUs; ax,ay,az; rx,ry,rz; qw,qx,qy,qz</span></td><td>user acceleration: g / 0.001<br>gyro: rad/s / 0.001<br>quaternion: unitless / 0.0001</td><td>כל CMDeviceMotion; 50Hz fallback או Batched בפועל.</td></tr>
+      <tr><td class="ltr">5 · BARO<br>17 bytes</td><td><span class="mono">tUs; relativeAltitude; pressure</span></td><td>m / 0.001<br>hPa / 0.001</td><td>כל callback של relative altimeter.</td></tr>
+      <tr><td class="ltr">6 · ABSALT<br>21 bytes</td><td><span class="mono">tUs; altitude; accuracy; precision</span></td><td>שלושתם מטרים / 0.001; nil נכתב כ־Int32.min</td><td>כל callback absolute; ללא rate API.</td></tr>
+      <tr><td class="ltr">7 · GPS<br>29 bytes</td><td><span class="mono">tUs; lat,lng; speed; course; hAcc,vAcc; gpsAlt</span></td><td>lat/lng: degrees / 1e−7<br>speed: m/s / 0.01<br>course: degrees / 0.1<br>accuracy: m / 0.1<br>altitude: m / 0.001</td><td>כל fix שעבר <span class="ltr">hAcc&lt;20m</span>; לא 1Hz מובטח.</td></tr>
+      <tr><td class="ltr">4 · RAWACC<br>reserved</td><td>Tag מוגדר</td><td>אין writer</td><td class="cross">לא נכתב כיום.</td></tr>
+    </table>
+    <h3 style="margin-top:6mm">ייצוג חסר</h3>
+    <div class="grid-3">
+      <div class="card yellow"><h3>Quaternion</h3><p class="small">נשמר ב־KSLG, אך Loader של Replay מתעלם ממנו ומחליף gravity בקבוע.</p></div>
+      <div class="card coral"><h3>Absolute quality</h3><p class="small">accuracy ו־precision נשמרים היטב; רק accuracy נכנס ל־gate החי.</p></div>
+      <div class="card teal"><h3>GPS geometry</h3><p class="small">נשמר במלואו, אך Replay שומר ממנו רק speed.</p></div>
+    </div>
+    <div class="callout note small"><span class="strong">זהירות ביחידות:</span> רכיבי התאוצה הם <span class="mono">CMDeviceMotion.userAcceleration</span> ביחידות g, לא acceleration כולל gravity. quaternion הוא orientation ללא יחידה.</div>
+    <div class="footnote mono">SessionLogger.swift:656–723 · Loader.swift:212–280</div>
+  </section>
+
+  <section class="page" data-page="21/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 2</span></div><span>Event, Sync, Status</span></div>
+    <div class="eyebrow"><span class="section-number">20</span> · Records משלימים וביצועי מערכת</div>
+    <h2>מה עוד נכתב ב־KSLG</h2>
+    <table class="dense">
+      <tr><th>Tag / גודל</th><th>שדות</th><th>קודים / יחידות</th><th>מתי</th></tr>
+      <tr><td class="ltr">8 · SUBMERSION<br>12 bytes</td><td><span class="mono">tUs; kind; value</span></td><td>0: submerged 0/1<br>1: depth m / 0.01<br>2: temperature °C / 0.01</td><td>אירועי Ultra. Water pressure נאסף ל־snapshot אך אינו נכתב כ־record נפרד.</td></tr>
+      <tr><td class="ltr">9 · EVENT<br>12+N bytes</td><td><span class="mono">tUs; stateCode; len; UTF‑8</span></td><td>0 idle, 1 riding, 2 airborne, 3 cooldown, 255 unknown</td><td>Reset, candidate, reject ו־JUMP; flush מיידי.</td></tr>
+      <tr><td class="ltr">10 · SYNC<br>19+N bytes</td><td><span class="mono">tUs; wallClockUnixMs; label</span></td><td>µs + Unix ms + UTF‑8</td><td>פעם בתחילת הסשן, יחד עם שלוש נקישות.</td></tr>
+      <tr><td class="ltr">11 · STATUS<br>16 bytes</td><td><span class="mono">tUs; thermal; lowPower; batteryPct; baroSource; baroHz</span></td><td>thermal 0…3; bool; % או −1; source 0/1/2; Hz / 0.01</td><td>כל <span class="ltr">2s</span>.</td></tr>
+    </table>
+    <h3 style="margin-top:5mm">אירוע V13 FINAL הוא טקסט, לא schema</h3>
+    <div class="schema">JUMP(v13) FINAL h=&lt;m&gt; air=&lt;s&gt; dist=&lt;m&gt;
+pre=&lt;m&gt; post=&lt;m|-1&gt; ref=&lt;m&gt;
+takeoffG=&lt;g&gt; landingG=&lt;g&gt; rot=&lt;turns&gt;
+arcPts=&lt;count&gt; conf=&lt;0..100&gt; trigger=&lt;altitude&gt; latency=&lt;s&gt;</div>
+    <div class="grid-2">
+      <div class="card coral"><h3>בעיות schema</h3><ul class="small"><li><span class="ltr">−1m</span> משמש missing, אף שהוא baseline חוקי.</li><li><span class="mono">state="JUMP"</span> ממופה ל־255.</li><li>speed נמסר ל־logger אך אינו נכתב ב־EVENT v2.</li><li>שמות/סדר טקסט אינם versioned.</li></ul></div>
+      <div class="card teal"><h3>Performance קיים</h3><ul class="small"><li>חום, Low Power וסוללה.</li><li>baro source.</li><li><span class="mono">baroHz</span> הוא EWMA של relative barometer, לא ABSALT.</li><li>אין CPU, memory, queue lag או dropped count.</li></ul></div>
+    </div>
+    <div class="footnote mono">SessionLogger.swift:725–771 · JumpDetectorV13.swift:514–527</div>
+  </section>
+
+  <section class="page" data-page="22/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 2</span></div><span>Upload + Replay</span></div>
+    <div class="eyebrow"><span class="section-number">21</span> · איך הקובץ מגיע לניתוח</div>
+    <h2>KSLG גולמי בתוך KLOG, ואז Replay חלקי</h2>
+    <div class="flow">
+      <div class="flow-row">
+        <div class="flow-node"><div class="kicker">WATCH FILE</div><h3>KSLG v2</h3><p class="small">בתים גולמיים של כל ה־streams.</p></div><div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">HTTP BODY</div><h3>KLOG v1</h3><p class="small">Metadata typed + blob; ללא base64.</p></div><div class="arrow">←</div>
+        <div class="flow-node"><div class="kicker">ANALYSIS</div><h3>JumpReplay</h3><p class="small">טוען records, מריץ detector וכותב actual.json / CSV.</p></div>
+      </div>
+    </div>
+    <h3 style="margin-top:5mm">מעטפת upload של הלוג</h3>
+    <table class="dense">
+      <tr><th>שדה KLOG</th><th>טיפוס</th><th>משמעות</th></tr>
+      <tr><td class="mono">type</td><td>String</td><td>session_log</td></tr>
+      <tr><td class="mono">filename</td><td>String</td><td>שם קובץ .kslog</td></tr>
+      <tr><td class="mono">contentType</td><td>String</td><td>application/x-kiters-session-log</td></tr>
+      <tr><td class="mono">contentEncoding</td><td>String</td><td>binary</td></tr>
+      <tr><td class="mono">appVersion/build</td><td>String</td><td>גרסת האפליקציה</td></tr>
+      <tr><td class="mono">uploadedAt</td><td>ISO‑8601</td><td>זמן העלאה</td></tr>
+      <tr><td class="mono">content</td><td>Blob</td><td>כל בתֵי KSLG כפי שהם</td></tr>
+    </table>
+    <h3 style="margin-top:5mm">מה Replay אינו משחזר כיום</h3>
+    <div class="grid-2">
+      <div class="card coral"><ul class="small"><li>GPS lat/lng/course/accuracy/altitude — נשאר רק speed.</li><li>Quaternion — נזרק; gravity נהפך לקבוע.</li><li>SYNC ו־STATUS — מדולגים.</li><li>טמפרטורת/לחץ מים — אינם מוזנים.</li></ul></div>
+      <div class="card yellow"><ul class="small"><li>GPS מוזן למנוע עם coordinates של <span class="ltr">0,0</span>.</li><li><span class="mono">actual.json</span> מציג תוצאות קפיצה, לא כל ה־rejects של V13.</li><li><span class="mono">dump-samples.csv</span> הוא ZOH על MOTION, לא ה־records המקוריים.</li><li>לכן distance ו־performance אינם end‑to‑end faithful.</li></ul></div>
+    </div>
+    <div class="callout"><span class="strong">מסקנה:</span> Replay מתאים כיום לאימות detection מבוסס altitude. הוא עדיין אינו replay מלא של מסלול GPS, orientation ומצב המערכת.</div>
+    <div class="footnote mono">CloudSyncService.swift:80–123 · Loader.swift:180–322 · JumpReplay/main.swift:235–280</div>
+  </section>
+
+  <section class="page" data-page="23/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 3</span></div><span>Live KLOG</span></div>
+    <div class="eyebrow"><span class="section-number">22</span> · Transport ו־cadence</div>
+    <h2>Start, Ping ו־Record על אותו endpoint</h2>
+    <div class="formula">"KLOG" · version UInt8=1 · flags UInt8=0 · typed root object</div>
+    <p class="small">HTTP ‏POST עם <span class="mono">Content-Type: application/octet-stream</span>. התגובה היא JSON. גוף KLOG תומך null, bool, Int64, Float64, UTF‑8 string, blob, array ו־object — כולם little‑endian ו־length‑prefixed.</p>
+    <table class="dense">
+      <tr><th>הודעה</th><th>שדות מדווחים</th><th>יחידות / פורמט</th><th>טריגר</th></tr>
+      <tr><td><b>start</b></td><td><span class="mono">type, lat, lng, startedAt</span></td><td>degrees; ISO‑8601</td><td>מיד בתחילת סשן. GPS prewarm אם יש, אחרת <span class="ltr">0,0</span>. retry לכל היותר כל 5s.</td></tr>
+      <tr><td><b>ping</b></td><td><span class="mono">type, sessId, lat, lng, jmax?, jcnt?</span></td><td>degrees; jmax במטרים; count</td><td>בערך כל 10s ורק כאשר GPS ממשיך להגיע.</td></tr>
+      <tr><td><b>record</b></td><td><span class="mono">type, sessId, jumpM?, airS?, speedKmh?, distKm?</span></td><td>m; s; km/h; km</td><td>רק metric ששיפר best של הסשן.</td></tr>
+    </table>
+    <h3 style="margin-top:5mm">שערי Record</h3>
+    <div class="grid-4">
+      <div class="metric"><div class="value">&gt; best</div><div class="label">jumpM</div></div>
+      <div class="metric"><div class="value">&gt; best</div><div class="label">airS</div></div>
+      <div class="metric"><div class="value">+1</div><div class="label">speed km/h</div></div>
+      <div class="metric"><div class="value">+0.1</div><div class="label">distance km</div></div>
+    </div>
+    <div class="callout warn"><span class="strong">אין Live event לכל קפיצה.</span> אם קפיצה אינה משפרת height או airtime, לא נשלחת הודעת record. כל הקפיצות מופיעות רק ב־<span class="mono">jData</span> של end.</div>
+    <div class="callout note small"><span class="strong">אמינות:</span> ping שנכשל אינו נשלח מחדש. record שנכשל נשמר כ־pending best ויכול להישלח בהמשך/בסיום. Start ללא GPS עלול לבחור spot לפי <span class="ltr">0,0</span>.</div>
+    <div class="footnote mono">WatchSessionUploader.swift:53–95 · LiveSessionUploadState.swift:95–183</div>
+  </section>
+
+  <section class="page" data-page="24/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>לוג 3</span></div><span>Live End</span></div>
+    <div class="eyebrow"><span class="section-number">23</span> · סיכום הסשן והקפיצות</div>
+    <h2>כל שדה ב־end וב־jData</h2>
+    <div class="grid-2">
+      <div>
+        <h3>End root</h3>
+        <table class="dense">
+          <tr><th>שדה</th><th>טיפוס / יחידה</th></tr>
+          <tr><td class="mono">sessId</td><td>Int server id</td></tr>
+          <tr><td class="mono">durMin</td><td>Int דקות; floor; מינימום 1</td></tr>
+          <tr><td class="mono">jmax</td><td>Double מטרים</td></tr>
+          <tr><td class="mono">jcnt</td><td>Int count</td></tr>
+          <tr><td class="mono">airS</td><td>Double שניות; maximum</td></tr>
+          <tr><td class="mono">spdKmh</td><td>Int km/h; raw max, trunc</td></tr>
+          <tr><td class="mono">distKm</td><td>Double קילומטרים</td></tr>
+          <tr><td class="mono">avgKmh</td><td>Double; ממוצע speed samples ×3.6</td></tr>
+          <tr><td class="mono">stars</td><td>Int; כרגע 3 קבוע</td></tr>
+          <tr><td class="mono">windKts, dir</td><td>נתמכים אך לא נשלחים כיום</td></tr>
+          <tr><td class="mono">track</td><td>Array compact coordinates</td></tr>
+          <tr><td class="mono">jData</td><td>Array compact jumps</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>jData — לכל קפיצה</h3>
+        <table class="dense">
+          <tr><th>Key</th><th>משמעות</th><th>יחידה</th></tr>
+          <tr><td class="mono">t</td><td>Offset מתחילת סשן</td><td>Int seconds, trunc</td></tr>
+          <tr><td class="mono">h</td><td>גובה</td><td>Int centimetres</td></tr>
+          <tr><td class="mono">a</td><td>זמן אוויר</td><td>Int tenths of second</td></tr>
+          <tr><td class="mono">s</td><td>Top GPS speed בחלון</td><td>Int km/h</td></tr>
+          <tr><td class="mono">d</td><td>מרחק קפיצה</td><td>Int decimetres</td></tr>
+          <tr><td class="mono">y</td><td>Latitude</td><td>degrees ×10,000</td></tr>
+          <tr><td class="mono">x</td><td>Longitude</td><td>degrees ×10,000</td></tr>
+        </table>
+        <h3 style="margin-top:5mm">track</h3>
+        <p class="small">כל נקודה היא <span class="mono">[lat×1e4, lng×1e4]</span>, בערך פעם ב־5 שניות וללא duplicate רצוף. הרזולוציה הגאוגרפית היא בערך 11 מטר בקו רוחב.</p>
+      </div>
+    </div>
+    <div class="callout warn small"><span class="strong">פערי metric:</span> ה־UI משתמש במהירות מוחלקת עם deadband; <span class="mono">end.spdKmh</span> משתמש ב־raw GPS max. ‏<span class="mono">avgKmh</span> הוא ממוצע דגימות ולא distance/time. התוצאה יכולה לכן להיראות שונה בין המסך לענן.</div>
+    <div class="callout note small"><span class="strong">סשן קצר:</span> end live נקרא לפני בדיקת 60 השניות. הקובץ המקומי וה־KSLG עשויים להימחק, אך רשומת server כבר יכולה להתקיים.</div>
+    <div class="footnote mono">SessionManager.swift:1170–1235 · WatchSessionUploader.swift:97–125</div>
+  </section>
+
+  <section class="page" data-page="25/31">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>חוזה מומלץ</span></div><span>Schema מאוחד</span></div>
+    <div class="eyebrow"><span class="section-number">24</span> · מה להוסיף — לא מה שקיים</div>
+    <h2>JumpResult מובנה אחד, עם שמות יחידה מפורשים</h2>
+    <div class="schema">{
+  "schemaVersion": 1,
+  "engineVersion": "v13-pure",
+  "config": { "minRiseM": 1.0, "baselineWindowS": 4.0,
+              "landingConfirmS": 2.0, "minLandingSamples": 4 },
+  "jump": {
+    "id": "UUID", "takeoffUnixMs": 0, "landingUnixMs": 0,
+    "heightM": 2.15, "airtimeS": 2.10, "confidencePct": 75,
+    "altitude": { "baselineM": -18.40, "apexM": -16.25,
+                  "landingM": -18.20, "precisionMedianM": 0.20,
+                  "accuracyMedianM": 14.0, "baselineSpreadM": 0.12,
+                  "sampleCount": 8, "landingQuality": "confirmed|soft" },
+    "gps": { "takeoffSpeedMS": 8.2, "landingSpeedMS": 7.9,
+             "distanceM": 17.1, "takeoffLatDeg": 32.0, "takeoffLngDeg": 34.0 },
+    "imu": { "takeoffG": 1.8, "landingG": 2.4, "peakG": 2.7,
+             "maxRotationRadS": 5.1, "rotationTurns": 0.8,
+             "impactEnergyG2S": 0.42 },
+    "performance": { "motionEffectiveHz": 199.7, "absoluteAltitudeHz": 3.0,
+                     "droppedSamples": 0, "thermalMax": 1, "lowPower": false }
+  }
+}</div>
+    <div class="grid-2">
+      <div class="card teal"><h3>לכתוב בשלושה מקומות</h3><ol class="small"><li>אובייקט Jump ב־Session JSON.</li><li>Record בינארי חדש <span class="mono">JUMP_RESULT</span> ב־KSLG.</li><li>Live event אופציונלי לכל jump; end נשאר compact.</li></ol></div>
+      <div class="card yellow"><h3>Replay נאמן</h3><ol class="small"><li>לשמר coordinates, quaternion, SYNC ו־STATUS.</li><li>להזין GPS אמיתי, לא <span class="ltr">0,0</span>.</li><li>לייצא rejects ו־config snapshot של V13.</li></ol></div>
+    </div>
+    <table class="dense" style="margin-top:5mm">
+      <tr><th>עדיפות</th><th>שינוי</th><th>למה</th></tr>
+      <tr><td class="ltr">P0</td><td>Structured JUMP_RESULT + V13Config snapshot</td><td>מבטל parsing טקסט ואי־אפשרות לשחזור.</td></tr>
+      <tr><td class="ltr">P0</td><td>Landing pending <span class="ltr">2s</span> עם quality, לא hard reject מיד</td><td>עונה לדרישה בלי למחוק known-good return.</td></tr>
+      <tr><td class="ltr">P1</td><td>Precision/local-spread telemetry; accuracy soft</td><td>מודד את איכות הדלתא שמעניינת אותנו.</td></tr>
+      <tr><td class="ltr">P1</td><td>Measured stream rates + dropped/queue lag</td><td>מאפשר להוכיח performance במקום להניח 200Hz.</td></tr>
+      <tr><td class="ltr">P1</td><td>Workout recovery + Always On מלא</td><td>רציפות אמיתית על מכשיר.</td></tr>
+      <tr><td class="ltr">P2</td><td>ניקוי scanner ותיעוד ישן סותר</td><td>מונע הפעלה מחדש של נתיב false positives.</td></tr>
+    </table>
+    <div class="callout"><span class="strong">הכרעה מומלצת:</span> V13 נשאר absolute-altitude delta engine. ‏GPS ו־IMU מעשירים תוצאה ואבחון; הם אינם gates. יציבות נחיתה מקבלת חלון אישור מדוד, אבל כישלון האישור אינו מוחק אוטומטית חזרה ברורה לבסיס בלי evidence נוסף.</div>
+  </section>
+
+  <section class="page" data-page="09/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>Case study</span></div>
+    <div class="eyebrow"><span class="section-number">08</span> · הלוג האחרון מהענן</div>
+    <h2>דקה אחת, שלוש קפיצות, ללא GPS</h2>
+    <div class="grid-4" style="margin-bottom:4mm">
+      <div class="metric"><div class="value">62.6s</div><div class="label">משך הסשן</div></div>
+      <div class="metric"><div class="value">12,313</div><div class="label">רשומות חיישן</div></div>
+      <div class="metric"><div class="value">63</div><div class="label">עדכוני altitude ייחודיים</div></div>
+      <div class="metric"><div class="value">3/3</div><div class="label">קפיצות שזוהו</div></div>
+    </div>
+    <div class="chart-shell">
+      <div id="session-chart" class="chart" role="img" aria-label="גרף גובה אבסולוטי של הסשן"></div>
+      <div class="legend"><span class="alt">גובה אבסולוטי</span><span class="air">חלון קפיצה</span><span class="base">baseline לאירוע</span></div>
+    </div>
+    <div class="grid-3" style="margin-top:4mm">
+      <div class="card teal"><h3>קפיצה 1</h3><p class="small"><span class="ltr">t=8.47s · 1.96m · 2.10s</span></p></div>
+      <div class="card coral"><h3>קפיצה 2</h3><p class="small"><span class="ltr">t=21.47s · 2.16m · 2.10s</span></p></div>
+      <div class="card lime"><h3>קפיצה 3</h3><p class="small"><span class="ltr">t=35.47s · 2.22m · 2.10s</span></p></div>
+    </div>
+    <div class="callout warn small"><span class="strong">הארטיפקט שאחרי קפיצה 3:</span> מיד לאחר החזרה לבסיס נמדדה צניחה מ־<span class="ltr">28.82m</span> לכ־<span class="ltr">25.26m</span>, ואחריה התאוששות ארוכה. סגירה מיידית בחזרה לבסיס שמרה את הקפיצה; המתנה לחלון יציב הייתה משאירה candidate פתוח.</div>
+    <div class="footnote mono">log_20260711_195534_8D524BE5.kslog</div>
+  </section>
+
+  <section class="page" data-page="10/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>אירועים מוגדלים</span></div>
+    <div class="eyebrow"><span class="section-number">09</span> · תמונות האירועים</div>
+    <h2>Baseline, שיא וחזרה - אירוע אחר אירוע</h2>
+    <div class="event-grid">
+      <div class="event-row">
+        <div class="event-stats"><div class="n">#1</div><div class="s">גובה 1.96m</div><div class="s">אוויר 2.10s</div><div class="s">baseline 29.03m</div></div>
+        <div class="chart-shell"><div id="event-chart-1" class="chart compact"></div></div>
+      </div>
+      <div class="event-row">
+        <div class="event-stats"><div class="n">#2</div><div class="s">גובה 2.16m</div><div class="s">אוויר 2.10s</div><div class="s">baseline 28.70m</div></div>
+        <div class="chart-shell"><div id="event-chart-2" class="chart compact"></div></div>
+      </div>
+      <div class="event-row">
+        <div class="event-stats"><div class="n">#3</div><div class="s">גובה 2.22m</div><div class="s">אוויר 2.10s</div><div class="s">baseline 28.73m</div></div>
+        <div class="chart-shell"><div id="event-chart-3" class="chart compact"></div></div>
+      </div>
+    </div>
+    <div class="legend"><span class="alt">דגימות altitude</span><span class="base">ממוצע baseline</span><span class="air">takeoff → landing</span></div>
+    <p class="micro" style="margin-top:2mm">הקו הצהוב הוא ממוצע ארבע השניות לפני ההמראה. השטח הוורוד מסמן את זמן האוויר שנקבע על ידי המנוע. הציר כולל גם דגימות לפני ואחרי כדי להמחיש את ההקשר המקומי.</p>
+  </section>
+
+  <section class="page" data-page="11/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>ניתוח הבאג</span></div>
+    <div class="eyebrow"><span class="section-number">10</span> · למה הקפיצות נחסמו בעבר</div>
+    <h2>ההמראה זוהתה; הנחיתה השאירה את המנוע תקוע</h2>
+    <div class="timeline"><div class="time">35.47s</div><div class="event"><span class="strong">Takeoff</span> · baseline של <span class="ltr">28.73m</span>.</div></div>
+    <div class="timeline"><div class="time">36.57s</div><div class="event"><span class="strong">Apex</span> · שיא של <span class="ltr">30.95m</span>, גובה <span class="ltr">2.22m</span>.</div></div>
+    <div class="timeline"><div class="time">37.57s</div><div class="event"><span class="strong">Baseline return</span> · ירידה ל־<span class="ltr">28.82m</span>. זוהי נחיתה מספקת.</div></div>
+    <div class="timeline"><div class="time">38–40s</div><div class="event"><span class="strong">Barometer dip</span> · צניחה עד <span class="ltr">25.26m</span>; חלון יציב אינו אפשרי.</div></div>
+    <div class="timeline"><div class="time">43–47s</div><div class="event"><span class="strong">Recovery</span> · חזרה הדרגתית לסביב <span class="ltr">30m</span>.</div></div>
+    <div class="grid-2" style="margin-top:5mm">
+      <div class="card coral">
+        <h3>ההתנהגות החוסמת</h3>
+        <p class="small">המנוע המתין ל־<span class="ltr">2s</span> יציבות אחרי השיא. הארטיפקט מנע יציבות, candidate נשאר airborne, ולבסוף הגיע ל־timeout או airtime חריג.</p>
+        <div class="formula" style="background:var(--coral)">peak → wait stable → dip → blocked</div>
+      </div>
+      <div class="card teal">
+        <h3>ההתנהגות הנוכחית</h3>
+        <p class="small">ברגע שנמדדו גם ירידה מספקת וגם חזרה לאזור baseline, האירוע נסגר. רעש שמתחיל לאחר מכן שייך לרצף הבא ואינו מוחק קפיצה שכבר הושלמה.</p>
+        <div class="formula" style="background:var(--teal)">peak → baseline return → emit</div>
+      </div>
+    </div>
+    <div class="callout"><span class="strong">התוצאה:</span> אותו לוג מפיק כעת שלוש קפיצות ב־replay ללא GPS. אין צורך ב־IMU spike, במהירות או ב־stable landing כדי לאשר את הרצף.</div>
+    <div class="callout note small"><span class="strong">הגנה משלימה:</span> אחרי הארטיפקט, מנוע ה־idle דוחה התאוששות מזויפת באמצעות <span class="mono">baselineNoisy</span>, <span class="mono">takeoffBelowBaseline</span> ו־<span class="mono">shortWindowRise</span>.</div>
+  </section>
+
+  <section class="page" data-page="12/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>Guardrails</span></div>
+    <div class="eyebrow"><span class="section-number">11</span> · מניעת false positives</div>
+    <h2>איפה המנוע מסרב ליצור קפיצה</h2>
+    <table>
+      <tr><th>שכבה</th><th>Reject / reset</th><th>מה היא מונעת</th></tr>
+      <tr><td>איכות absolute</td><td class="mono">absoluteReanchorSentinel</td><td>ערך כיול זמני עם accuracy קיצוני.</td></tr>
+      <tr><td>איכות absolute</td><td class="mono">absoluteAccuracy</td><td>זרם רועש מעל <span class="ltr">12m</span> accuracy.</td></tr>
+      <tr><td>נקודת ייחוס</td><td class="mono">absoluteDatumStep</td><td>מעבר חד בין datums שונים.</td></tr>
+      <tr><td>תחילת סשן</td><td class="mono">sensorWarmup</td><td>candidate לפני היסטוריה מספקת.</td></tr>
+      <tr><td>Baseline</td><td class="mono">baselineNotReady</td><td>פחות משלוש דגימות.</td></tr>
+      <tr><td>Baseline</td><td class="mono">baselineNoisy</td><td>בסיס עם טווח מעל <span class="ltr">1m</span>.</td></tr>
+      <tr><td>חלון עלייה</td><td class="mono">takeoffBelowBaseline</td><td>התאוששות משקע לחץ.</td></tr>
+      <tr><td>חלון עלייה</td><td class="mono">shortWindowRise</td><td>שינוי baseline איטי ללא pop מקומי.</td></tr>
+      <tr><td>Candidate</td><td class="mono">maxFlightExceeded</td><td>מצב airborne פתוח מעל <span class="ltr">20s</span>.</td></tr>
+      <tr><td>תוצאה</td><td class="mono">airtimeOutOfRange</td><td>רצף קצר מ־<span class="ltr">1s</span> או ארוך מ־<span class="ltr">12s</span>.</td></tr>
+      <tr><td>תוצאה</td><td class="mono">belowMinRise</td><td>שיא שלא עבר את הסף הסופי.</td></tr>
+      <tr><td>Session end</td><td class="mono">sessionEndedBeforeStableLanding</td><td>candidate לא גמור בזמן עצירה.</td></tr>
+    </table>
+    <div class="grid-2" style="margin-top:5mm">
+      <div class="callout warn" style="margin:0"><span class="strong">סיכון recall:</span> שער accuracy של <span class="ltr">12m</span> יכול להפסיק זיהוי בסביבה שבה Apple מדווחת איכות גרועה, גם אם הדלתא המקומית שימושית. זה gate אמיתי לפני הליבה.</div>
+      <div class="callout note" style="margin:0"><span class="strong">סיכון precision:</span> שדה precision נרשם אך אינו gate. אין כרגע התאמת סף דינמית לפי precision או cadence.</div>
+    </div>
+  </section>
+
+  <section class="page" data-page="13/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>אימות</span></div>
+    <div class="eyebrow"><span class="section-number">12</span> · בדיקות וראיות</div>
+    <h2>איך אנחנו יודעים שהנתיב הנוכחי עובד</h2>
+    <div class="grid-3" style="margin-bottom:5mm">
+      <div class="metric"><div class="value">PASS</div><div class="label">Engine E2E self-test</div></div>
+      <div class="metric"><div class="value">PASS</div><div class="label">Watch core checks</div></div>
+      <div class="metric"><div class="value">PASS</div><div class="label">V13 replay gate</div></div>
+    </div>
+    <table>
+      <tr><th>תרחיש</th><th>קלט מרכזי</th><th>ציפייה</th><th>תוצאה</th></tr>
+      <tr><td>קפיצה ללא GPS/IMU spike</td><td>Absolute arc בלבד</td><td>אירוע אחד</td><td class="check">עבר</td></tr>
+      <tr><td>Dip ארוך לאחר נחיתה</td><td>Return ואז צניחת baro</td><td>האירוע נשמר</td><td class="check">עבר</td></tr>
+      <tr><td>לוג אפס קפיצות</td><td>רעש מים/חוף</td><td><span class="ltr">0</span> אירועים</td><td class="check">עבר</td></tr>
+      <tr><td>לוג חי קודם</td><td>דקה, ללא GPS</td><td><span class="ltr">3</span> arcs</td><td class="check">עבר</td></tr>
+      <tr><td>הלוג האחרון</td><td>שלוש קפיצות ידועות</td><td><span class="ltr">3</span> אירועים</td><td class="check">עבר</td></tr>
+    </table>
+    <h3 style="margin-top:6mm">תוצאת replay של הלוג האחרון</h3>
+    <table>
+      <tr><th>#</th><th>Takeoff</th><th>Height</th><th>Airtime</th><th>GPS distance</th><th>Confidence</th></tr>
+      <tr><td class="ltr">1</td><td class="ltr">8.47s</td><td class="ltr">1.96m</td><td class="ltr">2.10s</td><td class="ltr">0.0m</td><td class="ltr">75%</td></tr>
+      <tr><td class="ltr">2</td><td class="ltr">21.47s</td><td class="ltr">2.16m</td><td class="ltr">2.10s</td><td class="ltr">0.0m</td><td class="ltr">75%</td></tr>
+      <tr><td class="ltr">3</td><td class="ltr">35.47s</td><td class="ltr">2.22m</td><td class="ltr">2.10s</td><td class="ltr">0.0m</td><td class="ltr">75%</td></tr>
+    </table>
+    <div class="callout small"><span class="strong">בדיקת regression:</span> השינוי לא רק מגדיל recall. הלוג הייעודי ללא קפיצות נשאר על אפס, מפני שהגנות baseline ו־short-window ממשיכות לחסום התאוששויות ורעש איטי.</div>
+  </section>
+
+  <section class="page" data-page="14/14">
+    <div class="running-head"><div class="brandline"><span class="brandmark"></span><span>מנוע 13</span></div><span>מפת קוד ומסקנות</span></div>
+    <div class="eyebrow"><span class="section-number">13</span> · תחזוקה והמשך</div>
+    <h2>איפה כל אחריות חיה בקוד</h2>
+    <div class="code-map">
+      <div class="code-file"><code>MotionManager.swift</code><div class="small">בעלות על CMAltimeter, stream ישיר, snapshot ולוג raw.</div></div>
+      <div class="code-file"><code>SessionManager.swift</code><div class="small">בחירת V13, התחלת sensor pipeline וניתוב הדגימות/אירועים.</div></div>
+      <div class="code-file"><code>JumpDetectorV13.swift</code><div class="small">config, quality gates, תזמון, dedup, queue ומיפוי ל־Jump.</div></div>
+      <div class="code-file"><code>JumpEngineV13.swift</code><div class="small">האלגוריתם הטהור: baseline, FSM, נחיתה, חישובים ו־metrics.</div></div>
+      <div class="code-file"><code>EngineE2ESelfTest.swift</code><div class="small">בדיקות adapter אמיתיות, כולל ללא GPS ו־post-landing dip.</div></div>
+      <div class="code-file"><code>WatchLiveSessionCoreChecks</code><div class="small">בדיקות חוזה live, זמני emit ותרחישי barometer-only.</div></div>
+      <div class="code-file"><code>verify_v13.sh</code><div class="small">שער regression על לוגים חיוביים ושליליים.</div></div>
+    </div>
+    <div class="grid-2" style="margin-top:6mm">
+      <div class="card teal">
+        <h3>האלגוריתם הפעיל, במשפטים קצרים</h3>
+        <ol class="small">
+          <li>קבל absolute altitude איכותי.</li>
+          <li>בנה ממוצע שקט של ארבע שניות.</li>
+          <li>זהה עלייה חדה מעל הסף.</li>
+          <li>עקוב אחר שיא וירידה.</li>
+          <li>סגור בחזרה לאזור baseline.</li>
+          <li>חשב height/airtime והוסף metrics זמינים.</li>
+        </ol>
+      </div>
+      <div class="card yellow">
+        <h3>נקודות לשיפור עתידי</h3>
+        <ul class="small">
+          <li>לכייל את שער accuracy מול יותר תנאי ים.</li>
+          <li>להפריד confidence פיזיקלי מ־GPS enrichment.</li>
+          <li>לנקות שדות תאימות ופונקציות buffered לא פעילות.</li>
+          <li>ליישר readiness עם התלות האמיתית ב־altimeter.</li>
+          <li>לכייל rotation על orientation, אם הוא מוצר נדרש.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:6mm"><span class="strong">מסקנה:</span> V13 הוא מנוע barometer-first אמיתי שמחשב דלתא מקומית, ולא גובה מעל פני הים. Workout והרצה ברקע קיימים; Always On, אישור נחיתה רציף וחוזה לוג מאוחד עדיין חלקיים. קפיצה יכולה להיווצר ללא GPS וללא evidence מ־IMU, כל עוד ערוץ הגובה האבסולוטי איכותי והרצף עובר baseline → rise → peak → return.</div>
+    <p class="micro" style="margin-top:5mm">מסמך זה מתאר את הקוד ב־working tree כפי שנבדק ב־<span class="ltr">13.07.2026</span>. ערכי UserDefaults יכולים לשנות חלק מהספים בזמן ריצה; הטבלאות מציגות ברירות מחדל.</p>
+  </section>
+
+  <script>
+    const reportPages = [...document.querySelectorAll(".page")];
+    const totalPages = String(reportPages.length).padStart(2, "0");
+    reportPages.forEach((page, index) => {
+      page.dataset.page = `${String(index + 1).padStart(2, "0")}/${totalPages}`;
+    });
+
+    const NS = "http://www.w3.org/2000/svg";
+    const data = window.REPORT_DATA;
+    const colors = { ink: "#172126", muted: "#617076", line: "#d9dfdc", teal: "#087f75", coral: "#ef6b55", yellow: "#f0bf3f", navy: "#1e3844" };
+
+    function el(name, attrs = {}, text = "") {
+      const node = document.createElementNS(NS, name);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      if (text) node.textContent = text;
+      return node;
+    }
+
+    function renderChart(target, points, events, options = {}) {
+      const width = 920;
+      const height = options.compact ? 245 : 410;
+      const margin = options.compact ? { t: 16, r: 26, b: 38, l: 48 } : { t: 22, r: 30, b: 45, l: 58 };
+      const xMin = options.xMin ?? Math.min(...points.map(p => p.t));
+      const xMax = options.xMax ?? Math.max(...points.map(p => p.t));
+      const visible = points.filter(p => p.t >= xMin && p.t <= xMax);
+      const yMin = (options.yMin ?? Math.min(...visible.map(p => p.altitude))) - 0.35;
+      const yMax = (options.yMax ?? Math.max(...visible.map(p => p.altitude))) + 0.35;
+      const innerW = width - margin.l - margin.r;
+      const innerH = height - margin.t - margin.b;
+      const x = value => margin.l + ((value - xMin) / (xMax - xMin)) * innerW;
+      const y = value => margin.t + (1 - (value - yMin) / (yMax - yMin)) * innerH;
+      const svg = el("svg", { viewBox: `0 0 ${width} ${height}`, width: "100%", height: "100%", role: "img" });
+
+      events.forEach(event => {
+        const start = Math.max(event.takeoff, xMin);
+        const end = Math.min(event.landing, xMax);
+        if (end > start) svg.appendChild(el("rect", { x: x(start), y: margin.t, width: x(end) - x(start), height: innerH, fill: colors.coral, opacity: .10 }));
+      });
+
+      const yTicks = 4;
+      for (let i = 0; i <= yTicks; i += 1) {
+        const value = yMin + ((yMax - yMin) * i / yTicks);
+        svg.appendChild(el("line", { x1: margin.l, y1: y(value), x2: width - margin.r, y2: y(value), stroke: colors.line, "stroke-width": 1 }));
+        svg.appendChild(el("text", { x: margin.l - 9, y: y(value) + 4, "text-anchor": "end", fill: colors.muted, "font-size": options.compact ? 17 : 15, "font-family": "Arial" }, value.toFixed(1)));
+      }
+      const xTickCount = options.compact ? 6 : 7;
+      for (let i = 0; i <= xTickCount; i += 1) {
+        const value = xMin + ((xMax - xMin) * i / xTickCount);
+        svg.appendChild(el("line", { x1: x(value), y1: margin.t, x2: x(value), y2: height - margin.b, stroke: colors.line, "stroke-width": 1, opacity: .65 }));
+        svg.appendChild(el("text", { x: x(value), y: height - 12, "text-anchor": "middle", fill: colors.muted, "font-size": options.compact ? 17 : 15, "font-family": "Arial" }, `${value.toFixed(options.compact ? 1 : 0)}s`));
+      }
+
+      events.forEach(event => {
+        if (event.baseline >= yMin && event.baseline <= yMax) {
+          svg.appendChild(el("line", { x1: x(Math.max(xMin, event.takeoff - 4)), y1: y(event.baseline), x2: x(Math.min(xMax, event.landing)), y2: y(event.baseline), stroke: colors.yellow, "stroke-width": 4, "stroke-dasharray": "10 7" }));
+        }
+      });
+
+      const path = visible.map((p, index) => `${index ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.altitude).toFixed(1)}`).join(" ");
+      svg.appendChild(el("path", { d: path, fill: "none", stroke: colors.teal, "stroke-width": options.compact ? 5 : 4, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      visible.forEach(p => svg.appendChild(el("circle", { cx: x(p.t), cy: y(p.altitude), r: options.compact ? 4 : 3, fill: "#ffffff", stroke: colors.teal, "stroke-width": 2 })));
+
+      events.forEach(event => {
+        const marks = [
+          [event.takeoff, "המראה", colors.navy],
+          [event.apex, "שיא", colors.coral],
+          [event.landing, "נחיתה", colors.teal],
+        ];
+        marks.forEach(([time, label, color], index) => {
+          if (time < xMin || time > xMax) return;
+          svg.appendChild(el("line", { x1: x(time), y1: margin.t, x2: x(time), y2: height - margin.b, stroke: color, "stroke-width": 2, "stroke-dasharray": "7 6", opacity: .9 }));
+          if (options.compact) svg.appendChild(el("text", { x: x(time), y: margin.t + 18 + index * 19, "text-anchor": "middle", fill: color, "font-size": 17, "font-weight": 700, "font-family": "SF Hebrew, Arial", direction: "rtl" }, label));
+        });
+      });
+
+      svg.appendChild(el("text", { x: 13, y: margin.t + innerH / 2, transform: `rotate(-90 13 ${margin.t + innerH / 2})`, "text-anchor": "middle", fill: colors.muted, "font-size": 15, "font-family": "Arial" }, "Altitude (m)"));
+      target.replaceChildren(svg);
+    }
+
+    window.reportReady = (async () => {
+      renderChart(document.getElementById("session-chart"), data.altitude, data.events, { xMin: 0, xMax: 62 });
+      data.events.forEach((event, index) => {
+        const xMin = Math.max(0, event.takeoff - 4.5);
+        const xMax = Math.min(data.source.durationSec, event.landing + 3.2);
+        const points = data.altitude.filter(point => point.t >= xMin && point.t <= xMax);
+        renderChart(document.getElementById(`event-chart-${index + 1}`), points, [event], { compact: true, xMin, xMax });
+      });
+      await document.fonts.ready;
+    })();
+  </script>
+</body>
+</html>

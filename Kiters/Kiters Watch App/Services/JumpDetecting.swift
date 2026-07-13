@@ -45,6 +45,11 @@ protocol JumpDetecting: AnyObject {
                                  accuracyM: Double?,
                                  precisionM: Double?)
 
+    /// Acquisition-layer recovery notification. V13 clears its altitude FSM so
+    /// a new absolute-altitude datum cannot be mistaken for a jump; engines that
+    /// do not consume the direct stream keep the default no-op implementation.
+    func absoluteAltitudeStreamDidRestart(reason: String)
+
     /// Final flush at session end. The streaming v7 engine has already emitted
     /// its jumps live and returns []. The batch v8 engine runs one last analysis
     /// over its buffer and returns any jumps found in the closing seconds that
@@ -60,5 +65,9 @@ extension JumpDetecting {
                                  accuracyM: Double?,
                                  precisionM: Double?) {
         _ = (sensorT, receivedT, altitudeM, accuracyM, precisionM)
+    }
+
+    func absoluteAltitudeStreamDidRestart(reason: String) {
+        _ = reason
     }
 }

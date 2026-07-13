@@ -21,6 +21,15 @@ enum EngineE2ESelfTest {
 
             try testV13WatchAdapterPostLandingJump()
             print("✓ v13 watch-adapter E2E synthetic jump (post-landing classification)", to: &stdout)
+
+            try testV13BarometerOnlyJumpWithoutGPSOrIMUSpike()
+            print("✓ v13 accepts a barometer-only jump without GPS or IMU spike", to: &stdout)
+
+            try testV13BarometerJumpSurvivesPostLandingAltitudeDip()
+            print("✓ v13 lands on baseline return before a post-landing altitude dip", to: &stdout)
+
+            try testV13RejectsAltitudeDipRecovery()
+            print("✓ v13 rejects pressure-dip recovery with no physical jump", to: &stdout)
             return true
         } catch {
             fputs("engine E2E self-test failed: \(error)\n", stderr)
@@ -342,7 +351,7 @@ enum EngineE2ESelfTest {
     }
 
     /// Full-stack v13 check: 50 Hz IMU + 3 Hz absolute altitude + GPS through the
-    /// watch adapter. One arc (pop at 8 s, apex ≈ 2.57 m, impact at 11 s) must be
+    /// watch adapter. One arc (pop at 12 s, apex ≈ 2.57 m, impact at 15 s) must be
     /// classified after landing and emitted exactly once within the 5 s budget.
     private static func testV13WatchAdapterPostLandingJump() throws {
         let detector = JumpDetectorV13()
@@ -386,12 +395,12 @@ enum EngineE2ESelfTest {
             detector.processSample(sample)
         }
 
-        let takeoff = 8.0
-        let landing = 11.0
+        let takeoff = 12.0
+        let landing = 15.0
         let dt = 0.02
         var nextAltT = 0.0
         var t = 0.0
-        while t <= 18.0 {
+        while t <= 22.0 {
             var accel = 0.15
             var gyro = 0.3
             if abs(t - takeoff) < 0.015 {
@@ -431,6 +440,202 @@ enum EngineE2ESelfTest {
         try require(jump.confidence >= 60, "v13 confidence should be high on a clean arc, got \(jump.confidence)")
         try require(jump.heightSource == "absoluteAltitude", "v13 height source should be absolute altitude")
         try require(jump.jumpDistance > 2, "v13 should derive a horizontal distance from GPS, got \(jump.jumpDistance)")
+    }
+
+    /// V13 detection is absolute-barometer based: no GPS fix and no IMU spike
+    /// must still emit a jump when the altitude arc clears the baseline average.
+    private static func testV13BarometerOnlyJumpWithoutGPSOrIMUSpike() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.sessionId = "e2e-v13-sensor-only"
+
+        var jumps: [Jump] = []
+        detector.onJumpDetected = { jumps.append($0) }
+        detector.reset(mode: .standard)
+
+        let bootWallClock = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
+        func date(_ t: TimeInterval) -> Date {
+            Date(timeIntervalSince1970: bootWallClock + t)
+        }
+
+        let takeoff = 12.0
+        let landing = 15.0
+        let dt = 0.02
+        var nextAltT = 0.0
+        var t = 0.0
+        while t <= 22.0 {
+            let accel = 0.15
+            let gyro = 0.3
+
+            var absAlt: Double?
+            if t + 1e-9 >= nextAltT {
+                let u = min(max((t - takeoff) / (landing - takeoff), 0), 1)
+                let height = t < takeoff ? 0 : max(0, sin(.pi * u)) * 2.6
+                absAlt = 40 + height
+                nextAltT += 1.0 / 3.0
+            }
+
+            let sample = IMUSample(
+                timestamp: date(t),
+                accelerationX: accel,
+                accelerationY: 0,
+                accelerationZ: 0,
+                rotationX: gyro,
+                rotationY: 0,
+                rotationZ: 0,
+                gravity: Vector3(x: 0, y: 0, z: -1),
+                pressure: nil,
+                motionTimestamp: t,
+                absoluteAltitude: absAlt,
+                absoluteAltitudeTimestamp: absAlt != nil ? t : nil
+            )
+            detector.processSample(sample)
+            t += dt
+        }
+
+        let late = detector.endSession()
+        for jump in late {
+            jumps.append(jump)
+        }
+
+        try require(jumps.count == 1, "v13 barometer-only jump should emit exactly one jump, got \(jumps.count)")
+        let jump = jumps[0]
+        try require(jump.height >= 2.0, "v13 barometer-only height should match the altitude arc, got \(jump.height)")
+        try require(abs(jump.airtime - 3.0) <= 0.45, "v13 barometer-only airtime should match the arc, got \(jump.airtime)")
+        try require(jump.jumpDistance == 0, "v13 barometer-only jump should not invent GPS distance, got \(jump.jumpDistance)")
+    }
+
+    /// A real absolute-altitude jump can return to the takeoff baseline and then
+    /// suffer a wet-port/splash dip. V13 must close the jump on baseline return
+    /// instead of waiting for a late stable window that would exceed max airtime.
+    private static func testV13BarometerJumpSurvivesPostLandingAltitudeDip() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.sessionId = "e2e-v13-jump-then-dip"
+
+        var jumps: [Jump] = []
+        detector.onJumpDetected = { jumps.append($0) }
+        detector.reset(mode: .standard)
+
+        let bootWallClock = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
+        func date(_ t: TimeInterval) -> Date {
+            Date(timeIntervalSince1970: bootWallClock + t)
+        }
+
+        let takeoff = 12.0
+        let landing = 14.0
+        let dt = 0.02
+        var nextAltT = 0.0
+        var t = 0.0
+        while t <= 32.0 {
+            var absAlt: Double?
+            if t + 1e-9 >= nextAltT {
+                if t >= takeoff, t <= landing {
+                    let u = min(max((t - takeoff) / (landing - takeoff), 0), 1)
+                    absAlt = 80.0 + sin(.pi * u) * 2.4
+                } else if t > landing, t < 28.0 {
+                    absAlt = 78.0 + sin((t - landing) * .pi / 2.0) * 2.0
+                } else {
+                    absAlt = 80.0
+                }
+                nextAltT += 1.0 / 3.0
+            }
+
+            let sample = IMUSample(
+                timestamp: date(t),
+                accelerationX: 0.15,
+                accelerationY: 0,
+                accelerationZ: 0,
+                rotationX: 0.3,
+                rotationY: 0,
+                rotationZ: 0,
+                gravity: Vector3(x: 0, y: 0, z: -1),
+                pressure: nil,
+                motionTimestamp: t,
+                absoluteAltitude: absAlt,
+                absoluteAltitudeTimestamp: absAlt != nil ? t : nil
+            )
+            detector.processSample(sample)
+            t += dt
+        }
+
+        let late = detector.endSession()
+        for jump in late {
+            jumps.append(jump)
+        }
+
+        try require(jumps.count == 1, "v13 jump followed by altitude dip should emit exactly one jump, got \(jumps.count)")
+        let jump = jumps[0]
+        try require(jump.height >= 2.0, "v13 post-dip jump height should match the altitude arc, got \(jump.height)")
+        try require(jump.airtime <= 3.0, "v13 should land on baseline return before the dip, got airtime \(jump.airtime)")
+        try require(jump.jumpDistance == 0, "v13 post-dip jump should not invent GPS distance, got \(jump.jumpDistance)")
+    }
+
+    /// A wet pressure port can push altitude several metres down and then
+    /// recover while the wrist is moving. That recovery used to be selected as
+    /// the lowest takeoff point by the historical scanner and emitted as a
+    /// jump. A robust pre-event baseline must keep this at zero detections.
+    private static func testV13RejectsAltitudeDipRecovery() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.sessionId = "e2e-v13-dip-recovery"
+
+        var jumps: [Jump] = []
+        detector.onJumpDetected = { jumps.append($0) }
+        detector.reset(mode: .standard)
+
+        let bootWallClock = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
+        func date(_ t: TimeInterval) -> Date {
+            Date(timeIntervalSince1970: bootWallClock + t)
+        }
+
+        let dt = 0.02
+        var nextAltT = 0.0
+        var t = 0.0
+        while t <= 30.0 {
+            let accel = (t >= 17.0 && t <= 19.0) ? 2.4 : 0.2
+            let gyro = (t >= 17.0 && t <= 19.0) ? 4.8 : 0.3
+            var absAlt: Double?
+            if t + 1e-9 >= nextAltT {
+                switch t {
+                case 0..<16: absAlt = 100.0
+                case 16..<17: absAlt = 97.0
+                case 17..<18: absAlt = 98.5
+                default: absAlt = 100.0
+                }
+                nextAltT += 1.0 / 3.0
+            }
+
+            let sample = IMUSample(
+                timestamp: date(t),
+                accelerationX: accel,
+                accelerationY: 0,
+                accelerationZ: 0,
+                rotationX: gyro,
+                rotationY: 0,
+                rotationZ: 0,
+                gravity: Vector3(x: 0, y: 0, z: -1),
+                pressure: nil,
+                motionTimestamp: t,
+                absoluteAltitude: absAlt,
+                absoluteAltitudeTimestamp: absAlt != nil ? t : nil
+            )
+            detector.updateGPS(
+                speed: 7.0,
+                altitude: 0,
+                latitude: 32.0,
+                longitude: 34.0 + t * 0.00002,
+                course: 90,
+                horizontalAccuracy: 4,
+                timestamp: sample.timestamp
+            )
+            detector.processSample(sample)
+            t += dt
+        }
+
+        let late = detector.endSession()
+        try require(jumps.isEmpty, "v13 must reject altitude dip recovery, got \(jumps.count) jump(s)")
+        try require(late.isEmpty, "v13 dip recovery should not leave a flush result")
     }
 
     private static func sampleForSignedLoad(at date: Date,

@@ -14,12 +14,45 @@ import Combine
 
 class MotionManager: ObservableObject {
     private let motionManager = CMMotionManager()
-    private let altimeter = CMAltimeter()
+    // Keep relative and absolute altitude on separate CMAltimeter instances and
+    // callback queues. Besides isolating the two Core Motion subscriptions, this
+    // lets the absolute stream be recreated without disturbing the raw pressure
+    // stream that the watchdog uses as an independent liveness signal.
+    private let relativeAltimeter = CMAltimeter()
+    private var absoluteAltimeter: CMAltimeter?
     private let queue = OperationQueue()
-    private let altimeterQueue = OperationQueue()
+    private let relativeAltimeterQueue = OperationQueue()
+    private let absoluteAltimeterQueue = OperationQueue()
+    private let altimeterControlQueue = DispatchQueue(
+        label: "com.kiters.altimeter.control",
+        qos: .userInitiated
+    )
     private var batchedSensorManager: CMBatchedSensorManager?
     private var usingBatchedDeviceMotion = false
     private var didFallbackFromBatchedError = false
+
+    // All fields below are confined to altimeterControlQueue.
+    private var altitudeSessionActive = false
+    private var absoluteStreamGeneration = 0
+    private var absoluteStreamStartedT: TimeInterval?
+    private var lastAbsoluteReceivedT: TimeInterval?
+    private var lastAbsoluteChangedT: TimeInterval?
+    private var lastAbsoluteHealthValueM: Double?
+    private var latestRelativeReceivedT: TimeInterval?
+    private var latestRelativeHealthValueM: Double?
+    private var relativeValueAtAbsoluteChangeM: Double?
+    private var absoluteRestartAttempts = 0
+    private var didLogRestartExhaustion = false
+    private var altimeterWatchdog: DispatchSourceTimer?
+    private var relativeTimestampNormalizer = AltimeterTimestampNormalizer()
+    private var absoluteTimestampNormalizer = AltimeterTimestampNormalizer()
+
+    private static let absoluteValueChangeEpsilonM = 0.01
+    private static let absoluteFreezeGraceSec = 10.0
+    private static let absoluteCallbackTimeoutSec = 8.0
+    private static let relativeFreshnessSec = 4.0
+    private static let relativeMovementForRestartM = 0.75
+    private static let maxAbsoluteRestartAttempts = 3
     
     @Published var isTracking = false
     @Published var currentAcceleration: CMAcceleration?
@@ -107,12 +140,52 @@ class MotionManager: ObservableObject {
                               _ altitudeM: Double,
                               _ accuracyM: Double?,
                               _ precisionM: Double?) -> Void)?
+    var onAbsoluteAltitudeStreamRestart: ((_ reason: String) -> Void)?
+
+    /// CMLogItem.timestamp has appeared in two clock domains on watchOS builds:
+    /// seconds-since-boot and seconds-since-2001. Anchor an unfamiliar domain to
+    /// receipt uptime once, then preserve the sensor's deltas on a monotonic axis.
+    private struct AltimeterTimestampNormalizer {
+        private var baseSensorT: TimeInterval?
+        private var baseReceivedT: TimeInterval?
+
+        mutating func reset() {
+            baseSensorT = nil
+            baseReceivedT = nil
+        }
+
+        mutating func normalize(sensorT: TimeInterval,
+                                receivedT: TimeInterval) -> TimeInterval {
+            guard receivedT.isFinite else { return sensorT }
+            guard sensorT.isFinite else { return receivedT }
+            if abs(sensorT - receivedT) <= 60 {
+                return sensorT
+            }
+
+            if baseSensorT == nil || baseReceivedT == nil {
+                baseSensorT = sensorT
+                baseReceivedT = receivedT
+            }
+
+            guard let baseSensorT, let baseReceivedT else { return receivedT }
+            let normalized = baseReceivedT + (sensorT - baseSensorT)
+            // Re-anchor if Core Motion changed its timestamp epoch mid-stream.
+            if !normalized.isFinite || abs(normalized - receivedT) > 10 {
+                self.baseSensorT = sensorT
+                self.baseReceivedT = receivedT
+                return receivedT
+            }
+            return normalized
+        }
+    }
     
     init() {
         queue.maxConcurrentOperationCount = 1
         queue.qualityOfService = .userInitiated
-        altimeterQueue.maxConcurrentOperationCount = 1
-        altimeterQueue.qualityOfService = .userInteractive
+        relativeAltimeterQueue.maxConcurrentOperationCount = 1
+        relativeAltimeterQueue.qualityOfService = .userInitiated
+        absoluteAltimeterQueue.maxConcurrentOperationCount = 1
+        absoluteAltimeterQueue.qualityOfService = .userInitiated
     }
     
     func startTracking(preferBatched: Bool = true) {
@@ -146,8 +219,7 @@ class MotionManager: ObservableObject {
     func stopTracking() {
         stopBatchedDeviceMotion()
         motionManager.stopDeviceMotionUpdates()
-        altimeter.stopRelativeAltitudeUpdates()
-        stopAbsoluteAltitudeUpdatesIfAvailable()
+        stopBarometer()
         isTracking = false
         
         // Flush remaining buffer
@@ -167,8 +239,7 @@ class MotionManager: ObservableObject {
     func pauseTracking() {
         stopBatchedDeviceMotion()
         motionManager.stopDeviceMotionUpdates()
-        altimeter.stopRelativeAltitudeUpdates()
-        stopAbsoluteAltitudeUpdatesIfAvailable()
+        stopBarometer()
         isTracking = false
         currentAbsoluteAltitudeSnapshot = (nil, nil, nil, nil)
         print("Motion tracking paused")
@@ -259,76 +330,254 @@ class MotionManager: ObservableObject {
     }
 
     private func startBarometer() {
-        if !CMAltimeter.isRelativeAltitudeAvailable() {
-            print("Relative altitude not available on this device")
-            startAbsoluteAltitudeIfAvailable()
-            return
-        }
+        altimeterControlQueue.sync {
+            altitudeSessionActive = true
+            relativeTimestampNormalizer.reset()
+            absoluteTimestampNormalizer.reset()
+            resetAltitudeHealthLocked()
 
-        altimeter.startRelativeAltitudeUpdates(to: altimeterQueue) { [weak self] data, error in
-            guard let self = self, let data = data else {
-                if let error = error {
-                    print("Altimeter error: \(error.localizedDescription)")
-                }
-                return
+            if CMAltimeter.isRelativeAltitudeAvailable() {
+                startRelativeAltitudeLocked()
+            } else {
+                print("Relative altitude not available on this device")
             }
-            // CMAltimeter gives pressure in kPa; convert to hPa (mbar).
-            let pressureHPa = data.pressure.doubleValue * 10.0
-            self.currentPressure = pressureHPa
-            self.currentRelativeAltitude = data.relativeAltitude.doubleValue
-            self.currentBarometerTimestamp = data.timestamp
-            SessionLogger.shared.logBarometer(
-                t: data.timestamp,
-                relativeAltitudeM: data.relativeAltitude.doubleValue,
-                pressureHPa: pressureHPa
-            )
-        }
-        print("Barometer tracking started")
 
-        startAbsoluteAltitudeIfAvailable()
+            startAbsoluteAltitudeLocked(reason: "sessionStart")
+            startAltimeterWatchdogLocked()
+        }
     }
 
-    private func startAbsoluteAltitudeIfAvailable() {
+    /// Must run on altimeterControlQueue.
+    private func startRelativeAltitudeLocked() {
+        relativeAltimeter.startRelativeAltitudeUpdates(to: relativeAltimeterQueue) { [weak self] data, error in
+            let receivedT = ProcessInfo.processInfo.systemUptime
+            self?.altimeterControlQueue.async { [weak self] in
+                guard let self, self.altitudeSessionActive else { return }
+                if let error {
+                    print("Altimeter error: \(error.localizedDescription)")
+                }
+                guard let data else { return }
+
+                let sensorT = self.relativeTimestampNormalizer.normalize(
+                    sensorT: data.timestamp,
+                    receivedT: receivedT
+                )
+                let relativeAltitudeM = data.relativeAltitude.doubleValue
+                // CMAltimeter gives pressure in kPa; convert to hPa (mbar).
+                let pressureHPa = data.pressure.doubleValue * 10.0
+                self.currentPressure = pressureHPa
+                self.currentRelativeAltitude = relativeAltitudeM
+                self.currentBarometerTimestamp = sensorT
+                self.noteRelativeAltitudeLocked(
+                    receivedT: receivedT,
+                    relativeAltitudeM: relativeAltitudeM
+                )
+                SessionLogger.shared.logBarometer(
+                    t: sensorT,
+                    relativeAltitudeM: relativeAltitudeM,
+                    pressureHPa: pressureHPa
+                )
+            }
+        }
+        print("Barometer tracking started")
+    }
+
+    /// Must run on altimeterControlQueue.
+    private func startAbsoluteAltitudeLocked(reason: String) {
         guard #available(watchOS 8.0, iOS 15.0, *) else { return }
         guard CMAltimeter.isAbsoluteAltitudeAvailable() else {
             print("Absolute altitude not available on this device")
             return
         }
 
-        altimeter.startAbsoluteAltitudeUpdates(to: altimeterQueue) { [weak self] data, error in
-            guard let self = self, let data = data else {
-                if let error = error {
-                    print("Absolute altitude error: \(error.localizedDescription)")
-                }
-                return
-            }
+        absoluteStreamGeneration += 1
+        let generation = absoluteStreamGeneration
+        let manager = CMAltimeter()
+        absoluteAltimeter = manager
+        absoluteStreamStartedT = ProcessInfo.processInfo.systemUptime
+        lastAbsoluteReceivedT = nil
+        lastAbsoluteChangedT = nil
+        lastAbsoluteHealthValueM = nil
+        relativeValueAtAbsoluteChangeM = latestRelativeHealthValueM
+        absoluteTimestampNormalizer.reset()
+
+        manager.startAbsoluteAltitudeUpdates(to: absoluteAltimeterQueue) { [weak self] data, error in
             let receivedT = ProcessInfo.processInfo.systemUptime
-            self.currentAbsoluteAltitudeSnapshot = (
-                data.altitude,
-                data.accuracy,
-                data.precision,
-                data.timestamp
-            )
-            SessionLogger.shared.logAbsoluteAltitude(
-                t: data.timestamp,
-                altitudeM: data.altitude,
-                accuracyM: data.accuracy,
-                precisionM: data.precision
-            )
-            self.onAbsoluteAltitude?(
-                data.timestamp,
-                receivedT,
-                data.altitude,
-                data.accuracy,
-                data.precision
-            )
+            self?.altimeterControlQueue.async { [weak self] in
+                guard let self,
+                      self.altitudeSessionActive,
+                      generation == self.absoluteStreamGeneration else { return }
+                if let error {
+                    print("Absolute altitude error: \(error.localizedDescription)")
+                    SessionLogger.shared.logEvent("Absolute altitude error: \(error.localizedDescription)")
+                }
+                guard let data else { return }
+
+                let sensorT = self.absoluteTimestampNormalizer.normalize(
+                    sensorT: data.timestamp,
+                    receivedT: receivedT
+                )
+                self.noteAbsoluteAltitudeLocked(
+                    receivedT: receivedT,
+                    altitudeM: data.altitude,
+                    accuracyM: data.accuracy
+                )
+                self.currentAbsoluteAltitudeSnapshot = (
+                    data.altitude,
+                    data.accuracy,
+                    data.precision,
+                    sensorT
+                )
+                SessionLogger.shared.logAbsoluteAltitude(
+                    t: sensorT,
+                    altitudeM: data.altitude,
+                    accuracyM: data.accuracy,
+                    precisionM: data.precision
+                )
+                self.onAbsoluteAltitude?(
+                    sensorT,
+                    receivedT,
+                    data.altitude,
+                    data.accuracy,
+                    data.precision
+                )
+            }
         }
-        print("Absolute altitude tracking started")
+        print("Absolute altitude tracking started (\(reason), generation=\(generation))")
     }
 
-    private func stopAbsoluteAltitudeUpdatesIfAvailable() {
-        guard #available(watchOS 8.0, iOS 15.0, *) else { return }
-        altimeter.stopAbsoluteAltitudeUpdates()
+    private func stopBarometer() {
+        altimeterControlQueue.sync {
+            altitudeSessionActive = false
+            altimeterWatchdog?.cancel()
+            altimeterWatchdog = nil
+            relativeAltimeter.stopRelativeAltitudeUpdates()
+            if #available(watchOS 8.0, iOS 15.0, *) {
+                absoluteAltimeter?.stopAbsoluteAltitudeUpdates()
+            }
+            absoluteAltimeter = nil
+            absoluteStreamGeneration += 1
+            relativeTimestampNormalizer.reset()
+            absoluteTimestampNormalizer.reset()
+            resetAltitudeHealthLocked()
+        }
+    }
+
+    /// Must run on altimeterControlQueue.
+    private func resetAltitudeHealthLocked() {
+        absoluteStreamStartedT = nil
+        lastAbsoluteReceivedT = nil
+        lastAbsoluteChangedT = nil
+        lastAbsoluteHealthValueM = nil
+        latestRelativeReceivedT = nil
+        latestRelativeHealthValueM = nil
+        relativeValueAtAbsoluteChangeM = nil
+        absoluteRestartAttempts = 0
+        didLogRestartExhaustion = false
+    }
+
+    /// Must run on altimeterControlQueue.
+    private func noteRelativeAltitudeLocked(receivedT: TimeInterval,
+                                            relativeAltitudeM: Double) {
+        guard receivedT.isFinite, relativeAltitudeM.isFinite else { return }
+        latestRelativeReceivedT = receivedT
+        latestRelativeHealthValueM = relativeAltitudeM
+        if relativeValueAtAbsoluteChangeM == nil {
+            relativeValueAtAbsoluteChangeM = relativeAltitudeM
+        }
+    }
+
+    /// Must run on altimeterControlQueue.
+    private func noteAbsoluteAltitudeLocked(receivedT: TimeInterval,
+                                            altitudeM: Double,
+                                            accuracyM: Double?) {
+        guard receivedT.isFinite, altitudeM.isFinite else { return }
+        lastAbsoluteReceivedT = receivedT
+
+        // Accuracy around 500 m is Core Motion's re-anchor sentinel. It is a
+        // callback, but not evidence that the altitude estimate is responsive.
+        if let accuracyM, accuracyM.isFinite, accuracyM >= 100 {
+            return
+        }
+
+        guard let previous = lastAbsoluteHealthValueM else {
+            lastAbsoluteHealthValueM = altitudeM
+            lastAbsoluteChangedT = receivedT
+            relativeValueAtAbsoluteChangeM = latestRelativeHealthValueM
+            return
+        }
+
+        if abs(altitudeM - previous) >= Self.absoluteValueChangeEpsilonM {
+            lastAbsoluteHealthValueM = altitudeM
+            lastAbsoluteChangedT = receivedT
+            relativeValueAtAbsoluteChangeM = latestRelativeHealthValueM
+            absoluteRestartAttempts = 0
+            didLogRestartExhaustion = false
+        }
+    }
+
+    /// Must run on altimeterControlQueue.
+    private func startAltimeterWatchdogLocked() {
+        altimeterWatchdog?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: altimeterControlQueue)
+        timer.schedule(deadline: .now() + 4, repeating: 2, leeway: .milliseconds(400))
+        timer.setEventHandler { [weak self] in
+            self?.evaluateAbsoluteAltitudeHealthLocked()
+        }
+        altimeterWatchdog = timer
+        timer.resume()
+    }
+
+    /// Must run on altimeterControlQueue.
+    private func evaluateAbsoluteAltitudeHealthLocked() {
+        guard altitudeSessionActive,
+              CMAltimeter.isAbsoluteAltitudeAvailable(),
+              let startedT = absoluteStreamStartedT else { return }
+
+        let now = ProcessInfo.processInfo.systemUptime
+        guard now - startedT >= Self.absoluteFreezeGraceSec,
+              let relativeReceivedT = latestRelativeReceivedT,
+              now - relativeReceivedT <= Self.relativeFreshnessSec,
+              let relativeNow = latestRelativeHealthValueM,
+              let relativeAnchor = relativeValueAtAbsoluteChangeM else { return }
+
+        let relativeMovement = abs(relativeNow - relativeAnchor)
+        guard relativeMovement >= Self.relativeMovementForRestartM else { return }
+
+        let callbackGap = now - (lastAbsoluteReceivedT ?? startedT)
+        let unchangedFor = now - (lastAbsoluteChangedT ?? startedT)
+        let callbacksStopped = callbackGap >= Self.absoluteCallbackTimeoutSec
+        let valueFrozen = callbackGap <= Self.relativeFreshnessSec
+            && unchangedFor >= Self.absoluteFreezeGraceSec
+        guard callbacksStopped || valueFrozen else { return }
+
+        let relativeMovementText = String(format: "%.2f", relativeMovement)
+
+        guard absoluteRestartAttempts < Self.maxAbsoluteRestartAttempts else {
+            if !didLogRestartExhaustion {
+                didLogRestartExhaustion = true
+                SessionLogger.shared.logEvent(
+                    "Absolute altitude watchdog exhausted restarts; relativeDelta=\(relativeMovementText)m"
+                )
+            }
+            return
+        }
+
+        absoluteRestartAttempts += 1
+        let callbackGapText = String(format: "%.1f", callbackGap)
+        let unchangedForText = String(format: "%.1f", unchangedFor)
+        let reason = callbacksStopped
+            ? "callbacksStopped gap=\(callbackGapText)s"
+            : "valueFrozen unchanged=\(unchangedForText)s"
+        let detail = "\(reason) relativeDelta=\(relativeMovementText)m attempt=\(absoluteRestartAttempts)"
+        if #available(watchOS 8.0, iOS 15.0, *) {
+            absoluteAltimeter?.stopAbsoluteAltitudeUpdates()
+        }
+        absoluteAltimeter = nil
+        currentAbsoluteAltitudeSnapshot = (nil, nil, nil, nil)
+        SessionLogger.shared.logEvent("Absolute altitude watchdog restart: \(detail)")
+        onAbsoluteAltitudeStreamRestart?(detail)
+        startAbsoluteAltitudeLocked(reason: "watchdog")
     }
 
     private func processMotionData(_ motion: CMDeviceMotion) {

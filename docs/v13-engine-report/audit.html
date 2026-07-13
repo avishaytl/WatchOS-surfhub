@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מנוע 13 - Audit: Buffer, Filter ותנאי פסילה</title>
+  <style>
+    :root{--ink:#172126;--muted:#647278;--paper:#f7f8f5;--white:#fff;--line:#d9dfdc;--teal:#087f75;--teal2:#dff2ef;--lime:#b7d63d;--coral:#ef6b55;--coral2:#fde7e2;--yellow:#f0bf3f;--yellow2:#fff2c7;--navy:#1e3844;--blue:#e3edf1}
+    *{box-sizing:border-box}html,body{margin:0;padding:0;background:#cbd1cf;color:var(--ink)}
+    body{font-family:"SF Hebrew","Arial Hebrew",Arial,sans-serif;font-size:10.5pt;line-height:1.48;letter-spacing:0}
+    .page{width:210mm;height:297mm;padding:14mm 15mm;position:relative;overflow:hidden;background:var(--paper);page-break-after:always}
+    .page:last-child{page-break-after:auto}.page::after{content:attr(data-page);position:absolute;bottom:6mm;left:15mm;width:25mm;text-align:left;color:#87938f;font-size:8pt;direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+    .head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:3mm;margin-bottom:7mm;color:var(--muted);font-size:8.5pt}
+    .brand{display:flex;align-items:center;gap:2mm;color:var(--navy);font-weight:800}.mark{width:4mm;height:4mm;background:var(--lime);border-radius:1mm;transform:rotate(12deg)}
+    h1,h2,h3,p{margin-top:0}h1{font-size:37pt;line-height:1.13;color:white;margin:32mm 0 5mm}h2{font-size:24pt;line-height:1.15;color:var(--navy);margin-bottom:5mm}h3{font-size:13pt;line-height:1.25;color:var(--navy);margin-bottom:2mm}
+    p{margin-bottom:3mm}.lead{font-size:13pt;line-height:1.55;color:#34434a}.small{font-size:8.8pt;color:var(--muted)}.micro{font-size:7.5pt;color:var(--muted)}
+    .ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}.mono{direction:ltr;unicode-bidi:isolate;font-family:"SF Mono",Menlo,monospace;font-size:.9em}.strong{font-weight:800}.eyebrow{font-size:9pt;font-weight:800;color:var(--teal);margin-bottom:2mm}.num{color:var(--coral);direction:ltr;display:inline-block}
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3mm}
+    .card{background:var(--white);border:1px solid var(--line);border-radius:2mm;padding:4mm;min-width:0}.card.teal{border-top:2.2mm solid var(--teal)}.card.coral{border-top:2.2mm solid var(--coral)}.card.yellow{border-top:2.2mm solid var(--yellow)}.card.lime{border-top:2.2mm solid var(--lime)}
+    .call{border-right:2mm solid var(--teal);background:var(--teal2);border-radius:1.5mm;padding:3.5mm 4mm;margin:4mm 0}.call.warn{border-color:var(--coral);background:var(--coral2)}.call.note{border-color:var(--yellow);background:var(--yellow2)}
+    .metric{background:white;border:1px solid var(--line);border-radius:2mm;padding:3mm}.metric b{font-size:20pt;line-height:1;color:var(--navy);direction:ltr;unicode-bidi:isolate;display:block}.metric span{font-size:8pt;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;background:white;font-size:8.4pt}th,td{padding:2.1mm 2.4mm;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}th{background:#eef1ef;color:var(--navy);font-weight:800}tr:last-child td{border-bottom:0}
+    td.ltr,th.ltr{direction:ltr;unicode-bidi:isolate;text-align:left}.keep{color:var(--teal);font-weight:850}.revise{color:#9a6c00;font-weight:850}.remove{color:var(--coral);font-weight:850}.soft{color:#476b7c;font-weight:850}
+    ul,ol{margin:1.5mm 0 3mm;padding-right:5mm}li{margin-bottom:1.2mm}.pill{display:inline-block;border-radius:999px;padding:.8mm 2mm;font-size:7.5pt;font-weight:800;background:var(--blue);color:var(--navy)}.pill.keep{background:var(--teal2)}.pill.revise{background:var(--yellow2)}.pill.remove{background:var(--coral2)}
+    .formula{direction:ltr;unicode-bidi:isolate;text-align:center;background:var(--navy);color:white;border-radius:2mm;padding:3mm;margin:3mm 0;font-family:"SF Mono",Menlo,monospace;font-size:12pt}
+    .flow{display:grid;grid-template-columns:1fr 10mm 1fr 10mm 1fr;align-items:center;gap:0;margin:5mm 0}.node{background:white;border:1px solid var(--line);border-radius:2mm;padding:4mm;min-height:36mm}.arrow{text-align:center;color:var(--coral);font-size:19pt;direction:ltr}
+    .stack{display:grid;gap:2.5mm}.row{display:grid;grid-template-columns:32mm 1fr;gap:3mm;align-items:stretch}.tag{display:grid;place-items:center;border-radius:2mm;background:var(--navy);color:white;text-align:center;font-weight:800;padding:2mm}.body{background:white;border:1px solid var(--line);border-radius:2mm;padding:3mm}
+    .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;margin:5mm 0}.tick{background:white;border:1px solid var(--line);border-radius:2mm;padding:3mm;text-align:center;min-height:36mm}.tick b{display:block;color:var(--teal);font-size:12pt;direction:ltr}.tick.bad{border-top:2mm solid var(--coral)}.tick.good{border-top:2mm solid var(--teal)}
+    .bar{height:14mm;background:#e7ebe9;border-radius:2mm;position:relative;overflow:hidden;margin:3mm 0}.bar span{position:absolute;top:0;bottom:0;right:0;display:grid;place-items:center;color:white;font-weight:800}.bar .a{width:40%;background:var(--yellow)}.bar .f{width:67%;background:var(--coral)}.bar.proposed .a{width:86%;background:var(--teal)}.bar.proposed .f{width:92%;background:var(--navy)}
+    .cover{background:var(--navy);color:white;padding:17mm}.cover .brand{color:#dce6e9}.cover .lead{color:#d4e0e3;max-width:155mm}.rule{width:35mm;height:3mm;background:var(--lime);margin:8mm 0}.coverbox{margin-top:16mm;max-width:160mm;border:1px solid #4b626c;background:#243f4a;border-radius:2mm;padding:6mm}.coverbox strong{color:var(--lime)}.covermeta{position:absolute;right:17mm;left:17mm;bottom:18mm;display:flex;justify-content:space-between;color:#aabcc2;font-size:8.5pt}
+    a{color:var(--teal);text-decoration:none}.source{font-size:7.4pt;color:var(--muted);margin-top:3mm}.verdict{font-size:17pt;line-height:1.45;color:var(--navy);margin:4mm 0 6mm}
+    @page{size:A4;margin:0}@media print{body{background:white}}
+  </style>
+</head>
+<body>
+  <section class="page cover" data-page="01/10">
+    <div class="brand"><span class="mark"></span><span>KITERS · ENGINE 13</span></div>
+    <h1>Buffer, פילטר גובה<br>ותנאי פסילה</h1>
+    <div class="rule"></div>
+    <p class="lead">מסמך המשך לדוח מנוע 13: תשובות ממוקדות, audit של כל gate והמלצה מעשית לשיפור recall בלי להחזיר false positives.</p>
+    <div class="coverbox"><strong>שורה תחתונה:</strong> יש buffer, אבל הזיהוי streaming. אין smoothing על הגובה, ובכוונה. חימום 8 שניות מיותר כ־gate נפרד. כדי לאפשר 30 שניות צריך לשנות שני גבולות. שער ה־accuracy הנוכחי דורש ריכוך.</div>
+    <div class="grid3" style="margin-top:12mm;max-width:160mm">
+      <div class="metric" style="background:#203b46;border-color:#4b626c"><b style="color:var(--lime)">60s</b><span style="color:#b7c7cc">history buffer</span></div>
+      <div class="metric" style="background:#203b46;border-color:#4b626c"><b style="color:var(--lime)">0</b><span style="color:#b7c7cc">low-pass filters</span></div>
+      <div class="metric" style="background:#203b46;border-color:#4b626c"><b style="color:var(--lime)">30s</b><span style="color:#b7c7cc">יעד זמן אוויר</span></div>
+    </div>
+    <div class="covermeta"><span>Audit לפי הקוד הנוכחי</span><span class="ltr">12.07.2026</span></div>
+  </section>
+
+  <section class="page" data-page="02/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>תשובות קצרות</span></div>
+    <div class="eyebrow"><span class="num">01</span> · Executive summary</div><h2>התשובה לכל שאלה במשפט אחד</h2>
+    <div class="stack">
+      <div class="row"><div class="tag">Buffer</div><div class="body"><span class="strong">כן, יש.</span> נשמרות 60 שניות altitude/IMU/GPS, אך אין סריקה retroactive בנתיב החי. הזיהוי נעשה בזמן אמת עם חלון baseline, חלון עלייה ו־ActiveJump.</div></div>
+      <div class="row"><div class="tag">פילטר</div><div class="body"><span class="strong">אין smoothing על altitude.</span> קיימים quality gates, datum reset, dedup, ממוצע baseline ואימות rise→peak→return. פילטר median רגיל עלול למחוק קפיצות אמיתיות בקצב 1Hz.</div></div>
+      <div class="row"><div class="tag">Glitch</div><div class="body">קפיצה מעל <span class="ltr">12m</span> מאפסת datum; glitch קטן יותר יכול לעבור. אם הוא נראה בדיוק כמו baseline→peak→return, אי אפשר להבדיל בברומטר בלבד בלי לשלם ב־recall.</div></div>
+      <div class="row"><div class="tag">Warmup</div><div class="body"><span class="ltr">8s</span> שבהן אסור לפתוח candidate. הוא נועד להתייצבות, אך baseline readiness כבר מבטיח היסטוריה; מומלץ להסיר את ה־gate הנפרד או להצמיד אותו ל־<span class="ltr">4s</span>.</div></div>
+      <div class="row"><div class="tag">30 שניות</div><div class="body">צריך לשנות גם <span class="mono">maxAirtimeSec 12→30</span> וגם <span class="mono">maxFlightSec 20→32</span>. שינוי 20 בלבד אינו מספיק.</div></div>
+      <div class="row"><div class="tag">Accuracy</div><div class="body">זהו <span class="mono">CMAbsoluteAltitudeData.accuracy</span> של Apple: אי־ודאות מוערכת בגובה האבסולוטי במטרים, לא GPS ולא רעש baseline. מומלץ להפוך את סף <span class="ltr">12m</span> מאיסור קשיח לדגל איכות.</div></div>
+      <div class="row"><div class="tag">נחיתה</div><div class="body">חזרה לאזור baseline היא התנאי המרכזי. <span class="mono">clearedBaseline</span> כפול ומיותר; <span class="mono">descendedFromPeak</span> נותן hysteresis אך אפשר לפשט אותו.</div></div>
+    </div>
+    <div class="call"><span class="strong">המלצת כיוון:</span> להשאיר absolute altitude כמקור החלטה יחיד, לצמצם hard rejects, ולהעביר תנאי איכות גבוליים ל־diagnostics/confidence.</div>
+  </section>
+
+  <section class="page" data-page="03/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>Buffer</span></div>
+    <div class="eyebrow"><span class="num">02</span> · האם עובדים בלי buffer?</div><h2>יש buffer, אבל הוא אינו “מנוע חיפוש אחורה”</h2>
+    <div class="flow">
+      <div class="node"><h3>History · 60s</h3><p class="small">altitude ל־baseline; IMU/GPS למדדים; הגנת duplicate apex.</p><span class="pill keep">פעיל</span></div><div class="arrow">←</div>
+      <div class="node"><h3>Streaming FSM</h3><p class="small">idle → airborne → landing. כל דגימה מעדכנת את המצב מיד.</p><span class="pill keep">מקור ההחלטה</span></div><div class="arrow">←</div>
+      <div class="node"><h3>Historical scanner</h3><p class="small">קיים בקוד אך אינו נקרא מתוך <span class="mono">addAltitude</span>.</p><span class="pill remove">לא פעיל</span></div>
+    </div>
+    <div class="grid2">
+      <div class="card teal"><h3>ה־buffers הפעילים</h3><ul class="small"><li><span class="mono">takeoffWindow</span>: בערך 1–2 שניות.</li><li><span class="mono">altitudeHistory</span>: 60 שניות, baseline והקשר.</li><li><span class="mono">landingWindow</span>: 2 שניות, fallback יציב.</li><li><span class="mono">imuHistory/gpsHistory</span>: metrics בלבד.</li></ul></div>
+      <div class="card coral"><h3>למה הסריקה אחורה כבויה</h3><p class="small">הנתיב הישן סרק פסגות שרירותיות ב־60 שניות והפיק <span class="ltr">14/14</span> false FINALs בלוג ללא קפיצות, לעיתים 46–56 שניות מאוחר.</p><p class="small">לכן ההיסטוריה נשמרת, אבל אינה רשאית “להמציא” candidate ישן.</p></div>
+    </div>
+    <div class="verdict"><span class="keep">החלטה:</span> לא להחזיר post‑hoc scan. להשאיר FSM streaming ואת החלונות הקצרים. אפשר לנקות בעתיד את פונקציות ה־scanner הלא פעילות כדי למנוע בלבול.</div>
+    <div class="call note"><span class="strong">אם רוצים “עוד buffer”:</span> רק pending buffer קצר של 2–4 דגימות סביב candidate, לא חיפוש מחדש לאורך דקה. בפועל ActiveJump כבר ממלא את התפקיד הזה.</div>
+  </section>
+
+  <section class="page" data-page="04/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>Altitude filter</span></div>
+    <div class="eyebrow"><span class="num">03</span> · מה קורה אם יש glitch?</div><h2>הערך ישיר, אך לא נכנס “עירום”</h2>
+    <div class="grid2">
+      <div class="card teal"><h3>מה כן קיים לפני המנוע</h3><ul class="small"><li>מספר סופי וזמן עולה.</li><li>sentinel ב־<span class="ltr">accuracy≥100m</span>.</li><li>שער quality ב־<span class="ltr">accuracy&gt;12m</span>.</li><li>datum step מעל <span class="ltr">12m</span>.</li><li>dedup ו־heartbeat של <span class="ltr">0.9s</span>.</li><li>baseline average וטווח רעש.</li></ul></div>
+      <div class="card yellow"><h3>מה לא קיים</h3><ul class="small"><li>low-pass / EMA.</li><li>median-of-3 על ערך הגובה.</li><li>Hampel filter על השיא.</li><li>velocity clamp קטן.</li><li>אישור מ־GPS או IMU.</li></ul></div>
+    </div>
+    <h3 style="margin-top:5mm">Glitch קטן מ־12m יכול להיראות כמו קפיצה</h3>
+    <div class="timeline">
+      <div class="tick good"><b>t−2</b>baseline</div><div class="tick good"><b>t−1</b>baseline</div><div class="tick bad"><b>t</b>+2m spike</div><div class="tick good"><b>t+1</b>baseline</div><div class="tick"><b>Result</b>arc מלא</div>
+    </div>
+    <div class="call warn"><span class="strong">המגבלה הפיזיקלית:</span> בקצב 1Hz, קפיצה אמיתית של כשתי שניות עשויה להיראות בדיוק כך: baseline, נקודת apex אחת, baseline. ברומטר בלבד אינו יכול לדעת אם נקודת האמצע היא קפיצה או glitch זהה.</div>
+    <div class="verdict"><span class="revise">המלצה:</span> לא להוסיף smoothing גורף. הוא יקטין גובה ויכול למחוק apex. להשאיר אימות קשת, לשמור raw samples, ולהוסיף בדיקת “isolated glitch” רק אם cadence בפועל מספק יותר מנקודת apex אחת או אם quality/precision משתנים יחד עם החריגה.</div>
+    <div class="call note small"><span class="strong">פער בדיקות:</span> קיימת בדיקה ל־dip→recovery, אך אין כרגע test מפורש ל־baseline→single upward spike→baseline. צריך להוסיף אותו ולהחליט במפורש אם recall או דחיית spike מקבלים עדיפות.</div>
+  </section>
+
+  <section class="page" data-page="05/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>Warmup + Accuracy</span></div>
+    <div class="eyebrow"><span class="num">04</span> · שני gates לא ברורים</div><h2>חימום 8 שניות ודיוק של Apple</h2>
+    <div class="grid2">
+      <div class="card coral"><h3>Warmup 8s</h3><p>ה־guard דורש שנקודת תחילת העלייה תהיה לפחות שמונה שניות אחרי דגימת altitude הראשונה.</p><div class="formula">firstTakeoffT − firstAltitudeT ≥ 8s</div><p class="small">מטרה מקורית: לתת לחיישן להתייצב ולצבור baseline. בפועל יש כבר דרישה נפרדת ל־4 שניות baseline, לפחות 3 דגימות וטווח עד 1m.</p><p class="small"><span class="remove">סיכון:</span> קפיצה אמיתית בתחילת הסשן נחסמת לחלוטין.</p></div>
+      <div class="card teal"><h3>Accuracy של מי?</h3><p>הערך מגיע ישירות מ־<span class="mono">CMAbsoluteAltitudeData.accuracy</span>.</p><ul class="small"><li>Apple מגדירה אותו כאי־ודאות מוערכת של altimeter במטרים, סטיית תקן אחת.</li><li>זה אינו horizontal/vertical GPS accuracy.</li><li>זה אינו <span class="mono">precision</span>; precision הוא הרזולוציה המומלצת.</li><li>זה אינו טווח הרעש שחישבנו בחלון baseline.</li></ul></div>
+    </div>
+    <div class="grid3" style="margin-top:5mm"><div class="metric"><b>8s</b><span>hard warmup</span></div><div class="metric"><b>12m</b><span>hard accuracy gate</span></div><div class="metric"><b>100m</b><span>re-anchor sentinel</span></div></div>
+    <div class="call"><span class="strong">המלצת warmup:</span> להסיר את <span class="ltr">8s</span> כ־gate עצמאי. <span class="mono">baselineNotReady</span> כבר חוסם עד שיש חלון תקין; לכל היותר להצמיד ל־<span class="ltr">baselineWindowSec=4s</span>.</div>
+    <div class="call warn"><span class="strong">המלצת accuracy:</span> להשאיר <span class="ltr">≥100m</span> כ־sentinel/reset. להפוך <span class="ltr">&gt;12m</span> מדחייה קשיחה לדגל quality/confidence או לדרוש כמה דגימות גרועות רצופות. שגיאת offset אבסולוטית יכולה להתבטל כאשר מחשבים דלתא מול baseline.</div>
+    <p class="source">מקור: <a href="https://developer.apple.com/documentation/coremotion/cmabsolutealtitudedata/accuracy">Apple · CMAbsoluteAltitudeData.accuracy</a> ו־<a href="https://developer.apple.com/documentation/coremotion/cmabsolutealtitudedata/precision">precision</a>.</p>
+  </section>
+
+  <section class="page" data-page="06/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>30 seconds</span></div>
+    <div class="eyebrow"><span class="num">05</span> · מגבלות זמן</div><h2>יש שני שעונים, לא אחד</h2>
+    <div class="grid2">
+      <div class="card yellow"><h3><span class="mono">maxAirtimeSec = 12</span></h3><p class="small">נבדק לאחר שנמצאה נחיתה. אירוע של 13–20 שניות יגיע לנחיתה ואז ייפסל כ־<span class="mono">airtimeOutOfRange</span>.</p></div>
+      <div class="card coral"><h3><span class="mono">maxFlightSec = 20</span></h3><p class="small">candidate פתוח מעל 20 שניות נסגר כ־<span class="mono">maxFlightExceeded</span>, גם אם הנחיתה עוד רגע מגיעה.</p></div>
+    </div>
+    <h3 style="margin-top:6mm">המצב הנוכחי</h3><div class="bar"><span class="a">Airtime 12s</span></div><div class="bar"><span class="f">Flight 20s</span></div>
+    <h3 style="margin-top:5mm">הצעה ליעד 30 שניות</h3><div class="bar proposed"><span class="a">Airtime 30s</span></div><div class="bar proposed"><span class="f">Flight 32s</span></div>
+    <div class="formula">maxAirtimeSec = 30s · maxFlightSec = 32s</div>
+    <div class="call"><span class="strong">למה 32 ולא 30?</span> דגימת altitude מגיעה בקצב נמוך ואינה נופלת בדיוק על גבול הזמן. margin של כשתי שניות מאפשר לדגימת הנחיתה להגיע בלי reject טכני.</div>
+    <div class="call warn"><span class="strong">Tradeoff:</span> candidate שגוי יכול לנעול את מצב airborne עד 32 שניות ולגרום לפספוס קפיצות אמיתיות אחריו. לכן שינוי timeout צריך להגיע יחד עם telemetry ועם ביטול מהיר כאשר מתקבלת חזרה ברורה לבסיס.</div>
+    <div class="verdict"><span class="keep">החלטה מוצעת:</span> לאפשר 30 שניות בתוצאה, 32 שניות למצב הפתוח, ולהשאיר את הנחיתה נבדקת לפני timeout כפי שקורה כיום.</div>
+  </section>
+
+  <section class="page" data-page="07/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>Landing audit</span></div>
+    <div class="eyebrow"><span class="num">06</span> · תנאי הנחיתה</div><h2>איזה תנאי באמת נחוץ</h2>
+    <table>
+      <tr><th>תנאי</th><th>תפקיד</th><th>Audit</th><th>המלצה</th></tr>
+      <tr><td class="mono">p.alt ≤ baseline + 0.75m</td><td>חזרה לאזור ההמראה.</td><td class="keep">ליבה</td><td>להשאיר.</td></tr>
+      <tr><td class="mono">peak − p.alt ≥ max(0.25, 0.5×minRise)</td><td>לוודא ירידה מהשיא ולא jitter ליד apex.</td><td class="revise">קשיח חלקית</td><td>לפשט ל־hasDescended או hysteresis קטן.</td></tr>
+      <tr><td class="mono">peak − baseline ≥ minRise</td><td>לוודא שהשיא עבר את סף הקפיצה.</td><td class="remove">כפול</td><td>להסיר; candidate ו־makeJump כבר בודקים.</td></tr>
+      <tr><td class="mono">stable window 2s</td><td>fallback אם baseline זז והגובה לא חוזר ל־band.</td><td class="soft">מסלול קבלה</td><td>אפשר להשאיר; אינו חוסם baseline return.</td></tr>
+      <tr><td class="mono">airtime range</td><td>plausibility לאחר נחיתה.</td><td class="revise">גבול נפרד</td><td>לעדכן ליעד החדש.</td></tr>
+    </table>
+    <div class="grid2" style="margin-top:6mm">
+      <div class="card teal"><h3>הנתיב הפשוט</h3><div class="formula" style="background:var(--teal)">peak → return to baseline → emit</div><p class="small">זה הנתיב שפתר את הבאג בלוג האחרון ושומר קפיצה לפני post‑landing dip.</p></div>
+      <div class="card yellow"><h3>למה fallback עדיין קיים</h3><div class="formula" style="background:#b88700">peak → shifted stable level → emit</div><p class="small">אם מפלס/pressure drift מזיז את נקודת הנחיתה ביותר מ־0.75m, חזרה לבסיס המקורי לא תתרחש. fallback יכול להציל את האירוע.</p></div>
+    </div>
+    <div class="call note"><span class="strong">לגבי “חישוב גובה בנחיתה”:</span> גובה הקפיצה אינו מחושב מבסיס הנחיתה. הוא תמיד <span class="mono">peak − preJumpBaseline</span>. ה־post baseline נשמר לאבחון בלבד.</div>
+    <div class="verdict"><span class="revise">החלטה מוצעת:</span> להסיר את הבדיקה הכפולה <span class="mono">clearedBaseline</span>, לרכך את descent gate, ולהשאיר stable landing כמסלול קבלה בלבד.</div>
+  </section>
+
+  <section class="page" data-page="08/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>Reject audit · 1</span></div>
+    <div class="eyebrow"><span class="num">07</span> · לפני candidate</div><h2>כל תנאי הפסילה: קלט ו־idle</h2>
+    <table>
+      <tr><th>Gate</th><th>למה קיים</th><th>סיכון ל־recall</th><th>פסק דין</th></tr>
+      <tr><td class="mono">nonFinite / outOfOrder</td><td>נתון לא חוקי או זמן חוזר.</td><td>אפסי.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">duplicate timestamp</td><td>אותו altimeter frame מוחזק על IMU.</td><td>אפסי; heartbeat שומר זמן.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">accuracy ≥ 100m</td><td>sentinel/re-anchor ידוע.</td><td>נמוך.</td><td class="keep">להשאיר reset</td></tr>
+      <tr><td class="mono">accuracy &gt; 12m</td><td>הפרדה אמפירית בין לוג טוב לגרוע.</td><td>גבוה; accuracy אבסולוטי.</td><td class="revise">להפוך soft</td></tr>
+      <tr><td class="mono">datum step &gt; 12m</td><td>מונע ערבוב שני baselines.</td><td>נמוך; קפיצה 12m חריגה.</td><td class="keep">להשאיר reset</td></tr>
+      <tr><td class="mono">retriggerGuard 0.8s</td><td>מונע duplicate מיד לאחר נחיתה.</td><td>נמוך.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">window ≥ 80%</td><td>מונע spike בלי משך מינימלי.</td><td>נמוך־בינוני.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">sensorWarmup 8s</td><td>התייצבות וצבירת history.</td><td>גבוה בתחילת סשן.</td><td class="remove">להסיר/לגזור</td></tr>
+      <tr><td class="mono">baselineNotReady</td><td>אין 3 דגימות ב־4s.</td><td>הכרחי מתמטית.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">baselineNoisy &gt; 1m</td><td>מונע בסיס לא אמין.</td><td>בינוני־גבוה בים.</td><td class="revise">robust spread</td></tr>
+      <tr><td class="mono">takeoffBelowBaseline</td><td>חוסם dip→recovery.</td><td>בינוני; נוסחה אטומה.</td><td class="revise">להחליף בהגנת glitch ברורה</td></tr>
+      <tr><td class="mono">shortWindowRise</td><td>דורש pop מקומי, לא drift איטי.</td><td>נמוך אם הסף נכון.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">rise over baseline</td><td>הגדרת הקפיצה עצמה.</td><td>תלוי minRise בלבד.</td><td class="keep">ליבה</td></tr>
+    </table>
+    <div class="call note small"><span class="strong">Baseline noisy:</span> range רגיש לדגימה קיצונית אחת. עדיף average של דגימות שעברו outlier check או spread robust, בלי להחליף את baseline average שהוגדר למנוע.</div>
+  </section>
+
+  <section class="page" data-page="09/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>Reject audit · 2</span></div>
+    <div class="eyebrow"><span class="num">08</span> · Candidate ותוצאה</div><h2>כל תנאי הפסילה אחרי ההמראה</h2>
+    <table>
+      <tr><th>Gate</th><th>למה קיים</th><th>סיכון ל־recall</th><th>פסק דין</th></tr>
+      <tr><td class="mono">baseline return</td><td>קובע נחיתה מהגובה האבסולוטי.</td><td>נמוך עם band מתאים.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">descendedFromPeak</td><td>hysteresis אחרי apex.</td><td>יכול לעכב נחיתה קטנה.</td><td class="revise">לפשט</td></tr>
+      <tr><td class="mono">clearedBaseline</td><td>בדיקת height חוזרת.</td><td>קטן אך מיותר.</td><td class="remove">להסיר</td></tr>
+      <tr><td class="mono">stableLanding</td><td>fallback ל־baseline drift.</td><td>אינו חוסם primary.</td><td class="soft">להשאיר acceptance</td></tr>
+      <tr><td class="mono">maxFlightExceeded 20s</td><td>מונע lock אינסופי.</td><td>גבוה מעל 20s.</td><td class="revise">32s</td></tr>
+      <tr><td class="mono">belowMinRise</td><td>defense-in-depth על height.</td><td>כמעט אפסי; כפול אך בטוח.</td><td class="soft">אפשר להשאיר assert</td></tr>
+      <tr><td class="mono">airtime 1…12s</td><td>plausibility.</td><td>גבוה מחוץ לטווח.</td><td class="revise">0.5…30s</td></tr>
+      <tr><td class="mono">staleResult 2.5s</td><td>מונע emit היסטורי מאוחר.</td><td>יכול לפסול flush תקין.</td><td class="remove">לוג בלבד ב־live</td></tr>
+      <tr><td class="mono">minArcSamples = 1</td><td>אמור לדרוש מספיק נקודות.</td><td>לא מגן בפועל.</td><td class="remove">מיותר כרגע</td></tr>
+      <tr><td class="mono">duplicate apex &lt; 2s</td><td>מונע אותו שיא פעמיים.</td><td>נמוך.</td><td class="keep">להשאיר</td></tr>
+      <tr><td class="mono">sessionEndedBeforeStableLanding</td><td>לא ממציא נחיתה בסוף סשן.</td><td>candidate לא גמור יאבד.</td><td class="keep">להשאיר + telemetry</td></tr>
+      <tr><td>GPS / IMU / water</td><td>metrics בלבד.</td><td>אין gate.</td><td class="keep">להשאיר כך</td></tr>
+    </table>
+    <div class="call"><span class="strong">כלל מנחה:</span> תנאי שמגן על תקינות מתמטית או datum נשאר hard. תנאי אמפירי גבולי צריך להפוך soft/diagnostic. תנאי שכבר נבדק קודם אינו צריך לסגור קפיצה תקינה.</div>
+  </section>
+
+  <section class="page" data-page="10/10">
+    <div class="head"><div class="brand"><span class="mark"></span><span>מנוע 13</span></div><span>המלצה מסכמת</span></div>
+    <div class="eyebrow"><span class="num">09</span> · סדר פעולות מוצע</div><h2>מה הייתי משנה, ובאיזה סדר</h2>
+    <div class="grid2">
+      <div class="card teal"><h3>שלב 1 · Recall בלי שינוי ארכיטקטורה</h3><ol class="small"><li><span class="mono">maxAirtime 30s</span>, <span class="mono">maxFlight 32s</span>.</li><li>להסיר warmup 8s; להסתמך על baseline ready.</li><li>להפוך accuracy&gt;12m ל־quality flag.</li><li>להסיר clearedBaseline הכפול.</li><li>להפוך staleResult ללוג בלבד.</li></ol></div>
+      <div class="card yellow"><h3>שלב 2 · ניקוי gates גבוליים</h3><ol class="small"><li>למדוד false/true על לוגים עם accuracy גבוה.</li><li>להחליף baseline range ב־robust spread.</li><li>לפשט descendedFromPeak ל־hysteresis ברור.</li><li>להחליף takeoffBelowBaseline בכלל dip recovery מתועד.</li><li>למחוק scanner ושדות תאימות לא פעילים.</li></ol></div>
+    </div>
+    <h3 style="margin-top:6mm">בדיקות שחייבות להתלוות לשינוי</h3>
+    <table>
+      <tr><th>תרחיש</th><th>ציפייה</th></tr>
+      <tr><td>קפיצה ראשונה מתחילה אחרי 4–5 שניות</td><td class="keep">מזוהה</td></tr>
+      <tr><td>קפיצה של 29.5 שניות + דגימת נחיתה מאוחרת</td><td class="keep">מזוהה</td></tr>
+      <tr><td>Absolute accuracy של 13–20m עם baseline שקט</td><td class="keep">אינה נחסמת אוטומטית</td></tr>
+      <tr><td>Sentinel accuracy 500 / datum step 20m</td><td class="keep">reset, אין קפיצה</td></tr>
+      <tr><td>Dip→recovery עם IMU/GPS חזקים</td><td class="keep">0 קפיצות</td></tr>
+      <tr><td>Baseline→single spike→baseline</td><td class="revise">החלטת מוצר מפורשת + test</td></tr>
+      <tr><td>שלוש הקפיצות מהלוג האחרון, no GPS</td><td class="keep">3/3</td></tr>
+      <tr><td>לוג אפס קפיצות</td><td class="keep">0</td></tr>
+    </table>
+    <div class="call warn"><span class="strong">הערת אמת:</span> אי אפשר להבטיח גם 100% recall וגם דחייה של single-sample glitch שנראה פיזיקלית זהה לקפיצה, כאשר absolute altitude הוא מקור ההחלטה היחיד. צריך לבחור את צד הסיכון; לפי מטרת V13, ההמלצה היא להעדיף recall ולשמור את ה־glitch כ־quality/diagnostic.</div>
+    <div class="verdict"><span class="keep">הקו המנחה:</span> baseline average של 3–5 שניות, עלייה אבסולוטית, חזרה לבסיס, ומינימום gates קשיחים. GPS ו־IMU נשארים מחוץ להחלטה.</div>
+    <p class="micro">המסמך הוא audit והמלצה בלבד. לא בוצע שינוי בהתנהגות המנוע במסגרת הכנתו.</p>
+  </section>
+</body>
+</html>

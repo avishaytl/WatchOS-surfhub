@@ -233,15 +233,15 @@ final class V13Probe: JumpEngineV13Delegate {
 /// then flat water at `base + driftM` (linear drift across the flight).
 /// 25 Hz IMU, 3 Hz altimeter, deterministic integer-step timeline.
 func feedV13Arc(_ engine: JumpEngineV13,
-                takeoff: Double = 8.0,
-                landing: Double = 11.0,
+                takeoff: Double = 12.0,
+                landing: Double = 15.0,
                 apexM: Double = 2.6,
                 base: Double = 100.0,
                 driftM: Double = 0.0,
-                endT: Double = 16.0,
+                endT: Double = 20.0,
                 gyroTriggerOnly: Bool = false,
                 spikeOnlyAt: Double? = nil,
-                withGPS: Bool = false) {
+                withGPS: Bool = true) {
     let dt = 0.04
     var nextAltT = 0.0
     let steps = Int((endT / dt).rounded())
@@ -295,7 +295,7 @@ func testV13DetectsCleanJumpAfterLanding() {
     expectEqual(probe.jumps.count, 1, "V13 should classify exactly one jump after landing")
     guard let jump = probe.jumps.first else { return }
     expect(abs(jump.heightM - 2.57) <= 0.3, "V13 height should match the synthetic apex, got \(jump.heightM)")
-    expect(abs(jump.airtimeSec - 3.6) <= 0.5, "V13 airtime should span the takeoff window start to stable landing, got \(jump.airtimeSec)")
+    expect(abs(jump.airtimeSec - 3.0) <= 0.7, "V13 airtime should span the takeoff window start to baseline return, got \(jump.airtimeSec)")
     expect(jump.emittedAtT - jump.landingT <= 5.0, "V13 must emit within 5 s of landing (§1), got \(jump.emittedAtT - jump.landingT)")
     expect(jump.emittedAtT >= jump.landingT, "V13 classification must run after landing")
     expect(jump.baselinePostM != nil, "V13 should compute a post-landing baseline")
@@ -323,8 +323,9 @@ func testV13CompensatesBaselineDriftAcrossJump() {
     let probe = V13Probe()
     engine.delegate = probe
 
-    // Water level drifts +0.9 m during the flight (swell). V13 simple mode
-    // subtracts the stable landing baseline measured over the 2 s landing window.
+    // Water level drifts +0.9 m during the flight (swell). V13 measures height
+    // against the pre-jump absolute baseline and keeps the landing baseline as
+    // a drift diagnostic.
     feedV13Arc(engine, driftM: 0.9)
 
     expectEqual(probe.jumps.count, 1, "V13 should land the drifted jump on the shifted baseline")
@@ -332,22 +333,40 @@ func testV13CompensatesBaselineDriftAcrossJump() {
     expect(jump.baselineShifted, "V13 should flag the shifted landing baseline")
     expect(!jump.driftSuspect, "0.9 m of drift is within the plausible-drift budget")
     expect(abs((jump.baselinePostM ?? 0) - 100.9) <= 0.15, "V13 post baseline should sit on the new level, got \(String(describing: jump.baselinePostM))")
-    expect(jump.heightM < 2.6, "V13 height must be measured against the landing baseline, got \(jump.heightM)")
-    expect(jump.heightM > 2.0, "V13 drift compensation should preserve the real jump scale, got \(jump.heightM)")
+    expect(jump.heightM > 2.6, "V13 height should stay referenced to the pre-jump baseline, got \(jump.heightM)")
+    expect(jump.heightM < 3.3, "V13 drift diagnostic should keep the drifted arc in a plausible range, got \(jump.heightM)")
 }
 
-func testV13FlushDoesNotEmitBeforeLandingWindow() {
+func testV13AllowsBarometerOnlyWithoutGPS() {
     let engine = JumpEngineV13()
     let probe = V13Probe()
     engine.delegate = probe
 
-    // Session ends about 1 s after touchdown. The new simple V13 contract needs
-    // a full 2 s stable landing window, so this must not emit a final jump yet.
-    feedV13Arc(engine, endT: 12.0)
-    let late = engine.flush(now: 12.0)
+    feedV13Arc(engine, withGPS: false)
+    expectEqual(probe.jumps.count, 1, "V13 should classify an altitude arc without riding-speed GPS")
+}
 
-    expectEqual(probe.jumps.count, 0, "V13 should not have emitted before the settle window closed")
-    expectEqual(late.count, 0, "V13 flush must wait for the full 2 s landing stability window")
+func testV13AllowsBarometerOnlyWithoutInertialSpike() {
+    let engine = JumpEngineV13()
+    let probe = V13Probe()
+    engine.delegate = probe
+
+    feedV13Arc(engine, gyroTriggerOnly: true)
+    expectEqual(probe.jumps.count, 1, "V13 should classify a clean altitude arc without takeoff/landing acceleration")
+}
+
+func testV13BaselineReturnEmitsBeforeLandingWindow() {
+    let engine = JumpEngineV13()
+    let probe = V13Probe()
+    engine.delegate = probe
+
+    // Session ends about 1 s after touchdown. V13 should close on absolute
+    // baseline return and leave nothing pending for flush.
+    feedV13Arc(engine, endT: 16.0)
+    let late = engine.flush(now: 16.0)
+
+    expectEqual(probe.jumps.count, 1, "V13 should emit on baseline return before the settle window closed")
+    expectEqual(late.count, 0, "V13 flush should have no pending jump after baseline-return emission")
 }
 
 testStartIsDedupedAndRetriesAfterFailureWindow()
@@ -361,5 +380,7 @@ testV12RejectsSubMeterAbsoluteJump()
 testV13DetectsCleanJumpAfterLanding()
 testV13RequiresConfiguredTakeoffWindow()
 testV13CompensatesBaselineDriftAcrossJump()
-testV13FlushDoesNotEmitBeforeLandingWindow()
+testV13AllowsBarometerOnlyWithoutGPS()
+testV13AllowsBarometerOnlyWithoutInertialSpike()
+testV13BaselineReturnEmitsBeforeLandingWindow()
 print("WatchLiveSessionCoreChecks passed")

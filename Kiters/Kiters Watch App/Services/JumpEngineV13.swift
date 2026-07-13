@@ -2,20 +2,20 @@
 //  JumpEngineV13.swift
 //  Kiters Watch App
 //
-//  V13 simple absolute-altitude jump engine.
+//  V13 absolute-altitude jump engine.
 //
 //  Design:
-//  - No IMU gate. IMU is optional metrics only.
-//  - Keeps a rolling altitude history so jumps can be reconstructed after
-//    landing even when several peaks happen before the baseline is stable.
+//  - Absolute altitude is the detection source. A jump opens when the absolute
+//    altitude rises over a 3-5 s baseline average by the configured threshold.
+//    IMU and GPS are optional metrics only; they must not block detection.
+//  - Keeps rolling altitude/IMU/GPS history for robust baselines and metrics.
+//    History may refine an already-open candidate; it must not originate jumps
+//    from arbitrary local peaks after the fact.
 //  - Jump condition is absolute-altitude rise over a short window:
 //      1.0 m -> 1.0 s, 1.5 m -> 1.5 s, 2.0 m -> 2.0 s.
-//  - Height is max absolute altitude after the jump condition minus the stable
-//    landing baseline measured over the landing window. When the landing window
-//    is choppy, V13 still emits the jump and lowers confidence instead of
-//    rejecting it.
-//  - Airtime is jump-condition time to landing-return time.
-//  - GPS speed/distance are GPS-derived and can be used as configurable gates.
+//  - Height is max absolute altitude minus the pre-jump baseline average.
+//  - Airtime is the start of the rise window to landing-return time.
+//  - GPS speed/distance are GPS-derived metrics only.
 //
 
 import Foundation
@@ -27,19 +27,20 @@ public struct V13Config {
     // is derived from this value in seconds.
     public var minRiseM = 1.0
 
-    // GPS-derived optional gates. Defaults keep the detector usable while field
-    // thresholds are being tuned; set > 0 to require GPS speed/distance.
+    // GPS-derived metrics. V13 detection is barometer-only by default, so these
+    // fields are reported/tunable but are not used as jump gates.
     public var minGpsSpeedMS = 0.0
     public var minGpsDistanceM = 0.0
 
-    // Landing: the user-requested stable 2 s window.
+    // Landing: prefer an absolute return to the pre-jump baseline. The stable
+    // window remains as a fallback/diagnostic path after the return signal.
     public var landingStableSec = 2.0
     public var landingStableDeltaM = 0.25
     public var landingStableRangeM = 0.6
     public var landingReturnBandM = 0.75
 
     // Bounds applied only after the altitude jump/landing sequence is complete.
-    public var minAirtimeSec = 0.2
+    public var minAirtimeSec = 1.0
     public var maxAirtimeSec = 12.0
     public var maxFlightSec = 20.0
     public var maxJumpHeightM = 30.0
@@ -54,7 +55,13 @@ public struct V13Config {
     public var emptyCandidateCloseSec = 0.0
     public var retriggerGuardSec = 0.8
     public var takeoffWindowSlackSec = 0.15
-    public var baselineWindowSec = 0.0
+    // Takeoff baseline: average absolute altitude over the 3-5 seconds before
+    // takeoff. The jump condition is current absolute altitude minus this
+    // baseline average.
+    public var baselineWindowSec = 4.0
+    public var minBaselineSamples = 3
+    public var maxBaselineNoiseRangeM = 1.0
+    public var startupWarmupSec = 8.0
     public var baselineGapSec = 0.0
     public var postLandingGapSec = 0.0
     public var postBaselineWindowSec = 2.0
@@ -66,6 +73,9 @@ public struct V13Config {
     public var crossingBandM = 0.0
     public var maxResultDelaySec = 2.5
     public var gpsMatchToleranceSec = 2.5
+    public var takeoffEvidenceLeadSec = 0.5
+    public var takeoffEvidenceTailSec = 0.8
+    public var landingEvidenceWindowSec = 0.8
 
     public init() {}
 }
@@ -152,6 +162,20 @@ public final class JumpEngineV13 {
         let spd: Double
     }
 
+    private struct BaselineStats {
+        let average: Double
+        let range: Double
+    }
+
+    private struct MotionEvidence {
+        let takeoffG: Double
+        let landingG: Double
+        let peakG: Double
+        let maxGyro: Double
+        let rotationIntegral: Double
+        let impactEnergy: Double
+    }
+
     private struct ActiveJump {
         let takeoffT: TimeInterval
         let baselineAlt: Double
@@ -182,12 +206,18 @@ public final class JumpEngineV13 {
     private var phase: Phase = .idle
     private var takeoffWindow: [AltPt] = []
     private var latestGPS: GpsPt?
+    private var firstAltitudeT: TimeInterval?
     private var lastAltT = -Double.infinity
     private var lastImuT = -Double.infinity
     private var lastGpsT = -Double.infinity
     private var lastLandedT = -Double.infinity
     private var altitudeHistory: [AltPt] = []
+    private var imuHistory: [ImuPt] = []
+    private var gpsHistory: [GpsPt] = []
     private var emittedPeakTimes: [TimeInterval] = []
+    // The buffered scan re-evaluates unclaimed peaks on every altitude sample,
+    // so an identical rejection would otherwise be logged dozens of times.
+    private var lastRejectDebug = ""
 
     public init(_ cfg: V13Config = V13Config()) {
         self.cfg = cfg
@@ -197,11 +227,14 @@ public final class JumpEngineV13 {
         phase = .idle
         takeoffWindow.removeAll(keepingCapacity: true)
         latestGPS = nil
+        firstAltitudeT = nil
         lastAltT = -Double.infinity
         lastImuT = -Double.infinity
         lastGpsT = -Double.infinity
         lastLandedT = -Double.infinity
         altitudeHistory.removeAll(keepingCapacity: true)
+        imuHistory.removeAll(keepingCapacity: true)
+        gpsHistory.removeAll(keepingCapacity: true)
         emittedPeakTimes.removeAll(keepingCapacity: true)
     }
 
@@ -210,6 +243,7 @@ public final class JumpEngineV13 {
     public func addAltitude(t: TimeInterval, altitudeM: Double) {
         guard t.isFinite, altitudeM.isFinite, t > lastAltT else { return }
         lastAltT = t
+        if firstAltitudeT == nil { firstAltitudeT = t }
         let p = AltPt(t: t, alt: altitudeM)
         altitudeHistory.append(p)
         prune(&altitudeHistory, before: p.t - cfg.bufferSec)
@@ -223,15 +257,20 @@ public final class JumpEngineV13 {
             ingestAirborneAltitude(p, jump: &jump)
         }
 
-        scanBufferedAltitude(now: p.t)
+        // Do not scan arbitrary historical peaks here. The former buffered
+        // origin path produced 14/14 false FINALs on the 2026-07-11 zero-jump
+        // session, including stale classifications 46-56 seconds late.
     }
 
     public func addIMU(t: TimeInterval, accelG: Double, gyroRadS: Double) {
         guard t.isFinite, accelG.isFinite, gyroRadS.isFinite, t > lastImuT else { return }
         lastImuT = t
 
-        guard case .airborne(var jump) = phase else { return }
         let p = ImuPt(t: t, accelG: max(0, accelG), gyroRadS: max(0, gyroRadS))
+        imuHistory.append(p)
+        prune(&imuHistory, before: t - cfg.bufferSec)
+
+        guard case .airborne(var jump) = phase else { return }
 
         if t - jump.takeoffT <= 0.6 {
             jump.takeoffG = max(jump.takeoffG, p.accelG)
@@ -254,7 +293,10 @@ public final class JumpEngineV13 {
     public func addGPS(t: TimeInterval, lat: Double, lng: Double, speedMS: Double) {
         guard t.isFinite, t > lastGpsT else { return }
         lastGpsT = t
-        latestGPS = GpsPt(t: t, lat: lat, lng: lng, spd: max(0, speedMS))
+        let p = GpsPt(t: t, lat: lat, lng: lng, spd: max(0, speedMS))
+        latestGPS = p
+        gpsHistory.append(p)
+        prune(&gpsHistory, before: t - cfg.bufferSec)
     }
 
     public func addSubmersion(t: TimeInterval, submerged: Bool) {
@@ -264,7 +306,6 @@ public final class JumpEngineV13 {
 
     public func flush(now: TimeInterval) -> [V13Jump] {
         let emittedAt = max(now, lastAltT)
-        scanBufferedAltitude(now: emittedAt)
 
         guard case .airborne(let jump) = phase else { return [] }
         phase = .idle
@@ -293,15 +334,39 @@ public final class JumpEngineV13 {
         guard p.t - lastLandedT >= cfg.retriggerGuardSec else { return }
 
         guard let first = takeoffWindow.first, p.t - first.t >= takeoffWindowSec * 0.8 else { return }
+        guard let firstAltitudeT, first.t - firstAltitudeT >= cfg.startupWarmupSec else {
+            rejectDebug(p.t, "REJECT(candidate) reason=sensorWarmup")
+            return
+        }
 
-        let rise = p.alt - first.alt
+        guard let baseline = baselineStats(before: first.t) else {
+            rejectDebug(p.t, "REJECT(candidate) reason=baselineNotReady")
+            return
+        }
+        guard baseline.range <= cfg.maxBaselineNoiseRangeM else {
+            rejectDebug(p.t, "REJECT(candidate) reason=baselineNoisy range=\(fmt(baseline.range))")
+            return
+        }
+        guard first.alt >= baseline.average - cfg.landingReturnBandM * 0.65 else {
+            rejectDebug(p.t, "REJECT(candidate) reason=takeoffBelowBaseline delta=\(fmt(first.alt - baseline.average))")
+            return
+        }
+        // Gate against the baseline average, never against the lowest/first
+        // point. A pressure dip followed by recovery should not become the
+        // baseline by itself.
+        let shortWindowRise = p.alt - first.alt
+        guard shortWindowRise >= cfg.minRiseM else {
+            rejectDebug(p.t, "REJECT(candidate) reason=shortWindowRise rise=\(fmt(shortWindowRise))")
+            return
+        }
+        let rise = p.alt - baseline.average
         guard rise >= cfg.minRiseM else { return }
 
         beginJump(
             triggerT: first.t,
-            baselineAlt: first.alt,
+            baselineAlt: baseline.average,
             triggerAlt: p.alt,
-            launchGPS: latestGPS,
+            launchGPS: gpsPoint(near: first.t),
             altitudePointCount: takeoffWindow.count,
             maxAscentRate: ascentRate(in: takeoffWindow),
             triggerPoint: p
@@ -360,6 +425,19 @@ public final class JumpEngineV13 {
             }
         }
 
+        if let landing = baselineReturnLanding(from: p, jump: jump) {
+            if let result = makeJump(from: jump, stable: landing, emittedAt: p.t, reason: "baselineReturn") {
+                if markPeakIfNew(result.apexT) {
+                    delegate?.jumpDetected(result)
+                    onDebug(p.t, "JUMP h=\(result.heightM)m air=\(result.airtimeSec)s baseline=\(result.baselinePostM ?? result.baselinePreM) latency=\(fmt(result.emittedAtT - result.landingT))s")
+                }
+            }
+            lastLandedT = landing.landingT
+            phase = .idle
+            takeoffWindow = [p]
+            return
+        }
+
         if p.t - jump.takeoffT > cfg.maxFlightSec {
             onDebug(p.t, "REJECT reason=maxFlightExceeded air=\(fmt(p.t - jump.takeoffT))")
             phase = .idle
@@ -409,28 +487,13 @@ public final class JumpEngineV13 {
             let takeoff = altitudeHistory[takeoffIdx]
             guard peak.alt - takeoff.alt >= cfg.minRiseM else { continue }
 
-            let stableLandingIdx = bufferedStableLandingIndex(
+            guard let landingIdx = bufferedStableLandingIndex(
                 afterPeakAt: peakIdx,
                 baseline: takeoff,
                 peak: peak,
                 minDescentM: minDescentM,
                 postWindowSec: postWindowSec
-            )
-            guard let fallbackLandingIdx = bufferedLandingIndex(
-                afterPeakAt: peakIdx,
-                baseline: takeoff,
-                peak: peak,
-                minDescentM: minDescentM
             ) else { continue }
-
-            let landingIdx: Int
-            if let stableLandingIdx {
-                landingIdx = stableLandingIdx
-            } else {
-                let fallbackLanding = altitudeHistory[fallbackLandingIdx]
-                guard allowOpenTail || now + 0.05 >= fallbackLanding.t + postWindowSec + cfg.maxResultDelaySec else { continue }
-                landingIdx = fallbackLandingIdx
-            }
 
             let landing = altitudeHistory[landingIdx]
             guard allowOpenTail || now + 0.05 >= landing.t + postWindowSec else { continue }
@@ -438,6 +501,7 @@ public final class JumpEngineV13 {
             let postEnd = min(now, landing.t + postWindowSec)
             let postWindow = altitudeHistory.filter { $0.t >= landing.t && $0.t <= postEnd }
             let stable = relaxedLanding(from: postWindow, fallback: landing)
+            guard stable.isStable else { continue }
 
             guard let result = makeBufferedJump(
                 takeoffIdx: takeoffIdx,
@@ -526,7 +590,7 @@ public final class JumpEngineV13 {
         let delta = abs((points.last ?? fallback).alt - (points.first ?? fallback).alt)
         let range = hi - lo
         let isStable = delta <= cfg.landingStableDeltaM && range <= cfg.landingStableRangeM
-        return (fallback.t, average(values), range, isStable)
+        return (fallback.t, median(values), range, isStable)
     }
 
     private func makeBufferedJump(takeoffIdx: Int,
@@ -537,43 +601,43 @@ public final class JumpEngineV13 {
         let takeoff = altitudeHistory[takeoffIdx]
         let peak = altitudeHistory[peakIdx]
         let landing = altitudeHistory[landingIdx]
-        let baselineShift = stable.baseline - takeoff.alt
-        let baselineRef: Double
-        if stable.isStable {
-            baselineRef = stable.baseline
-        } else if abs(baselineShift) <= cfg.maxBaselineDriftM {
-            baselineRef = min(stable.baseline, takeoff.alt)
-        } else {
-            baselineRef = takeoff.alt
+        guard stable.isStable else {
+            rejectDebug(emittedAt, "REJECT(buffered) reason=unstableLanding")
+            return nil
         }
+        // Height is measured from the pre-jump absolute-altitude baseline
+        // average. The landing baseline is diagnostic only.
+        guard let preStats = baselineStats(before: takeoff.t) else {
+            rejectDebug(emittedAt, "REJECT(buffered) reason=baselineNotReady")
+            return nil
+        }
+        let preBaseline = preStats.average
+        let baselineShift = stable.baseline - preBaseline
+        let baselineRef = preBaseline
         let rawHeight = peak.alt - baselineRef
         let height = min(rawHeight, cfg.maxJumpHeightM)
         let airtime = landing.t - takeoff.t
-        let landingGPS = latestGPS
-        let launchGPS = latestGPS
+        let landingGPS = gpsPoint(near: landing.t)
+        let launchGPS = gpsPoint(near: takeoff.t)
         let distance = gpsDistance(from: launchGPS, to: landingGPS, airtime: airtime)
+        let motion = motionEvidence(takeoffT: takeoff.t, landingT: landing.t)
 
         guard height >= cfg.minRiseM else {
-            onDebug(emittedAt, "REJECT(buffered) reason=belowMinRise h=\(fmt(height)) min=\(fmt(cfg.minRiseM))")
+            rejectDebug(emittedAt, "REJECT(buffered) reason=belowMinRise h=\(fmt(height)) min=\(fmt(cfg.minRiseM))")
             return nil
         }
         guard airtime >= cfg.minAirtimeSec, airtime <= cfg.maxAirtimeSec else {
-            onDebug(emittedAt, "REJECT(buffered) reason=airtimeOutOfRange air=\(fmt(airtime))")
+            rejectDebug(emittedAt, "REJECT(buffered) reason=airtimeOutOfRange air=\(fmt(airtime))")
             return nil
         }
-        if cfg.minGpsSpeedMS > 0 {
-            guard let speed = launchGPS?.spd, speed >= cfg.minGpsSpeedMS else {
-                onDebug(emittedAt, "REJECT(buffered) reason=gpsSpeed speed=\(fmt(launchGPS?.spd ?? -1)) min=\(fmt(cfg.minGpsSpeedMS))")
-                return nil
-            }
+        guard emittedAt - landing.t <= cfg.maxResultDelaySec + 0.1 else {
+            rejectDebug(emittedAt, "REJECT(buffered) reason=staleResult delay=\(fmt(emittedAt - landing.t))")
+            return nil
         }
-        if cfg.minGpsDistanceM > 0 {
-            guard let distance, distance >= cfg.minGpsDistanceM else {
-                onDebug(emittedAt, "REJECT(buffered) reason=gpsDistance dist=\(fmt(distance ?? -1)) min=\(fmt(cfg.minGpsDistanceM))")
-                return nil
-            }
+        guard landingIdx - takeoffIdx + 1 >= cfg.minArcSamples else {
+            rejectDebug(emittedAt, "REJECT(buffered) reason=tooFewAltitudeSamples")
+            return nil
         }
-
         let segment = Array(altitudeHistory[takeoffIdx...landingIdx])
         let rates = altitudeRates(in: segment)
         let baselineShifted = abs(baselineShift) > cfg.landingReturnBandM
@@ -594,20 +658,20 @@ public final class JumpEngineV13 {
             landingT: landing.t,
             apexT: peak.t,
             peakAltitudeM: round2(peak.alt),
-            baselinePreM: round2(takeoff.alt),
+            baselinePreM: round2(preBaseline),
             baselinePostM: round2(stable.baseline),
             baselineRefM: round2(baselineRef),
             baselineShifted: baselineShifted,
             driftSuspect: driftSuspect,
             maxAscentRateMS: round2(rates.ascent),
             maxDescentRateMS: round2(rates.descent),
-            takeoffG: 0,
-            landingG: 0,
-            peakG: 0,
-            prePopImpulseG: 0,
-            maxRotationRadS: 0,
-            rotationTurns: 0,
-            impactEnergy: 0,
+            takeoffG: round2(motion.takeoffG),
+            landingG: round2(motion.landingG),
+            peakG: round2(motion.peakG),
+            prePopImpulseG: round2(motion.takeoffG),
+            maxRotationRadS: round2(motion.maxGyro),
+            rotationTurns: round2(motion.rotationIntegral / (2 * .pi)),
+            impactEnergy: round2(motion.impactEnergy),
             takeoffSpeedMS: launchGPS.map { round2($0.spd) },
             landingSpeedMS: landingGPS.map { round2($0.spd) },
             distanceM: distance.map(round2),
@@ -637,18 +701,31 @@ public final class JumpEngineV13 {
         let range = hi - lo
         guard delta <= cfg.landingStableDeltaM, range <= cfg.landingStableRangeM else { return nil }
 
-        return (first.t, average(values), range)
+        return (first.t, median(values), range)
+    }
+
+    private func baselineReturnLanding(from p: AltPt,
+                                       jump: ActiveJump) -> (landingT: TimeInterval, baseline: Double, range: Double)? {
+        let returnedToBaseline = p.alt <= jump.baselineAlt + cfg.landingReturnBandM
+        let descendedFromPeak = jump.maxAlt - p.alt >= max(0.25, cfg.minRiseM * 0.5)
+        let clearedBaseline = jump.maxAlt - jump.baselineAlt >= cfg.minRiseM
+        guard returnedToBaseline, descendedFromPeak, clearedBaseline else { return nil }
+        return (p.t, p.alt, 0)
     }
 
     private func makeJump(from jump: ActiveJump,
                           stable: (landingT: TimeInterval, baseline: Double, range: Double),
                           emittedAt: TimeInterval,
                           reason: String) -> V13Jump? {
-        let rawHeight = jump.maxAlt - stable.baseline
+        // Height is measured from the pre-jump absolute-altitude baseline
+        // average. The landing baseline is diagnostic only.
+        let baselineRef = jump.baselineAlt
+        let rawHeight = jump.maxAlt - baselineRef
         let height = min(rawHeight, cfg.maxJumpHeightM)
         let airtime = stable.landingT - jump.takeoffT
-        let landingGPS = latestGPS
+        let landingGPS = gpsPoint(near: stable.landingT)
         let distance = gpsDistance(from: jump.launchGPS, to: landingGPS, airtime: airtime)
+        let motion = motionEvidence(takeoffT: jump.takeoffT, landingT: stable.landingT)
 
         guard height >= cfg.minRiseM else {
             onDebug(emittedAt, "REJECT reason=belowMinRise h=\(fmt(height)) min=\(fmt(cfg.minRiseM)) via=\(reason)")
@@ -658,19 +735,14 @@ public final class JumpEngineV13 {
             onDebug(emittedAt, "REJECT reason=airtimeOutOfRange air=\(fmt(airtime)) via=\(reason)")
             return nil
         }
-        if cfg.minGpsSpeedMS > 0 {
-            guard let speed = jump.launchGPS?.spd, speed >= cfg.minGpsSpeedMS else {
-                onDebug(emittedAt, "REJECT reason=gpsSpeed speed=\(fmt(jump.launchGPS?.spd ?? -1)) min=\(fmt(cfg.minGpsSpeedMS))")
-                return nil
-            }
+        guard emittedAt - stable.landingT <= cfg.maxResultDelaySec + 0.1 else {
+            onDebug(emittedAt, "REJECT reason=staleResult delay=\(fmt(emittedAt - stable.landingT))")
+            return nil
         }
-        if cfg.minGpsDistanceM > 0 {
-            guard let distance, distance >= cfg.minGpsDistanceM else {
-                onDebug(emittedAt, "REJECT reason=gpsDistance dist=\(fmt(distance ?? -1)) min=\(fmt(cfg.minGpsDistanceM))")
-                return nil
-            }
+        guard jump.altitudePointCount >= cfg.minArcSamples else {
+            onDebug(emittedAt, "REJECT reason=tooFewAltitudeSamples n=\(jump.altitudePointCount)")
+            return nil
         }
-
         let baselineShift = stable.baseline - jump.baselineAlt
         let baselineShifted = abs(baselineShift) > cfg.landingReturnBandM
         let driftSuspect = abs(baselineShift) > cfg.maxBaselineDriftM
@@ -691,18 +763,18 @@ public final class JumpEngineV13 {
             peakAltitudeM: round2(jump.maxAlt),
             baselinePreM: round2(jump.baselineAlt),
             baselinePostM: round2(stable.baseline),
-            baselineRefM: round2(stable.baseline),
+            baselineRefM: round2(baselineRef),
             baselineShifted: baselineShifted,
             driftSuspect: driftSuspect,
             maxAscentRateMS: round2(jump.maxAscentRate),
             maxDescentRateMS: round2(jump.maxDescentRate),
-            takeoffG: round2(jump.takeoffG),
-            landingG: round2(jump.landingG),
-            peakG: round2(jump.peakG),
-            prePopImpulseG: 0,
-            maxRotationRadS: round2(jump.maxGyro),
-            rotationTurns: round2(jump.rotationIntegral / (2 * .pi)),
-            impactEnergy: round2(jump.impactEnergy),
+            takeoffG: round2(motion.takeoffG),
+            landingG: round2(motion.landingG),
+            peakG: round2(motion.peakG),
+            prePopImpulseG: round2(motion.takeoffG),
+            maxRotationRadS: round2(motion.maxGyro),
+            rotationTurns: round2(motion.rotationIntegral / (2 * .pi)),
+            impactEnergy: round2(motion.impactEnergy),
             takeoffSpeedMS: jump.launchGPS.map { round2($0.spd) },
             landingSpeedMS: landingGPS.map { round2($0.spd) },
             distanceM: distance.map(round2),
@@ -715,8 +787,8 @@ public final class JumpEngineV13 {
             triggerSource: .altitude,
             emittedAtT: emittedAt,
             profile: [
-                V13ProfilePoint(tOffsetSec: 0, relHeightM: round2(jump.baselineAlt - stable.baseline)),
-                V13ProfilePoint(tOffsetSec: round2(jump.apexT - jump.takeoffT), relHeightM: round2(jump.maxAlt - stable.baseline)),
+                V13ProfilePoint(tOffsetSec: 0, relHeightM: round2(jump.baselineAlt - baselineRef)),
+                V13ProfilePoint(tOffsetSec: round2(jump.apexT - jump.takeoffT), relHeightM: round2(jump.maxAlt - baselineRef)),
                 V13ProfilePoint(tOffsetSec: round2(stable.landingT - jump.takeoffT), relHeightM: 0)
             ]
         )
@@ -761,7 +833,25 @@ public final class JumpEngineV13 {
         return (ascent, descent)
     }
 
+    private func rejectDebug(_ t: TimeInterval, _ msg: String) {
+        guard msg != lastRejectDebug else { return }
+        lastRejectDebug = msg
+        onDebug(t, msg)
+    }
+
     private func prune(_ points: inout [AltPt], before cutoff: TimeInterval) {
+        while let first = points.first, first.t < cutoff {
+            points.removeFirst()
+        }
+    }
+
+    private func prune(_ points: inout [ImuPt], before cutoff: TimeInterval) {
+        while let first = points.first, first.t < cutoff {
+            points.removeFirst()
+        }
+    }
+
+    private func prune(_ points: inout [GpsPt], before cutoff: TimeInterval) {
         while let first = points.first, first.t < cutoff {
             points.removeFirst()
         }
@@ -780,6 +870,51 @@ public final class JumpEngineV13 {
         guard !isPeakAlreadyEmitted(peakT) else { return false }
         emittedPeakTimes.append(peakT)
         return true
+    }
+
+    private func gpsPoint(near t: TimeInterval) -> GpsPt? {
+        gpsHistory
+            .filter { abs($0.t - t) <= cfg.gpsMatchToleranceSec }
+            .min { abs($0.t - t) < abs($1.t - t) }
+    }
+
+    private func motionEvidence(takeoffT: TimeInterval, landingT: TimeInterval) -> MotionEvidence {
+        let takeoff = imuHistory.filter {
+            $0.t >= takeoffT - cfg.takeoffEvidenceLeadSec
+                && $0.t <= takeoffT + cfg.takeoffEvidenceTailSec
+        }
+        let landing = imuHistory.filter {
+            $0.t >= landingT - cfg.landingEvidenceWindowSec
+                && $0.t <= landingT + cfg.landingEvidenceWindowSec
+        }
+        let arc = imuHistory.filter {
+            $0.t >= takeoffT - cfg.takeoffEvidenceLeadSec
+                && $0.t <= landingT + cfg.landingEvidenceWindowSec
+        }
+
+        var rotationIntegral = 0.0
+        var impactEnergy = 0.0
+        if arc.count >= 2 {
+            for idx in 1..<arc.count {
+                let previous = arc[idx - 1]
+                let current = arc[idx]
+                let dt = max(0, current.t - previous.t)
+                rotationIntegral += current.gyroRadS * dt
+                if current.accelG >= cfg.landingImpactG {
+                    let over = max(0, current.accelG - 1.0)
+                    impactEnergy += over * over * dt
+                }
+            }
+        }
+
+        return MotionEvidence(
+            takeoffG: takeoff.map(\.accelG).max() ?? 0,
+            landingG: landing.map(\.accelG).max() ?? 0,
+            peakG: arc.map(\.accelG).max() ?? 0,
+            maxGyro: arc.map(\.gyroRadS).max() ?? 0,
+            rotationIntegral: rotationIntegral,
+            impactEnergy: impactEnergy
+        )
     }
 
     private func gpsDistance(from a: GpsPt?, to b: GpsPt?, airtime: Double) -> Double? {
@@ -809,6 +944,29 @@ public final class JumpEngineV13 {
     private func average(_ values: [Double]) -> Double {
         guard !values.isEmpty else { return 0 }
         return values.reduce(0, +) / Double(values.count)
+    }
+
+    private func median(_ values: [Double]) -> Double {
+        guard !values.isEmpty else { return 0 }
+        let sorted = values.sorted()
+        let mid = sorted.count / 2
+        return sorted.count % 2 == 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+    }
+
+    private func baselineStats(before t: TimeInterval) -> BaselineStats? {
+        let values = altitudeHistory
+            .filter { $0.t >= t - cfg.baselineWindowSec && $0.t < t }
+            .map(\.alt)
+        guard values.count >= cfg.minBaselineSamples,
+              let lo = values.min(), let hi = values.max() else { return nil }
+        return BaselineStats(average: average(values), range: hi - lo)
+    }
+
+    /// Average altitude over the `baselineWindowSec` seconds strictly before
+    /// `t`. Kept for the dormant buffered-refinement code; live candidates use
+    /// `baselineStats`.
+    private func robustBaseline(before t: TimeInterval, fallback: Double) -> Double {
+        baselineStats(before: t)?.average ?? fallback
     }
 
     private func round2(_ v: Double) -> Double {

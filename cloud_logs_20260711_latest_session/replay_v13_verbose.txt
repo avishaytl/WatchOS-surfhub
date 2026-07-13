@@ -1,0 +1,41 @@
+════════════════════════════════════════════════
+File:    log_20260711_125607_91F05F7A.kslog
+Format:  onDevice  rate=199.7 Hz  samples=125418  dur=628.2s
+Mode:    standard  mockSpeed=8.0 m/s
+Jumps:   34 (accepted=34)
+  [✓] #0  t=33.07s  air=2.10s phys=2.10s  h=2.21m(absoluteAltitude)  dist=3.2m  apex=1.10s  conf=72  rot=0
+  [✓] #1  t=26.06s  air=3.10s phys=3.10s  h=1.05m(absoluteAltitude)  dist=5.4m  apex=1.12s  conf=84  rot=0
+  [✓] #2  t=151.07s  air=3.10s phys=3.10s  h=2.97m(absoluteAltitude)  dist=0.4m  apex=1.10s  conf=72  rot=0
+  [✓] #3  t=149.07s  air=6.10s phys=6.10s  h=1.18m(absoluteAltitude)  dist=5.4m  apex=1.10s  conf=84  rot=0
+  [✓] #4  t=202.16s  air=5.01s phys=5.01s  h=1.67m(absoluteAltitude)  dist=29.8m  apex=1.00s  conf=72  rot=0
+  [✓] #5  t=217.07s  air=3.10s phys=3.10s  h=1.05m(absoluteAltitude)  dist=12.4m  apex=1.10s  conf=84  rot=0
+  [✓] #6  t=222.17s  air=3.00s phys=3.00s  h=1.04m(absoluteAltitude)  dist=13.5m  apex=1.00s  conf=90  rot=1
+  [✓] #7  t=207.17s  air=4.99s phys=4.99s  h=1.20m(absoluteAltitude)  dist=21.0m  apex=1.05s  conf=84  rot=0
+  [✓] #8  t=285.06s  air=4.10s phys=4.10s  h=2.89m(absoluteAltitude)  dist=27.2m  apex=1.10s  conf=77  rot=0
+  [✓] #9  t=291.09s  air=3.07s phys=3.07s  h=1.38m(absoluteAltitude)  dist=21.7m  apex=1.08s  conf=51  rot=0
+  [✓] #10  t=297.07s  air=3.10s phys=3.10s  h=1.26m(absoluteAltitude)  dist=19.4m  apex=1.10s  conf=70  rot=0
+  [✓] #11  t=306.07s  air=3.10s phys=3.10s  h=2.71m(absoluteAltitude)  dist=21.7m  apex=1.10s  conf=77  rot=0
+  [✓] #12  t=304.17s  air=6.00s phys=6.00s  h=1.02m(absoluteAltitude)  dist=42.0m  apex=1.00s  conf=84  rot=0
+  [✓] #13  t=276.07s  air=2.10s phys=2.10s  h=1.03m(absoluteAltitude)  dist=4.0m  apex=1.10s  conf=70  rot=0
+  [✓] #14  t=326.07s  air=6.10s phys=6.10s  h=1.13m(absoluteAltitude)  dist=41.3m  apex=1.10s  conf=70  rot=0
+  [✓] #15  t=282.07s  air=2.10s phys=2.10s  h=1.43m(absoluteAltitude)  dist=12.7m  apex=0.60s  conf=70  rot=0
+  [✓] #16  t=334.07s  air=3.10s phys=3.10s  h=1.06m(absoluteAltitude)  dist=15.0m  apex=1.10s  conf=63  rot=0
+  [✓] #17  t=347.07s  air=2.10s phys=2.10s  h=2.03m(absoluteAltitude)  dist=13.0m  apex=1.10s  conf=72  rot=0
+  [✓] #18  t=295.17s  air=6.00s phys=6.00s  h=1.76m(absoluteAltitude)  dist=35.5m  apex=1.00s  conf=77  rot=0
+  [✓] #19  t=301.16s  air=3.00s phys=3.00s  h=1.27m(absoluteAltitude)  dist=16.6m  apex=1.00s  conf=63  rot=0
+  [✓] #20  t=354.06s  air=3.10s phys=3.10s  h=2.21m(absoluteAltitude)  dist=17.1m  apex=1.10s  conf=60  rot=0
+  [✓] #21  t=319.07s  air=3.10s phys=3.10s  h=1.27m(absoluteAltitude)  dist=22.8m  apex=1.10s  conf=70  rot=0
+  [✓] #22  t=573.07s  air=1.10s phys=1.10s  h=4.52m(absoluteAltitude)  dist=0.6m  apex=1.00s  conf=77  rot=0
+  [✓] #23  t=581.07s  air=2.10s phys=2.10s  h=2.42m(absoluteAltitude)  dist=0.2m  apex=1.14s  conf=60  rot=0
+  [✓] #24  t=536.07s  air=4.10s phys=4.10s  h=1.09m(absoluteAltitude)  dist=6.0m  apex=1.10s  conf=70  rot=0
+  [✓] #25  t=588.17s  air=4.00s phys=4.00s  h=1.31m(absoluteAltitude)  dist=3.8m  apex=1.00s  conf=66  rot=0
+  [✓] #26  t=542.12s  air=6.05s phys=6.05s  h=1.26m(absoluteAltitude)  dist=6.1m  apex=1.05s  conf=70  rot=0
+  [✓] #27  t=596.07s  air=1.10s phys=1.10s  h=5.60m(absoluteAltitude)  dist=1.0m  apex=1.00s  conf=60  rot=0
+  [✓] #28  t=598.07s  air=1.10s phys=1.10s  h=1.34m(absoluteAltitude)  dist=0.8m  apex=1.00s  conf=51  rot=0
+  [✓] #29  t=603.17s  air=4.00s phys=4.00s  h=3.47m(absoluteAltitude)  dist=3.7m  apex=1.00s  conf=60  rot=0
+  [✓] #30  t=557.07s  air=2.10s phys=2.10s  h=1.32m(absoluteAltitude)  dist=2.0m  apex=1.10s  conf=63  rot=0
+  [✓] #31  t=562.07s  air=1.10s phys=1.10s  h=1.08m(absoluteAltitude)  dist=1.1m  apex=1.00s  conf=70  rot=0
+  [✓] #32  t=615.07s  air=3.10s phys=3.10s  h=6.38m(absoluteAltitude)  dist=3.0m  apex=1.10s  conf=60  rot=0
+  [✓] #33  t=612.17s  air=8.00s phys=8.00s  h=2.68m(absoluteAltitude)  dist=7.7m  apex=1.00s  conf=85  rot=0
+════════════════════════════════════════════════
+→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260711_latest_session/replay_v13/log_20260711_125607_91F05F7A.actual.json
