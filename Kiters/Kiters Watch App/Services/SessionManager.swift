@@ -164,6 +164,8 @@ class SessionManager: ObservableObject {
     private var activeDetectionEngine: DetectionEngine = .v11Buffered
     private var recordingPipelineStarted = false
     private var motionPipelineStarted = false
+    private var lastPipelineWarningSignature = ""
+    private var lastPipelineWarningT = -Double.infinity
     private let networkMonitor = NWPathMonitor()
     private let networkMonitorQueue = DispatchQueue(label: "com.kiters.network-monitor")
 
@@ -250,6 +252,14 @@ class SessionManager: ObservableObject {
             self?.jumpDetector.absoluteAltitudeStreamDidRestart(reason: reason)
         }
 
+        motionManager.onIMUStreamRecovery = { [weak self] reason in
+            self?.sessionLogger.logEvent("IMU stream recovery: \(reason)")
+        }
+
+        motionManager.onPipelineHealth = { [weak self] health in
+            self?.handleMotionPipelineHealth(health)
+        }
+
         waterSubmersionManager.onSnapshot = { [weak self] snapshot in
             self?.motionManager.updateSubmersion(snapshot)
         }
@@ -268,6 +278,18 @@ class SessionManager: ObservableObject {
         jumpDetector.onStateChanged = { [weak self] newState in
             DispatchQueue.main.async {
                 self?.jumpDetectionState = newState
+            }
+        }
+
+        // V14 drives the absolute altimeter on demand: the engine opens the
+        // window at takeoff and closes it after the landing baseline settles.
+        if let v14 = jumpDetector as? JumpDetectorV14 {
+            v14.onAbsoluteAltitudeWindowChange = { [weak self] open, reason in
+                if open {
+                    self?.motionManager.beginAbsoluteAltitudeWindow(reason: reason)
+                } else {
+                    self?.motionManager.endAbsoluteAltitudeWindow(reason: reason)
+                }
             }
         }
 
@@ -376,12 +398,15 @@ class SessionManager: ObservableObject {
 
     // MARK: - Session Control
     
-    func startSession(sport: Sport) {
+    /// `engineOverride` bypasses the Settings engine for this session only —
+    /// the Home "sensor recording" button passes `.sensorRecorder` so a pure
+    /// capture session never depends on (or changes) the user's engine choice.
+    func startSession(sport: Sport, engineOverride: DetectionEngine? = nil) {
         guard currentSession == nil else {
             print("⚠️ Session already active")
             return
         }
-        
+
         print("━━━━━━━━━━ STARTING SESSION ━━━━━━━━━━")
         print("🏄 Sport: \(sport.displayName)")
         print("📍 Location auth: \(locationAuthStatus.rawValue) (2=whenInUse, 3=always, 4=denied)")
@@ -413,15 +438,25 @@ class SessionManager: ObservableObject {
         speedSmoothingBuffer.removeAll(keepingCapacity: true)
         recordingPipelineStarted = false
         motionPipelineStarted = false
+        lastPipelineWarningSignature = ""
+        lastPipelineWarningT = -Double.infinity
         
         // Reset jump detector before sensors start streaming so the first IMU
         // samples belong to the new live session. The engine is (re)selected
         // here from the user's Settings choice and its callbacks re-wired.
         let mode = detectionMode
-        let requestedEngine = detectionEngine
+        let requestedEngine = engineOverride ?? detectionEngine
         let selection = makeJumpDetector(for: requestedEngine)
         activeDetectionEngine = selection.engine
         jumpDetector = selection.detector
+        if selection.engine == .v13Pure {
+            V13CalculationLogService.shared.beginSession(
+                sessionID: newSession.id,
+                t: ProcessInfo.processInfo.systemUptime
+            )
+        } else {
+            V13CalculationLogService.shared.detachSink()
+        }
         if let fallbackReason = selection.fallbackReason {
             sessionNotice = SessionUserNotice(
                 titleKey: "session.v12_unavailable_title",
@@ -453,7 +488,9 @@ class SessionManager: ObservableObject {
         print("📍 Starting location tracking...")
         locationManager.startTracking()
 
-        if activeDetectionEngine == .v12AppleSensorFusion || activeDetectionEngine == .v13Pure {
+        if activeDetectionEngine == .v12AppleSensorFusion || activeDetectionEngine == .v13Pure
+            || activeDetectionEngine == .v14Hybrid || activeDetectionEngine == .v15Clean
+            || activeDetectionEngine == .sensorRecorder {
             startMotionPipelineIfNeeded(preferBatched: false, reason: "\(activeDetectionEngine.rawValue)-immediate-sensor-start")
         } else {
             scheduleMotionFallbackIfWorkoutDoesNotStart()
@@ -470,6 +507,20 @@ class SessionManager: ObservableObject {
         switch requestedEngine {
         case .v11Buffered:
             return (.v11Buffered, JumpDetectorV11(), nil)
+        case .sensorRecorder:
+            return (.sensorRecorder, SensorRecordingDetector(), nil)
+        case .v15Clean:
+            let readiness = JumpDetectorV15.readinessReport()
+            if !readiness.isReady {
+                print("🦘 V15 selected despite readiness issue; keeping V15 active: \(readiness.logDetails)")
+            }
+            return (.v15Clean, JumpDetectorV15(), nil)
+        case .v14Hybrid:
+            let readiness = JumpDetectorV14.readinessReport()
+            if !readiness.isReady {
+                print("🦘 V14 selected despite readiness issue; keeping V14 active: \(readiness.logDetails)")
+            }
+            return (.v14Hybrid, JumpDetectorV14(), nil)
         case .v13Pure:
             let readiness = JumpDetectorV13.readinessReport()
             if !readiness.isReady {
@@ -501,8 +552,41 @@ class SessionManager: ObservableObject {
         guard isRecording, !isPaused, !motionPipelineStarted else { return }
         motionPipelineStarted = true
 
+        // V14 samples the absolute altimeter on demand — only inside the
+        // engine's takeoff→stable-landing window. V15 and V13 are the
+        // continuous single-consumer (spec P4): stream start-to-stop, no
+        // watchdog restarts — every observed freeze was a competing consumer
+        // or a restart-induced re-anchor, not a lack of supervision. Every
+        // other (older) engine keeps the supervised continuous stream.
+        let absoluteMode: MotionManager.AbsoluteAcquisitionMode
+        if jumpDetector is JumpDetectorV14 {
+            absoluteMode = .onDemand
+        } else if jumpDetector is JumpDetectorV15 {
+            absoluteMode = .continuousNoWatchdog
+        } else if jumpDetector is JumpDetectorV13 {
+            absoluteMode = .continuousNoWatchdog
+        } else {
+            absoluteMode = .continuous
+        }
+        motionManager.setAbsoluteAcquisitionMode(absoluteMode)
+
+        // V15-FIX §3 F5: bypass the shared V13 throttle setting for V15 —
+        // it's calibrated for the barometer's native ~3 Hz cadence, and the
+        // V13 setting (default 0.5 s / 2 Hz, user-configurable up to 1.0 s)
+        // was measured cutting V15's abs stream to a fixed ~1 Hz, leaving
+        // only 3–4 arc points per jump even on an otherwise-healthy channel.
+        // V14's on-demand window is even shorter-lived (only takeoff→landing,
+        // often well under 2 s) and was still inheriting the same throttle —
+        // full rate here means more real absolute samples land inside a short
+        // flight instead of falling through to the ballistic estimate.
+        let absoluteIntervalOverride: Double? = (jumpDetector is JumpDetectorV15
+            || jumpDetector is JumpDetectorV14) ? 0.0 : nil
+
         waterSubmersionManager.start()
-        motionManager.startTracking(preferBatched: preferBatched)
+        motionManager.startTracking(
+            preferBatched: preferBatched,
+            absoluteProcessingIntervalOverrideSec: absoluteIntervalOverride
+        )
         print("Motion pipeline started (\(reason), batched=\(preferBatched))")
     }
 
@@ -537,6 +621,12 @@ class SessionManager: ObservableObject {
         // Update session status synchronously (called from main via button)
         currentSession?.status = .paused
         isPaused = true
+        if activeDetectionEngine == .v13Pure {
+            V13CalculationLogService.shared.lifecycle(
+                t: ProcessInfo.processInfo.systemUptime,
+                action: "sessionPaused"
+            )
+        }
         
         // Stop timer
         timer?.invalidate()
@@ -560,6 +650,12 @@ class SessionManager: ObservableObject {
         // Update session status synchronously (called from main via button)
         currentSession?.status = .active
         isPaused = false
+        if activeDetectionEngine == .v13Pure {
+            V13CalculationLogService.shared.lifecycle(
+                t: ProcessInfo.processInfo.systemUptime,
+                action: "sessionResumed"
+            )
+        }
         
         // Restart timer
         startTimer()
@@ -583,18 +679,30 @@ class SessionManager: ObservableObject {
         session.status = .completed
         currentSession = session
         finishLiveSessionOnServer(session: session, showPendingPrompt: session.duration >= 60)
-        
+
         // Stop all services
         locationManager.stopTracking()
         motionManager.stopTracking()
         waterSubmersionManager.stop()
         motionPipelineStarted = false
+
+        // Queue the summary only after sensor acquisition has stopped and after
+        // the detector's synchronous flush above. SessionLogger.stop() then
+        // drains it into the same .kslog file used by the cloud-upload flow.
+        if activeDetectionEngine == .v13Pure {
+            V13CalculationLogService.shared.endSession(
+                t: ProcessInfo.processInfo.systemUptime,
+                durationSec: session.duration,
+                reportedJumpCount: session.jumps.count
+            )
+        }
         
         // Stop session logger only if the one-minute recording gate opened.
         let completedLogURL = recordingPipelineStarted ? sessionLogger.mostRecentLogURL() : nil
         if recordingPipelineStarted {
             sessionLogger.stop()
         }
+        V13CalculationLogService.shared.detachSink()
         // Remember the log location synchronously (before the async live-finalize
         // completes) so the finalize handler can upload the .kslog too.
         if let logURL = completedLogURL { pendingUploadLogURLs[session.id] = logURL }
@@ -869,7 +977,6 @@ class SessionManager: ObservableObject {
         // thread with struct copies and makes the UI unresponsive.
         // The IMU batch callback writes samples to storage in bulk.
         // Here we only feed the jump detector (runs on the OperationQueue background thread).
-        sessionLogger.logMotionSample(sample)
         jumpDetector.processSample(sample)
     }
 
@@ -893,9 +1000,57 @@ class SessionManager: ObservableObject {
         // batch (every 5 seconds).  Copy-on-write of that struct on the main
         // thread causes increasing UI lag.
         //
-        // All raw sensor data is already being written to the CSV log by
-        // SessionLogger.  Jump-specific samples are captured in Jump.imuSamples.
-        // There is no need to keep a second copy inside Session.
+        // Keep one logger operation per Core Motion batch. This preserves every
+        // compact raw record without allocating 200 dispatch blocks per second.
+        sessionLogger.logMotionSamples(batch)
+    }
+
+    private func handleMotionPipelineHealth(_ health: MotionPipelineHealth) {
+        let loggerHealth = sessionLogger.queueHealthSnapshot()
+        var warnings = health.warnings
+        if loggerHealth.maximumPending >= 25 {
+            warnings.append("loggerQueueBacklog")
+        }
+
+        var values: [String: Double] = [
+            "windowSec": health.windowSec,
+            "absoluteIntervalSec": health.absoluteIntervalSec,
+            "imuSourceHz": health.imuSourceHz,
+            "imuProcessedHz": health.imuProcessedHz,
+            "relativeAltitudeHz": health.relativeAltitudeHz,
+            "absoluteAltitudeSourceHz": health.absoluteAltitudeSourceHz,
+            "absoluteAltitudeProcessedHz": health.absoluteAltitudeProcessedHz,
+            "waterUpdateHz": health.waterUpdateHz,
+            "absoluteQueueLatencyAverageMs": health.absoluteQueueLatencyAverageMs,
+            "absoluteQueueLatencyMaximumMs": health.absoluteQueueLatencyMaximumMs,
+            "loggerPendingOperations": Double(loggerHealth.pending),
+            "loggerMaximumPendingOperations": Double(loggerHealth.maximumPending)
+        ]
+        if let gap = health.imuGapSec { values["imuGapSec"] = gap }
+        if let gap = health.relativeAltitudeGapSec { values["relativeAltitudeGapSec"] = gap }
+        if let gap = health.absoluteAltitudeGapSec { values["absoluteAltitudeGapSec"] = gap }
+
+        V13CalculationLogService.shared.record(V13AuditRecord(
+            monotonicTime: health.timestamp,
+            kind: "pipelineHealth",
+            stage: "pipeline",
+            action: "sensorPipelineHealth",
+            decision: warnings.isEmpty ? "healthy" : "degraded",
+            reason: warnings.first,
+            values: values,
+            labels: [
+                "imuSource": health.imuSource,
+                "warnings": warnings.joined(separator: ",")
+            ]
+        ))
+
+        let signature = warnings.sorted().joined(separator: ",")
+        guard !signature.isEmpty,
+              signature != lastPipelineWarningSignature
+                || health.timestamp - lastPipelineWarningT >= 60 else { return }
+        lastPipelineWarningSignature = signature
+        lastPipelineWarningT = health.timestamp
+        sessionLogger.logEvent("Motion pipeline degraded: \(signature)")
     }
     
     private func handleJumpDetected(_ jump: Jump) {
@@ -987,12 +1142,25 @@ class SessionManager: ObservableObject {
 
         recordingPipelineStarted = true
         let mode = detectionMode
+        let v13Config = (jumpDetector as? JumpDetectorV13)?.effectiveConfiguration
         sessionLogger.start(
             sessionId: session.id,
             mode: mode,
             sensorOnly: true,
-            engine: activeDetectionEngine
+            engine: activeDetectionEngine,
+            v13Config: v13Config
         )
+        if let config = v13Config {
+            V13CalculationLogService.shared.attachSink { record in
+                SessionLogger.shared.logV13Audit(record)
+            }
+            sessionLogger.logEvent(
+                "V13 config minCounted=\(config.minCountedHeightM)m "
+                    + "candidateRise=\(config.candidateRiseM)m "
+                    + "takeoffWindow=\(config.takeoffWindowSec)s "
+                    + "landingDescent=\(config.landingDescentM)m"
+            )
+        }
         emitSessionStartSyncMarker()
         if ProcessInfo.processInfo.isLowPowerModeEnabled {
             sessionLogger.logEvent("Low Power Mode is ON - disable it for absolute-altitude cadence")

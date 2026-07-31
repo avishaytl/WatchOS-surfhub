@@ -1,0 +1,17 @@
+{
+  "cloudDate": "2026-07-28",
+  "matchingFilesOnServer": 1,
+  "files": [
+    {
+      "name": "log_20260728_182822_05D47F19.kslog",
+      "cloudPath": "watch/log_20260728_182822_05D47F19.kslog",
+      "serverCreatedAtUTC": "2026-07-28T16:21:37.526Z",
+      "sessionStartLocal": "2026-07-28T18:28:22+03:00",
+      "durationSeconds": 3175.848,
+      "sampleCount": 633765,
+      "engineVersion": "v15-clean",
+      "sizeBytes": 18819615,
+      "sha256": "f3e65bb1d234d0fb41da2914029ca4ce93223cf91e9091b4ab5e29ee2e95668d"
+    }
+  ]
+}

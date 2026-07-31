@@ -29,6 +29,8 @@ let package = Package(
                 "JumpDetectorV11.swift",
                 "JumpDetectorV12.swift",
                 "JumpDetectorV13.swift",
+                "JumpDetectorV14.swift",
+                "JumpDetectorV15.swift",
                 "KitesurfJumpEngine.swift",
                 "KitesurfJumpEngine_old.swift",
                 "KitesurfJumpEngineV8.swift",
@@ -46,7 +48,7 @@ let package = Package(
                 "WaterSubmersionManager.swift",
                 "WorkoutManager.swift",
             ],
-            sources: ["LiveSessionUploadState.swift", "JumpEngineV12.swift", "JumpEngineV13.swift"]
+            sources: ["LiveSessionUploadState.swift", "JumpEngineV12.swift", "JumpEngineV13.swift", "JumpEngineV14.swift", "V14HeightAnalyzer.swift", "JumpEngineV15.swift"]
         ),
         .executableTarget(
             name: "WatchLiveSessionCoreChecks",

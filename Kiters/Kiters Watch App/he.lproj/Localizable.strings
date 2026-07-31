@@ -5,6 +5,7 @@
 
 // MARK: - Home View
 "home.start_session" = "התחל אימון";
+"home.record_sensors" = "הקלטת חיישנים";
 "home.settings" = "הגדרות";
 "home.recent_sessions" = "אימונים אחרונים";
 "home.no_sessions" = "אין אימונים עדיין";
@@ -128,7 +129,10 @@
 "settings.absolute_altitude_error" = "שגיאת חיישן";
 "settings.absolute_altitude_unavailable" = "Absolute altitude לא זמין";
 "settings.engine.section" = "מנוע קפיצות";
-"settings.v13_min_rise" = "גובה קפיצה מינימלי V13";
+"settings.v13_min_counted_height" = "ספירת קפיצות מגובה";
+"settings.v13_min_counted_height_hint" = "משפיע רק על הספירה הסופית · הזיהוי נשאר מלא · החל מהסשן הבא";
+"settings.v13_absolute_interval" = "מרווח דגימת Absolute";
+"settings.v13_absolute_interval_hint" = "קצב עיבוד 0.25–1.0 שנ׳ · Core Motion עשוי למסור את החיישן לאט יותר · החל מהסשן הבא";
 "settings.v12_disable_speed_gate" = "בדיקות: V12 בלי סף מהירות";
 "settings.v12_debug" = "מעבדת V12";
 "settings.v12_debug_hint" = "שליטה בגייטים וערכי V12 בלבד";

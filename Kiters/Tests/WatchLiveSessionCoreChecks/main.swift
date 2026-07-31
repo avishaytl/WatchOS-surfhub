@@ -318,6 +318,46 @@ func testV13RequiresConfiguredTakeoffWindow() {
     expectEqual(probe.jumps.count, 0, "V13 must not open a jump before the configured takeoff window elapsed")
 }
 
+func testV13CountedHeightDoesNotChangeCandidateDetection() {
+    var oneMetreConfig = V13Config()
+    oneMetreConfig.minCountedHeightM = 1.0
+    let oneMetreEngine = JumpEngineV13(oneMetreConfig)
+    let oneMetreProbe = V13Probe()
+    var oneMetreCandidateT: TimeInterval?
+    oneMetreEngine.delegate = oneMetreProbe
+    oneMetreEngine.onDebug = { t, event in
+        if event.hasPrefix("CANDIDATE"), oneMetreCandidateT == nil {
+            oneMetreCandidateT = t
+        }
+    }
+
+    var twoMetreConfig = V13Config()
+    twoMetreConfig.minCountedHeightM = 2.0
+    let twoMetreEngine = JumpEngineV13(twoMetreConfig)
+    let twoMetreProbe = V13Probe()
+    var twoMetreCandidateT: TimeInterval?
+    twoMetreEngine.delegate = twoMetreProbe
+    twoMetreEngine.onDebug = { t, event in
+        if event.hasPrefix("CANDIDATE"), twoMetreCandidateT == nil {
+            twoMetreCandidateT = t
+        }
+    }
+
+    // Both engines receive the same valid 1.6 m arc. They must open the same
+    // candidate at the same time; only the final user-count decision differs.
+    feedV13Arc(oneMetreEngine, apexM: 1.6, withGPS: false)
+    feedV13Arc(twoMetreEngine, apexM: 1.6, withGPS: false)
+
+    expect(oneMetreCandidateT != nil, "1 m count threshold should open an altitude candidate")
+    expect(twoMetreCandidateT != nil, "2 m count threshold must not suppress the same candidate")
+    if let oneMetreCandidateT, let twoMetreCandidateT {
+        expect(abs(oneMetreCandidateT - twoMetreCandidateT) < 0.001,
+               "count threshold must not move takeoff timing")
+    }
+    expectEqual(oneMetreProbe.jumps.count, 1, "1.6 m jump should count at the 1 m preference")
+    expectEqual(twoMetreProbe.jumps.count, 0, "1.6 m jump should not count at the 2 m preference")
+}
+
 func testV13CompensatesBaselineDriftAcrossJump() {
     let engine = JumpEngineV13()
     let probe = V13Probe()
@@ -369,6 +409,259 @@ func testV13BaselineReturnEmitsBeforeLandingWindow() {
     expectEqual(late.count, 0, "V13 flush should have no pending jump after baseline-return emission")
 }
 
+func testV13StructuredAuditCoversSessionAndDecisionChain() {
+    let audit = V13CalculationLogService.shared
+    let cfg = V13Config()
+    var records: [V13AuditRecord] = []
+
+    audit.beginSession(sessionID: "audit-check", t: 0)
+    audit.configure(cfg, t: 0.01)
+
+    // Attach after schema/config to verify that the pre-file prefix is buffered
+    // and drained rather than being lost at session startup.
+    audit.attachSink { records.append($0) }
+
+    let engine = JumpEngineV13(cfg)
+    engine.onAudit = { audit.record($0) }
+    engine.reset()
+    feedV13Arc(engine, withGPS: true)
+    audit.endSession(t: 21, durationSec: 21, reportedJumpCount: 1)
+    audit.detachSink()
+
+    expect(!records.isEmpty, "V13 audit should emit structured records")
+    expectEqual(records.first?.kind, "schema", "V13 audit should begin with its self-describing schema")
+    expect(records.first.flatMap { try? JSONEncoder().encode($0) } != nil,
+           "V13 audit schema should be JSON encodable for KSLG storage")
+    expect(records.first?.definitions.contains(where: { !$0.descriptionHe.isEmpty }) == true,
+           "V13 audit schema should include Hebrew parameter explanations")
+    expect(records.allSatisfy { $0.sessionID == "audit-check" },
+           "every V13 audit record should carry the session id")
+    expect(records.enumerated().allSatisfy { index, record in record.sequence == UInt64(index + 1) },
+           "V13 audit sequence should remain gap-free across buffered and live records")
+
+    let candidateEvaluation = records.first {
+        $0.stage == "takeoff" && $0.action == "evaluateCandidate"
+    }
+    expect(candidateEvaluation?.conditions.contains(where: { $0.id == "baselineNoise" }) == true,
+           "takeoff audit should expose the baseline-noise condition")
+    expect(candidateEvaluation?.conditions.contains(where: { $0.id == "shortWindowRise" }) == true,
+           "takeoff audit should expose the short-window rise condition")
+    expect(records.contains(where: { $0.stage == "apex" && $0.decision == "newApex" }),
+           "V13 audit should record maximum-height transitions")
+    expect(records.contains(where: { $0.stage == "landing" && $0.action == "landingDetected" }),
+           "V13 audit should record the landing transition")
+    expect(records.contains(where: { $0.stage == "result" && $0.decision == "accepted" }),
+           "V13 audit should record the accepted final calculation")
+    let imuAuditCount = records.filter { $0.action == "integrateIMU" }.count
+    expect(imuAuditCount >= 5 && imuAuditCount <= 16,
+           "V13 structured IMU audit should be throttled near 4 Hz, got \(imuAuditCount) records")
+    expectEqual(records.last?.kind, "summary", "V13 audit should end with a session summary")
+}
+
+// ── V14 hybrid engine (IMU+pressure detection, on-demand absolute) ────────
+
+final class V14Probe: JumpEngineV14Delegate {
+    var jumps: [V14Jump] = []
+    var windowEvents: [Bool] = []
+    func jumpDetected(_ jump: V14Jump) {
+        jumps.append(jump)
+    }
+}
+
+/// Drives a clean synthetic kite jump through the pure V14 engine:
+/// riding at 1 g → pop → 1.4 s unweight with a 2 m pressure arc → impact →
+/// stable landing baseline. The absolute stream is fed only while the engine
+/// keeps its on-demand window open, exactly like the live adapter.
+func feedV14Jump(_ engine: JumpEngineV14,
+                 probe: V14Probe,
+                 withGPS: Bool,
+                 absoluteAt: ((TimeInterval) -> Double)?) {
+    var windowOpen = false
+    engine.onAbsoluteWindowRequest = { open, _ in
+        windowOpen = open
+        probe.windowEvents.append(open)
+    }
+
+    let takeoff = 12.0
+    let landing = 13.4
+    var nextRelT = 0.0
+    var nextAbsT = 0.0
+    var t = 0.0
+    while t <= 22.0 {
+        var load = 1.0
+        if t >= takeoff - 0.12, t < takeoff { load = 2.4 }
+        else if t >= takeoff, t < landing { load = 0.05 }
+        else if t >= landing, t < landing + 0.1 { load = 3.2 }
+        engine.addIMU(t: t, verticalLoadG: load, gyroRadS: 0.6)
+
+        if t + 1e-9 >= nextRelT {
+            let p = (t - takeoff) / (landing - takeoff)
+            let arc = (t > takeoff && t < landing) ? 2.0 * 4 * p * (1 - p) : 0.0
+            engine.addRelativeAltitude(t: t, altitudeM: arc)
+            nextRelT += 0.5
+        }
+        if let absoluteAt, windowOpen, t + 1e-9 >= nextAbsT {
+            engine.addAbsoluteAltitude(t: t, altitudeM: absoluteAt(t))
+            nextAbsT = t + 1.0
+        }
+        if withGPS, t.truncatingRemainder(dividingBy: 1.0) < 0.011 {
+            engine.addGPS(t: t, lat: 32.0, lng: 34.0 + t * 0.00003, speedMS: 8.5)
+        }
+        t += 0.02
+    }
+}
+
+func testV14PrefersRelativeHeightOverHealthyAbsoluteCrossCheck() {
+    // Both channels are healthy and agree on the same arc. Relative altitude
+    // is the primary height source (V14_RELATIVE_HEIGHT_UPGRADE_PLAN.md §10)
+    // — absolute is an opportunistic fallback / diagnostic value only, never
+    // preferred even when healthy.
+    let engine = JumpEngineV14()
+    let probe = V14Probe()
+    engine.delegate = probe
+    feedV14Jump(engine, probe: probe, withGPS: true, absoluteAt: { t in
+        if t > 12.0, t < 13.4 {
+            let p = (t - 12.0) / 1.4
+            return 100.0 + 2.0 * 4 * p * (1 - p)
+        }
+        return 100.0 + (Int(t) % 2 == 0 ? 0.02 : -0.02)
+    })
+
+    expectEqual(probe.jumps.count, 1, "V14 should emit exactly one jump")
+    let jump = probe.jumps[0]
+    expectEqual(jump.heightSource, .relativeAltitude, "V14 height should prefer the relative channel even with a healthy absolute cross-check")
+    expect(abs(jump.heightM - 2.0) <= 0.6, "V14 relative height should match the arc, got \(jump.heightM)")
+    expect(abs(jump.airtimeSec - 1.4) <= 0.3, "V14 airtime should span the unweight, got \(jump.airtimeSec)")
+    expect(jump.landingConfirmed, "V14 landing should confirm on the stable baseline")
+    expect(jump.detectionConfidence > 0, "V14 detection confidence should be positive (IMU signature alone)")
+    expect(jump.heightConfidence > 0, "V14 height confidence should be positive for a well-measured relative height")
+    expectEqual(probe.windowEvents.first, true, "V14 must open the absolute window at takeoff")
+    expectEqual(probe.windowEvents.last, false, "V14 must close the absolute window after landing")
+}
+
+func testV14FrozenAbsoluteFallsBackToRelativeHeight() {
+    let engine = JumpEngineV14()
+    let probe = V14Probe()
+    engine.delegate = probe
+    feedV14Jump(engine, probe: probe, withGPS: true, absoluteAt: { _ in 100.0 })
+
+    expectEqual(probe.jumps.count, 1, "V14 should emit exactly one jump with a frozen absolute channel")
+    expectEqual(probe.jumps[0].heightSource, .relativeAltitude,
+                "V14 should fall back to the relative channel when absolute is frozen")
+    expect(abs(probe.jumps[0].heightM - 2.0) <= 0.5,
+           "V14 relative height should match the arc, got \(probe.jumps[0].heightM)")
+}
+
+func testV14DetectsWithoutGPSAndKeepsMetricsEmpty() {
+    let engine = JumpEngineV14()
+    let probe = V14Probe()
+    engine.delegate = probe
+    feedV14Jump(engine, probe: probe, withGPS: false, absoluteAt: nil)
+
+    expectEqual(probe.jumps.count, 1, "V14 must detect without GPS")
+    let jump = probe.jumps[0]
+    expect(jump.takeoffSpeedMS == nil, "V14 takeoff speed must stay nil without GPS")
+    expect(jump.distanceM == nil, "V14 distance must stay nil without GPS")
+    expect(jump.heightM >= 1.0, "V14 height should still be measured without GPS, got \(jump.heightM)")
+}
+
+func testV14JumpCalculationIsGPSInvariant() {
+    let gpsEngine = JumpEngineV14()
+    let gpsProbe = V14Probe()
+    gpsEngine.delegate = gpsProbe
+    feedV14Jump(gpsEngine, probe: gpsProbe, withGPS: true, absoluteAt: nil)
+
+    let noGPSEngine = JumpEngineV14()
+    let noGPSProbe = V14Probe()
+    noGPSEngine.delegate = noGPSProbe
+    feedV14Jump(noGPSEngine, probe: noGPSProbe, withGPS: false, absoluteAt: nil)
+
+    expectEqual(gpsProbe.jumps.count, noGPSProbe.jumps.count,
+                "V14 jump count must be identical with and without GPS")
+    guard let withGPS = gpsProbe.jumps.first, let withoutGPS = noGPSProbe.jumps.first else { return }
+    expectEqual(withGPS.heightM, withoutGPS.heightM, "V14 height must not depend on GPS")
+    expectEqual(withGPS.airtimeSec, withoutGPS.airtimeSec, "V14 airtime must not depend on GPS")
+    expectEqual(withGPS.heightSource, withoutGPS.heightSource, "V14 height source must not depend on GPS")
+    expectEqual(withGPS.confidence, withoutGPS.confidence, "V14 confidence must not depend on GPS")
+}
+
+// ── V15 clean engine (IMU-led detection, continuous pressure measurement) ─
+
+final class V15Probe: JumpEngineV15Delegate {
+    var jumps: [V15Jump] = []
+    func jumpDetected(_ jump: V15Jump) {
+        jumps.append(jump)
+    }
+}
+
+/// Drives the same sensor arc twice: once without GPS and once with a
+/// deliberately unusable low-speed GPS stream. Detection and all physical
+/// calculations must be identical; only optional result metrics may differ.
+func feedV15Jump(_ engine: JumpEngineV15, probe: V15Probe, withLowSpeedGPS: Bool) {
+    let takeoff = 10.0
+    let landing = 13.2
+    var nextAbsT = 0.0
+    var nextRelT = 0.0
+    var nextGPST = 0.0
+    var t = 0.0
+
+    while t <= 18.0 {
+        if t + 1e-9 >= nextAbsT {
+            let p = (t - takeoff) / (landing - takeoff)
+            let arc = (t > takeoff && t < landing) ? 2.0 * 4 * p * (1 - p) : 0.0
+            engine.addAbsoluteAltitude(t: t, altitudeM: 100.0 + arc, accuracyM: 4.0)
+            nextAbsT += 0.2
+        }
+        if t + 1e-9 >= nextRelT {
+            let p = (t - takeoff) / (landing - takeoff)
+            let arc = (t > takeoff && t < landing) ? 2.0 * 4 * p * (1 - p) : 0.0
+            engine.addRelativeAltitude(t: t, altitudeM: arc)
+            nextRelT += 0.5
+        }
+        if withLowSpeedGPS, t + 1e-9 >= nextGPST {
+            engine.addGPS(t: t, lat: 32.0, lng: 34.0 + t * 0.000001,
+                          speedMS: 0.2, courseDeg: 90)
+            nextGPST += 1.0
+        }
+
+        let load: Double
+        if t >= takeoff, t < takeoff + 0.08 {
+            load = 1.8
+        } else if t >= takeoff + 0.08, t < landing {
+            load = 0.8
+        } else if t >= landing, t < landing + 0.08 {
+            load = 4.0
+        } else {
+            load = 1.0
+        }
+        engine.addIMU(t: t, verticalLoadG: load, gyroRadS: 0.5)
+        t += 0.02
+    }
+}
+
+func testV15JumpCalculationIsGPSInvariant() {
+    let gpsEngine = JumpEngineV15()
+    let gpsProbe = V15Probe()
+    gpsEngine.delegate = gpsProbe
+    feedV15Jump(gpsEngine, probe: gpsProbe, withLowSpeedGPS: true)
+
+    let noGPSEngine = JumpEngineV15()
+    let noGPSProbe = V15Probe()
+    noGPSEngine.delegate = noGPSProbe
+    feedV15Jump(noGPSEngine, probe: noGPSProbe, withLowSpeedGPS: false)
+
+    expectEqual(gpsProbe.jumps.count, noGPSProbe.jumps.count,
+                "V15 jump count must be identical with low-speed GPS and without GPS")
+    expectEqual(gpsProbe.jumps.count, 1, "V15 sensor fixture should emit exactly one jump")
+    guard let withGPS = gpsProbe.jumps.first, let withoutGPS = noGPSProbe.jumps.first else { return }
+    expectEqual(withGPS.heightM, withoutGPS.heightM, "V15 height must not depend on GPS")
+    expectEqual(withGPS.airtimeSec, withoutGPS.airtimeSec, "V15 airtime must not depend on GPS")
+    expectEqual(withGPS.heightSource, withoutGPS.heightSource, "V15 height source must not depend on GPS")
+    expectEqual(withGPS.confidence, withoutGPS.confidence, "V15 confidence must not depend on GPS")
+    expectEqual(withGPS.takeoffT, withoutGPS.takeoffT, "V15 takeoff time must not depend on GPS")
+    expectEqual(withGPS.landingT, withoutGPS.landingT, "V15 landing time must not depend on GPS")
+}
+
 testStartIsDedupedAndRetriesAfterFailureWindow()
 testFallbackStartUsesZeroCoordinateAndAcceptsLateServerId()
 testPingTrackAndRecordGatingMatchLiveSessionContract()
@@ -379,8 +672,15 @@ testV12PipelineEmitsInstantAndRefinedJump()
 testV12RejectsSubMeterAbsoluteJump()
 testV13DetectsCleanJumpAfterLanding()
 testV13RequiresConfiguredTakeoffWindow()
+testV13CountedHeightDoesNotChangeCandidateDetection()
 testV13CompensatesBaselineDriftAcrossJump()
 testV13AllowsBarometerOnlyWithoutGPS()
 testV13AllowsBarometerOnlyWithoutInertialSpike()
 testV13BaselineReturnEmitsBeforeLandingWindow()
+testV13StructuredAuditCoversSessionAndDecisionChain()
+testV14PrefersRelativeHeightOverHealthyAbsoluteCrossCheck()
+testV14FrozenAbsoluteFallsBackToRelativeHeight()
+testV14DetectsWithoutGPSAndKeepsMetricsEmpty()
+testV14JumpCalculationIsGPSInvariant()
+testV15JumpCalculationIsGPSInvariant()
 print("WatchLiveSessionCoreChecks passed")

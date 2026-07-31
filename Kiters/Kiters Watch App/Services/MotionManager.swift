@@ -12,6 +12,184 @@ import Foundation
 import CoreMotion
 import Combine
 
+struct MotionPipelineHealth {
+    let timestamp: TimeInterval
+    let windowSec: Double
+    let absoluteIntervalSec: Double
+    let imuSource: String
+    let imuSourceHz: Double
+    let imuProcessedHz: Double
+    let relativeAltitudeHz: Double
+    let absoluteAltitudeSourceHz: Double
+    let absoluteAltitudeProcessedHz: Double
+    let waterUpdateHz: Double
+    let imuGapSec: Double?
+    let relativeAltitudeGapSec: Double?
+    let absoluteAltitudeGapSec: Double?
+    let absoluteQueueLatencyAverageMs: Double
+    let absoluteQueueLatencyMaximumMs: Double
+
+    var warnings: [String] {
+        var result: [String] = []
+        if let imuGapSec, imuGapSec >= 2 { result.append("imuCallbackGap") }
+        if let absoluteAltitudeGapSec,
+           absoluteAltitudeGapSec >= max(3, absoluteIntervalSec * 4) {
+            result.append("absoluteCallbackGap")
+        }
+        if absoluteQueueLatencyMaximumMs >= 250 { result.append("absoluteQueueDelay") }
+        if imuSourceHz >= 10, imuProcessedHz < imuSourceHz * 0.5 {
+            result.append("imuProcessingBacklog")
+        }
+        return result
+    }
+}
+
+private final class MotionPipelineMonitor {
+    private let lock = NSLock()
+    private var windowStartT = ProcessInfo.processInfo.systemUptime
+    private var sessionStartT = ProcessInfo.processInfo.systemUptime
+    private var imuSourceCount = 0
+    private var imuProcessedCount = 0
+    private var relativeCount = 0
+    private var absoluteSourceCount = 0
+    private var absoluteProcessedCount = 0
+    private var waterCount = 0
+    private var absoluteLatencyTotalMs = 0.0
+    private var absoluteLatencyMaximumMs = 0.0
+    private var absoluteLatencyCount = 0
+    private var lastIMUT: TimeInterval?
+    private var lastRelativeT: TimeInterval?
+    private var lastAbsoluteT: TimeInterval?
+    private var absoluteIntervalSec = 0.5
+    private var imuSource = "not-started"
+    // False while the absolute stream is deliberately off (.onDemand outside a
+    // jump window) so a silent stream is not reported as a callback gap.
+    private var absoluteStreamExpected = true
+
+    func reset(at now: TimeInterval, absoluteIntervalSec: Double) {
+        lock.lock()
+        windowStartT = now
+        sessionStartT = now
+        imuSourceCount = 0
+        imuProcessedCount = 0
+        relativeCount = 0
+        absoluteSourceCount = 0
+        absoluteProcessedCount = 0
+        waterCount = 0
+        absoluteLatencyTotalMs = 0
+        absoluteLatencyMaximumMs = 0
+        absoluteLatencyCount = 0
+        lastIMUT = nil
+        lastRelativeT = nil
+        lastAbsoluteT = nil
+        self.absoluteIntervalSec = absoluteIntervalSec
+        imuSource = "not-started"
+        absoluteStreamExpected = true
+        lock.unlock()
+    }
+
+    func noteAbsoluteStreamExpected(_ expected: Bool, at t: TimeInterval) {
+        lock.lock()
+        if expected && !absoluteStreamExpected {
+            // Fresh gap baseline when an on-demand window opens, so the idle
+            // period before the window doesn't count as a callback gap.
+            lastAbsoluteT = t
+        }
+        absoluteStreamExpected = expected
+        lock.unlock()
+    }
+
+    func setIMUSource(_ source: String) {
+        lock.lock()
+        imuSource = source
+        lock.unlock()
+    }
+
+    func noteIMUSource(count: Int, at t: TimeInterval) {
+        lock.lock()
+        imuSourceCount += max(0, count)
+        lastIMUT = t
+        lock.unlock()
+    }
+
+    func noteIMUProcessed() {
+        lock.lock()
+        imuProcessedCount += 1
+        lock.unlock()
+    }
+
+    func noteRelative(at t: TimeInterval) {
+        lock.lock()
+        relativeCount += 1
+        lastRelativeT = t
+        lock.unlock()
+    }
+
+    func noteAbsoluteSource(at t: TimeInterval) {
+        lock.lock()
+        absoluteSourceCount += 1
+        lastAbsoluteT = t
+        lock.unlock()
+    }
+
+    func noteAbsoluteProcessed(queueLatencySec: Double) {
+        let latencyMs = max(0, queueLatencySec) * 1_000
+        lock.lock()
+        absoluteProcessedCount += 1
+        absoluteLatencyCount += 1
+        absoluteLatencyTotalMs += latencyMs
+        absoluteLatencyMaximumMs = max(absoluteLatencyMaximumMs, latencyMs)
+        lock.unlock()
+    }
+
+    func noteWater() {
+        lock.lock()
+        waterCount += 1
+        lock.unlock()
+    }
+
+    func snapshot(at now: TimeInterval) -> MotionPipelineHealth {
+        lock.lock()
+        let elapsed = max(0.001, now - windowStartT)
+        let imuGapSec = max(0, now - (lastIMUT ?? sessionStartT))
+        let relativeAltitudeGapSec = max(0, now - (lastRelativeT ?? sessionStartT))
+        let absoluteAltitudeGapSec: Double? = absoluteStreamExpected
+            ? max(0, now - (lastAbsoluteT ?? sessionStartT))
+            : nil
+        let result = MotionPipelineHealth(
+            timestamp: now,
+            windowSec: elapsed,
+            absoluteIntervalSec: absoluteIntervalSec,
+            imuSource: imuSource,
+            imuSourceHz: Double(imuSourceCount) / elapsed,
+            imuProcessedHz: Double(imuProcessedCount) / elapsed,
+            relativeAltitudeHz: Double(relativeCount) / elapsed,
+            absoluteAltitudeSourceHz: Double(absoluteSourceCount) / elapsed,
+            absoluteAltitudeProcessedHz: Double(absoluteProcessedCount) / elapsed,
+            waterUpdateHz: Double(waterCount) / elapsed,
+            imuGapSec: imuGapSec,
+            relativeAltitudeGapSec: relativeAltitudeGapSec,
+            absoluteAltitudeGapSec: absoluteAltitudeGapSec,
+            absoluteQueueLatencyAverageMs: absoluteLatencyCount == 0
+                ? 0
+                : absoluteLatencyTotalMs / Double(absoluteLatencyCount),
+            absoluteQueueLatencyMaximumMs: absoluteLatencyMaximumMs
+        )
+        windowStartT = now
+        imuSourceCount = 0
+        imuProcessedCount = 0
+        relativeCount = 0
+        absoluteSourceCount = 0
+        absoluteProcessedCount = 0
+        waterCount = 0
+        absoluteLatencyTotalMs = 0
+        absoluteLatencyMaximumMs = 0
+        absoluteLatencyCount = 0
+        lock.unlock()
+        return result
+    }
+}
+
 class MotionManager: ObservableObject {
     private let motionManager = CMMotionManager()
     // Keep relative and absolute altitude on separate CMAltimeter instances and
@@ -21,6 +199,10 @@ class MotionManager: ObservableObject {
     private let relativeAltimeter = CMAltimeter()
     private var absoluteAltimeter: CMAltimeter?
     private let queue = OperationQueue()
+    private let motionProcessingQueue = DispatchQueue(
+        label: "com.kiters.motion.processing",
+        qos: .userInitiated
+    )
     private let relativeAltimeterQueue = OperationQueue()
     private let absoluteAltimeterQueue = OperationQueue()
     private let altimeterControlQueue = DispatchQueue(
@@ -31,8 +213,24 @@ class MotionManager: ObservableObject {
     private var usingBatchedDeviceMotion = false
     private var didFallbackFromBatchedError = false
 
+    /// How the absolute-altitude stream is acquired for the session.
+    /// `.continuous` starts it at session start and keeps the freeze watchdog
+    /// (V13 and older engines). `.onDemand` keeps it OFF until the jump engine
+    /// opens a window via `beginAbsoluteAltitudeWindow` and stops it again on
+    /// `endAbsoluteAltitudeWindow` (V14). `.continuousNoWatchdog` runs the
+    /// stream start-to-stop with NO watchdog restarts (V15, spec P4: every
+    /// observed freeze was a competing consumer, and restarts only added
+    /// degenerate warm-up records — the fix is the single-consumer contract,
+    /// not supervision). Set by SessionManager before the session starts.
+    enum AbsoluteAcquisitionMode {
+        case continuous
+        case continuousNoWatchdog
+        case onDemand
+    }
+
     // All fields below are confined to altimeterControlQueue.
     private var altitudeSessionActive = false
+    private var absoluteAcquisitionMode: AbsoluteAcquisitionMode = .continuous
     private var absoluteStreamGeneration = 0
     private var absoluteStreamStartedT: TimeInterval?
     private var lastAbsoluteReceivedT: TimeInterval?
@@ -46,6 +244,12 @@ class MotionManager: ObservableObject {
     private var altimeterWatchdog: DispatchSourceTimer?
     private var relativeTimestampNormalizer = AltimeterTimestampNormalizer()
     private var absoluteTimestampNormalizer = AltimeterTimestampNormalizer()
+    private var absoluteProcessingIntervalSec = 0.5
+    private var lastAbsoluteProcessedReceivedT: TimeInterval?
+
+    private let pipelineMonitor = MotionPipelineMonitor()
+    private let pipelineHealthQueue = DispatchQueue(label: "com.kiters.motion.health", qos: .utility)
+    private var pipelineHealthTimer: DispatchSourceTimer?
 
     private static let absoluteValueChangeEpsilonM = 0.01
     private static let absoluteFreezeGraceSec = 10.0
@@ -141,6 +345,8 @@ class MotionManager: ObservableObject {
                               _ accuracyM: Double?,
                               _ precisionM: Double?) -> Void)?
     var onAbsoluteAltitudeStreamRestart: ((_ reason: String) -> Void)?
+    var onIMUStreamRecovery: ((_ reason: String) -> Void)?
+    var onPipelineHealth: ((MotionPipelineHealth) -> Void)?
 
     /// CMLogItem.timestamp has appeared in two clock domains on watchOS builds:
     /// seconds-since-boot and seconds-since-2001. Anchor an unfamiliar domain to
@@ -188,7 +394,14 @@ class MotionManager: ObservableObject {
         absoluteAltimeterQueue.qualityOfService = .userInitiated
     }
     
-    func startTracking(preferBatched: Bool = true) {
+    /// `absoluteProcessingIntervalOverrideSec`: bypasses the user's V13
+    /// throttle setting entirely (spec V15-FIX §3 F5). V15 is calibrated for
+    /// the barometer's native ~3 Hz cadence — the shared V13 setting
+    /// defaults to 0.5 s (2 Hz) and, measured in the field, effectively
+    /// throttled V15's abs stream to a fixed ~1 Hz, leaving only 3–4 arc
+    /// points per jump (borderline against `minArcPoints=3`) even when the
+    /// channel was otherwise healthy. Pass 0 for "every callback, full rate".
+    func startTracking(preferBatched: Bool = true, absoluteProcessingIntervalOverrideSec: Double? = nil) {
         guard isDeviceMotionAvailable else {
             print("❌ Device motion not available")
             return
@@ -196,20 +409,28 @@ class MotionManager: ObservableObject {
 
         guard !isTracking else { return }
 
-        sampleBuffer.removeAll(keepingCapacity: true)
         didFallbackFromBatchedError = false
-        startBarometer()
-
-        var startedBatched = false
-        if preferBatched {
-            startedBatched = startBatchedDeviceMotionIfAvailable()
-        }
-
-        if !startedBatched {
-            startFallbackDeviceMotion()
-        }
+        let absoluteInterval = absoluteProcessingIntervalOverrideSec ?? V13Settings.normalizedAbsoluteAltitudeSampleInterval(
+            UserDefaults.standard.object(forKey: V13Settings.absoluteAltitudeSampleIntervalSec) == nil
+                ? V13Config().absoluteAltitudeSampleIntervalSec
+                : UserDefaults.standard.double(forKey: V13Settings.absoluteAltitudeSampleIntervalSec)
+        )
+        pipelineMonitor.reset(
+            at: ProcessInfo.processInfo.systemUptime,
+            absoluteIntervalSec: absoluteInterval
+        )
+        startBarometer(absoluteProcessingIntervalSec: absoluteInterval)
 
         isTracking = true
+        motionProcessingQueue.sync {
+            sampleBuffer.removeAll(keepingCapacity: true)
+            let startedBatched = preferBatched && startBatchedDeviceMotionIfAvailable()
+            if !startedBatched {
+                startFallbackDeviceMotion()
+            }
+        }
+
+        startPipelineHealthTimer()
         let source = usingBatchedDeviceMotion
             ? "CMBatchedSensorManager \(batchedSensorManager?.deviceMotionDataFrequency ?? 0)Hz"
             : "CMMotionManager \(Int(sampleRate))Hz"
@@ -217,16 +438,14 @@ class MotionManager: ObservableObject {
     }
     
     func stopTracking() {
-        stopBatchedDeviceMotion()
-        motionManager.stopDeviceMotionUpdates()
-        stopBarometer()
         isTracking = false
-        
-        // Flush remaining buffer
-        if !sampleBuffer.isEmpty {
-            onIMUBatch?(sampleBuffer)
-            sampleBuffer.removeAll()
+        stopPipelineHealthTimer()
+        motionProcessingQueue.sync {
+            stopBatchedDeviceMotion()
+            motionManager.stopDeviceMotionUpdates()
+            flushSampleBuffer()
         }
+        stopBarometer()
         
         currentPressure = nil
         currentRelativeAltitude = nil
@@ -237,10 +456,14 @@ class MotionManager: ObservableObject {
     }
     
     func pauseTracking() {
-        stopBatchedDeviceMotion()
-        motionManager.stopDeviceMotionUpdates()
-        stopBarometer()
         isTracking = false
+        stopPipelineHealthTimer()
+        motionProcessingQueue.sync {
+            stopBatchedDeviceMotion()
+            motionManager.stopDeviceMotionUpdates()
+            flushSampleBuffer()
+        }
+        stopBarometer()
         currentAbsoluteAltitudeSnapshot = (nil, nil, nil, nil)
         print("Motion tracking paused")
     }
@@ -252,17 +475,22 @@ class MotionManager: ObservableObject {
 
     func updateSubmersion(_ snapshot: WaterSubmersionSnapshot) {
         currentSubmersion = snapshot
+        pipelineMonitor.noteWater()
     }
 
     func upgradeToBatchedIfAvailable() {
-        guard isTracking, !usingBatchedDeviceMotion else { return }
-        guard CMBatchedSensorManager.isDeviceMotionSupported else { return }
+        motionProcessingQueue.async { [weak self] in
+            guard let self,
+                  self.isTracking,
+                  !self.usingBatchedDeviceMotion,
+                  CMBatchedSensorManager.isDeviceMotionSupported else { return }
 
-        motionManager.stopDeviceMotionUpdates()
-        if startBatchedDeviceMotionIfAvailable() {
-            print("Motion tracking upgraded to CMBatchedSensorManager \(batchedSensorManager?.deviceMotionDataFrequency ?? 0)Hz")
-        } else {
-            startFallbackDeviceMotion()
+            self.motionManager.stopDeviceMotionUpdates()
+            if self.startBatchedDeviceMotionIfAvailable() {
+                print("Motion tracking upgraded to CMBatchedSensorManager \(self.batchedSensorManager?.deviceMotionDataFrequency ?? 0)Hz")
+            } else {
+                self.startFallbackDeviceMotion()
+            }
         }
     }
 
@@ -282,25 +510,41 @@ class MotionManager: ObservableObject {
         manager.startDeviceMotionUpdates { [weak self] motions, error in
             guard let self = self else { return }
             if let error {
-                self.handleBatchedMotionError(error)
+                self.requestBatchedMotionFallback(
+                    reason: "error: \(error.localizedDescription)"
+                )
                 return
             }
             guard let motions, !motions.isEmpty else { return }
-            for motion in motions {
-                self.processMotionData(motion)
+            let receivedT = ProcessInfo.processInfo.systemUptime
+            self.pipelineMonitor.noteIMUSource(count: motions.count, at: receivedT)
+            self.motionProcessingQueue.async { [weak self] in
+                guard let self else { return }
+                for motion in motions {
+                    self.processMotionData(motion)
+                }
             }
         }
+
+        pipelineMonitor.setIMUSource("CMBatchedSensorManager")
 
         return true
     }
 
-    private func handleBatchedMotionError(_ error: Error) {
-        print("Batched device motion error: \(error.localizedDescription)")
-        guard !didFallbackFromBatchedError else { return }
-        didFallbackFromBatchedError = true
-        stopBatchedDeviceMotion()
-        startFallbackDeviceMotion()
-        print("Motion tracking fell back to CMMotionManager \(Int(sampleRate))Hz")
+    private func requestBatchedMotionFallback(reason: String) {
+        motionProcessingQueue.async { [weak self] in
+            guard let self,
+                  self.isTracking,
+                  self.usingBatchedDeviceMotion,
+                  !self.didFallbackFromBatchedError else { return }
+
+            self.didFallbackFromBatchedError = true
+            self.stopBatchedDeviceMotion()
+            self.startFallbackDeviceMotion()
+            let message = "CMBatchedSensorManager -> CMMotionManager; \(reason)"
+            print("Motion tracking recovery: \(message)")
+            self.onIMUStreamRecovery?(message)
+        }
     }
 
     private func stopBatchedDeviceMotion() {
@@ -324,14 +568,21 @@ class MotionManager: ObservableObject {
                 return
             }
 
-            self.processMotionData(motion)
+            let receivedT = ProcessInfo.processInfo.systemUptime
+            self.pipelineMonitor.noteIMUSource(count: 1, at: receivedT)
+            self.motionProcessingQueue.async { [weak self] in
+                self?.processMotionData(motion)
+            }
         }
         usingBatchedDeviceMotion = false
+        pipelineMonitor.setIMUSource("CMMotionManager")
     }
 
-    private func startBarometer() {
+    private func startBarometer(absoluteProcessingIntervalSec: Double) {
         altimeterControlQueue.sync {
             altitudeSessionActive = true
+            self.absoluteProcessingIntervalSec = absoluteProcessingIntervalSec
+            lastAbsoluteProcessedReceivedT = nil
             relativeTimestampNormalizer.reset()
             absoluteTimestampNormalizer.reset()
             resetAltitudeHealthLocked()
@@ -342,8 +593,54 @@ class MotionManager: ObservableObject {
                 print("Relative altitude not available on this device")
             }
 
-            startAbsoluteAltitudeLocked(reason: "sessionStart")
-            startAltimeterWatchdogLocked()
+            switch absoluteAcquisitionMode {
+            case .continuous:
+                startAbsoluteAltitudeLocked(reason: "sessionStart")
+                startAltimeterWatchdogLocked()
+            case .continuousNoWatchdog:
+                startAbsoluteAltitudeLocked(reason: "sessionStart")
+                SessionLogger.shared.logEvent("Absolute altitude acquisition: continuous single-consumer, no watchdog restarts")
+            case .onDemand:
+                // The stream stays off until the jump engine opens a window;
+                // the freeze watchdog has nothing to supervise in this mode.
+                pipelineMonitor.noteAbsoluteStreamExpected(false, at: ProcessInfo.processInfo.systemUptime)
+                SessionLogger.shared.logEvent("Absolute altitude acquisition: onDemand (stream off until a jump window opens)")
+            }
+        }
+    }
+
+    /// Selects the absolute-altitude acquisition mode for the next session.
+    /// Call before `startTracking`.
+    func setAbsoluteAcquisitionMode(_ mode: AbsoluteAcquisitionMode) {
+        altimeterControlQueue.sync {
+            absoluteAcquisitionMode = mode
+        }
+    }
+
+    /// On-demand window control (`.onDemand` mode only): the V14 engine opens
+    /// the window at takeoff and closes it once the landing baseline is
+    /// confirmed stable.
+    func beginAbsoluteAltitudeWindow(reason: String) {
+        altimeterControlQueue.async { [weak self] in
+            guard let self, self.altitudeSessionActive,
+                  self.absoluteAcquisitionMode == .onDemand,
+                  self.absoluteAltimeter == nil else { return }
+            self.startAbsoluteAltitudeLocked(reason: "window \(reason)")
+        }
+    }
+
+    func endAbsoluteAltitudeWindow(reason: String) {
+        altimeterControlQueue.async { [weak self] in
+            guard let self, self.absoluteAcquisitionMode == .onDemand,
+                  self.absoluteAltimeter != nil else { return }
+            if #available(watchOS 8.0, iOS 15.0, *) {
+                self.absoluteAltimeter?.stopAbsoluteAltitudeUpdates()
+            }
+            self.absoluteAltimeter = nil
+            self.absoluteStreamGeneration += 1
+            self.currentAbsoluteAltitudeSnapshot = (nil, nil, nil, nil)
+            self.pipelineMonitor.noteAbsoluteStreamExpected(false, at: ProcessInfo.processInfo.systemUptime)
+            SessionLogger.shared.logEvent("Absolute altitude window closed (\(reason))")
         }
     }
 
@@ -351,6 +648,7 @@ class MotionManager: ObservableObject {
     private func startRelativeAltitudeLocked() {
         relativeAltimeter.startRelativeAltitudeUpdates(to: relativeAltimeterQueue) { [weak self] data, error in
             let receivedT = ProcessInfo.processInfo.systemUptime
+            self?.pipelineMonitor.noteRelative(at: receivedT)
             self?.altimeterControlQueue.async { [weak self] in
                 guard let self, self.altitudeSessionActive else { return }
                 if let error {
@@ -394,15 +692,19 @@ class MotionManager: ObservableObject {
         let generation = absoluteStreamGeneration
         let manager = CMAltimeter()
         absoluteAltimeter = manager
-        absoluteStreamStartedT = ProcessInfo.processInfo.systemUptime
+        let streamStartT = ProcessInfo.processInfo.systemUptime
+        absoluteStreamStartedT = streamStartT
+        pipelineMonitor.noteAbsoluteStreamExpected(true, at: streamStartT)
         lastAbsoluteReceivedT = nil
         lastAbsoluteChangedT = nil
         lastAbsoluteHealthValueM = nil
+        lastAbsoluteProcessedReceivedT = nil
         relativeValueAtAbsoluteChangeM = latestRelativeHealthValueM
         absoluteTimestampNormalizer.reset()
 
         manager.startAbsoluteAltitudeUpdates(to: absoluteAltimeterQueue) { [weak self] data, error in
             let receivedT = ProcessInfo.processInfo.systemUptime
+            self?.pipelineMonitor.noteAbsoluteSource(at: receivedT)
             self?.altimeterControlQueue.async { [weak self] in
                 guard let self,
                       self.altitudeSessionActive,
@@ -434,6 +736,15 @@ class MotionManager: ObservableObject {
                     accuracyM: data.accuracy,
                     precisionM: data.precision
                 )
+                let shouldProcess = self.lastAbsoluteProcessedReceivedT == nil
+                    || receivedT - (self.lastAbsoluteProcessedReceivedT ?? 0)
+                        >= self.absoluteProcessingIntervalSec - 0.005
+                guard shouldProcess else { return }
+                self.lastAbsoluteProcessedReceivedT = receivedT
+                let processedT = ProcessInfo.processInfo.systemUptime
+                self.pipelineMonitor.noteAbsoluteProcessed(
+                    queueLatencySec: processedT - receivedT
+                )
                 self.onAbsoluteAltitude?(
                     sensorT,
                     receivedT,
@@ -459,6 +770,7 @@ class MotionManager: ObservableObject {
             absoluteStreamGeneration += 1
             relativeTimestampNormalizer.reset()
             absoluteTimestampNormalizer.reset()
+            lastAbsoluteProcessedReceivedT = nil
             resetAltitudeHealthLocked()
         }
     }
@@ -581,6 +893,7 @@ class MotionManager: ObservableObject {
     }
 
     private func processMotionData(_ motion: CMDeviceMotion) {
+        pipelineMonitor.noteIMUProcessed()
         let submersion = currentSubmersion
         let pressure = currentPressure
         let relativeAltitude = currentRelativeAltitude
@@ -629,6 +942,46 @@ class MotionManager: ObservableObject {
         if sampleBuffer.count >= bufferSize {
             onIMUBatch?(sampleBuffer)
             sampleBuffer.removeAll()
+        }
+    }
+
+    /// Must run on motionProcessingQueue.
+    private func flushSampleBuffer() {
+        guard !sampleBuffer.isEmpty else { return }
+        onIMUBatch?(sampleBuffer)
+        sampleBuffer.removeAll(keepingCapacity: true)
+    }
+
+    private func startPipelineHealthTimer() {
+        pipelineHealthQueue.sync {
+            pipelineHealthTimer?.cancel()
+            let timer = DispatchSource.makeTimerSource(queue: pipelineHealthQueue)
+            timer.schedule(deadline: .now() + 5, repeating: 5, leeway: .milliseconds(500))
+            timer.setEventHandler { [weak self] in
+                guard let self else { return }
+                let health = self.pipelineMonitor.snapshot(
+                    at: ProcessInfo.processInfo.systemUptime
+                )
+                self.onPipelineHealth?(health)
+                if health.imuSource == "CMBatchedSensorManager",
+                   (health.imuGapSec ?? 0) >= 3 {
+                    self.requestBatchedMotionFallback(
+                        reason: String(
+                            format: "silent callback gap %.2fs",
+                            health.imuGapSec ?? 0
+                        )
+                    )
+                }
+            }
+            pipelineHealthTimer = timer
+            timer.resume()
+        }
+    }
+
+    private func stopPipelineHealthTimer() {
+        pipelineHealthQueue.sync {
+            pipelineHealthTimer?.cancel()
+            pipelineHealthTimer = nil
         }
     }
 

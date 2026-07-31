@@ -1,0 +1,736 @@
+🦘 JumpDetector(v14) reset - ready=true minRise=1.0m baselineMedian=4.0s unweight=0.75g/0.35s pop=1.6g(require=false) landingImpact=1.9g stable=2.0s±0.6m absolute=onDemandWindow gps=metricsOnly offline replay: watch sensor readiness skipped
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6341.04
+🦘 v14 CANDIDATE takeoff=6341.04 baseline=n/a pop=false
+  [v14   74.20s] CANDIDATE takeoff=6341.04 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN impact=2.35g air=0.61
+  [v14   74.46s] TOUCHDOWN impact=2.35g air=0.61
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.15 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14   77.19s] REJECT reason=belowMinRise h=0.15 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6407.18
+🦘 v14 CANDIDATE takeoff=6407.18 baseline=-2.16 pop=false
+  [v14  140.35s] CANDIDATE takeoff=6407.18 baseline=-2.16 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.38
+  [v14  140.63s] TOUCHDOWN loadReturn air=0.38
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.38 via=stableBaseline
+  [v14  143.86s] REJECT reason=airtimeTooShort air=0.38 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6411.24
+🦘 v14 CANDIDATE takeoff=6411.24 baseline=-1.71 pop=false
+  [v14  144.41s] CANDIDATE takeoff=6411.24 baseline=-1.71 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.42
+  [v14  144.73s] TOUCHDOWN loadReturn air=0.42
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.10 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14  148.99s] REJECT reason=belowMinRise h=0.10 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6414.96
+🦘 v14 CANDIDATE takeoff=6414.96 baseline=-1.75 pop=false
+  [v14  148.13s] CANDIDATE takeoff=6414.96 baseline=-1.75 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  148.39s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+  [v14  151.56s] REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6418.10
+🦘 v14 CANDIDATE takeoff=6418.10 baseline=n/a pop=false
+  [v14  151.26s] CANDIDATE takeoff=6418.10 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  151.52s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6428.89
+🦘 v14 CANDIDATE takeoff=6428.89 baseline=n/a pop=false
+  [v14  162.05s] CANDIDATE takeoff=6428.89 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  162.31s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+  [v14  169.50s] REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6451.54
+🦘 v14 CANDIDATE takeoff=6451.54 baseline=n/a pop=true
+  [v14  184.71s] CANDIDATE takeoff=6451.54 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=1.67
+  [v14  186.27s] TOUCHDOWN loadReturn air=1.67
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 JUMP h=3.28m src=absoluteAltitude air=1.67s conf=0.81 via=stableBaseline
+  [v14  190.01s] JUMP h=3.28m src=absoluteAltitude air=1.67s conf=0.81 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6550.21
+🦘 v14 CANDIDATE takeoff=6550.21 baseline=-2.59 pop=false
+  [v14  283.38s] CANDIDATE takeoff=6550.21 baseline=-2.59 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  283.63s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=nextTakeoff
+  [v14  284.86s] REJECT reason=airtimeTooShort air=0.36 via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6551.70
+🦘 v14 CANDIDATE takeoff=6551.70 baseline=n/a pop=false
+  [v14  284.86s] CANDIDATE takeoff=6551.70 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.37
+  [v14  285.13s] TOUCHDOWN loadReturn air=0.37
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+  [v14  287.46s] REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6563.77
+🦘 v14 CANDIDATE takeoff=6563.77 baseline=-2.19 pop=true
+  [v14  296.93s] CANDIDATE takeoff=6563.77 baseline=-2.19 pop=true
+🦘 v14 TOUCHDOWN impact=1.92g air=1.73
+  [v14  298.31s] TOUCHDOWN impact=1.92g air=1.73
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 JUMP h=2.58m src=absoluteAltitude air=1.73s conf=0.81 via=stableBaseline
+  [v14  302.85s] JUMP h=2.58m src=absoluteAltitude air=1.73s conf=0.81 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6574.27
+🦘 v14 CANDIDATE takeoff=6574.27 baseline=n/a pop=true
+  [v14  307.44s] CANDIDATE takeoff=6574.27 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  307.69s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+  [v14  310.54s] REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6630.25
+🦘 v14 CANDIDATE takeoff=6630.25 baseline=-2.15 pop=false
+  [v14  363.42s] CANDIDATE takeoff=6630.25 baseline=-2.15 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.40
+  [v14  363.71s] TOUCHDOWN loadReturn air=0.40
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=airtimeTooShort air=0.40 via=nextTakeoff
+  [v14  367.79s] REJECT reason=airtimeTooShort air=0.40 via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6634.63
+🦘 v14 CANDIDATE takeoff=6634.63 baseline=-2.57 pop=false
+  [v14  367.79s] CANDIDATE takeoff=6634.63 baseline=-2.57 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  368.05s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+  [v14  373.80s] REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6662.98
+🦘 v14 CANDIDATE takeoff=6662.98 baseline=-2.30 pop=true
+  [v14  396.15s] CANDIDATE takeoff=6662.98 baseline=-2.30 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=1.95
+  [v14  398.00s] TOUCHDOWN loadReturn air=1.95
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.81 min=1.00 src=relativeAltitude via=stableBaseline
+  [v14  402.86s] REJECT reason=belowMinRise h=0.81 min=1.00 src=relativeAltitude via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6731.24
+🦘 v14 CANDIDATE takeoff=6731.24 baseline=n/a pop=true
+  [v14  464.40s] CANDIDATE takeoff=6731.24 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=3.05g air=0.79
+  [v14  464.84s] TOUCHDOWN impact=3.05g air=0.79
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.77 min=1.00 src=ballistic via=stableBaseline
+  [v14  469.54s] REJECT reason=belowMinRise h=0.77 min=1.00 src=ballistic via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6747.68
+🦘 v14 CANDIDATE takeoff=6747.68 baseline=-1.99 pop=false
+  [v14  480.84s] CANDIDATE takeoff=6747.68 baseline=-1.99 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  481.10s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+  [v14  484.92s] REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6771.36
+🦘 v14 CANDIDATE takeoff=6771.36 baseline=-1.58 pop=false
+  [v14  504.52s] CANDIDATE takeoff=6771.36 baseline=-1.58 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.45
+  [v14  504.87s] TOUCHDOWN loadReturn air=0.45
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.13 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14  508.00s] REJECT reason=belowMinRise h=0.13 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6782.43
+🦘 v14 CANDIDATE takeoff=6782.43 baseline=n/a pop=true
+  [v14  515.59s] CANDIDATE takeoff=6782.43 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.37
+  [v14  515.86s] TOUCHDOWN loadReturn air=0.37
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+  [v14  518.25s] REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6794.32
+🦘 v14 CANDIDATE takeoff=6794.32 baseline=-0.80 pop=false
+  [v14  527.48s] CANDIDATE takeoff=6794.32 baseline=-0.80 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.41
+  [v14  527.79s] TOUCHDOWN loadReturn air=0.41
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.09 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14  531.07s] REJECT reason=belowMinRise h=0.09 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6839.16
+🦘 v14 CANDIDATE takeoff=6839.16 baseline=n/a pop=true
+  [v14  572.32s] CANDIDATE takeoff=6839.16 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.79
+  [v14  573.01s] TOUCHDOWN loadReturn air=0.79
+🦘 v14 RELSPIKE skip delta=-43.25 n=1
+  [v14  574.67s] RELSPIKE skip delta=-43.25 n=1
+🦘 v14 RELSPIKE skip delta=-46.76 n=2
+  [v14  577.23s] RELSPIKE skip delta=-46.76 n=2
+🦘 v14 RELSPIKE reaccept level=-29.73 after=3
+  [v14  579.80s] RELSPIKE reaccept level=-29.73 after=3
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 HEIGHT absolute=34.78 exceeds ceiling 2.50 (air=0.79) — discarded
+  [v14  579.80s] HEIGHT absolute=34.78 exceeds ceiling 2.50 (air=0.79) — discarded
+🦘 v14 REJECT reason=belowMinRise h=0.49 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14  579.80s] REJECT reason=belowMinRise h=0.49 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 RELSPIKE skip delta=10.68 n=1
+  [v14  584.93s] RELSPIKE skip delta=10.68 n=1
+🦘 v14 RELSPIKE skip delta=28.14 n=2
+  [v14  587.49s] RELSPIKE skip delta=28.14 n=2
+🦘 v14 RELSPIKE reaccept level=0.31 after=3
+  [v14  590.06s] RELSPIKE reaccept level=0.31 after=3
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6873.26
+🦘 v14 CANDIDATE takeoff=6873.26 baseline=-2.08 pop=true
+  [v14  606.42s] CANDIDATE takeoff=6873.26 baseline=-2.08 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  606.68s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+  [v14  613.14s] REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6890.86
+🦘 v14 CANDIDATE takeoff=6890.86 baseline=-1.60 pop=false
+  [v14  624.02s] CANDIDATE takeoff=6890.86 baseline=-1.60 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.40
+  [v14  624.32s] TOUCHDOWN loadReturn air=0.40
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.09 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14  627.56s] REJECT reason=belowMinRise h=0.09 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6894.40
+🦘 v14 CANDIDATE takeoff=6894.40 baseline=-1.60 pop=true
+  [v14  627.56s] CANDIDATE takeoff=6894.40 baseline=-1.60 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  627.82s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+  [v14  633.65s] REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6952.55
+🦘 v14 CANDIDATE takeoff=6952.55 baseline=-13.98 pop=true
+  [v14  685.72s] CANDIDATE takeoff=6952.55 baseline=-13.98 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  685.97s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=6973.74
+🦘 v14 CANDIDATE takeoff=6973.74 baseline=-11.48 pop=false
+  [v14  706.90s] CANDIDATE takeoff=6973.74 baseline=-11.48 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  707.16s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+  [v14  710.58s] REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7004.04
+🦘 v14 CANDIDATE takeoff=7004.04 baseline=-10.92 pop=true
+  [v14  737.20s] CANDIDATE takeoff=7004.04 baseline=-10.92 pop=true
+🦘 v14 TOUCHDOWN impact=2.00g air=1.44
+  [v14  738.29s] TOUCHDOWN impact=2.00g air=1.44
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 JUMP h=2.85m src=relativeAltitude air=1.44s conf=0.83 via=stableBaseline
+  [v14  741.38s] JUMP h=2.85m src=relativeAltitude air=1.44s conf=0.83 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7021.78
+🦘 v14 CANDIDATE takeoff=7021.78 baseline=-7.11 pop=false
+  [v14  754.94s] CANDIDATE takeoff=7021.78 baseline=-7.11 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.42
+  [v14  755.26s] TOUCHDOWN loadReturn air=0.42
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.12 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14  759.30s] REJECT reason=belowMinRise h=0.12 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7037.40
+🦘 v14 CANDIDATE takeoff=7037.40 baseline=-7.54 pop=false
+  [v14  770.57s] CANDIDATE takeoff=7037.40 baseline=-7.54 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  770.83s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+  [v14  774.68s] REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+🦘 v14 TURBULENT takeoff flagged gyro=9.31 load=1.67
+  [v14  802.23s] TURBULENT takeoff flagged gyro=9.31 load=1.67
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7069.06
+🦘 v14 CANDIDATE takeoff=7069.06 baseline=n/a pop=true
+  [v14  802.23s] CANDIDATE takeoff=7069.06 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=1.90g air=0.69
+  [v14  802.57s] TOUCHDOWN impact=1.90g air=0.69
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.59 min=1.00 src=ballistic via=confirmTimeout
+  [v14  808.57s] REJECT reason=belowMinRise h=0.59 min=1.00 src=ballistic via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7095.13
+🦘 v14 CANDIDATE takeoff=7095.13 baseline=n/a pop=true
+  [v14  828.30s] CANDIDATE takeoff=7095.13 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14  828.55s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+  [v14  831.10s] REJECT reason=airtimeTooShort air=0.36 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7120.02
+🦘 v14 CANDIDATE takeoff=7120.02 baseline=-13.06 pop=false
+  [v14  853.19s] CANDIDATE takeoff=7120.02 baseline=-13.06 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.38
+  [v14  853.46s] TOUCHDOWN loadReturn air=0.38
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.38 via=stableBaseline
+  [v14  856.74s] REJECT reason=airtimeTooShort air=0.38 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7131.40
+🦘 v14 CANDIDATE takeoff=7131.40 baseline=n/a pop=true
+  [v14  864.56s] CANDIDATE takeoff=7131.40 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.62
+  [v14  865.08s] TOUCHDOWN loadReturn air=0.62
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.47 min=1.00 src=ballistic via=nextTakeoff
+  [v14  869.04s] REJECT reason=belowMinRise h=0.47 min=1.00 src=ballistic via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7135.88
+🦘 v14 CANDIDATE takeoff=7135.88 baseline=n/a pop=true
+  [v14  869.04s] CANDIDATE takeoff=7135.88 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.65
+  [v14  869.59s] TOUCHDOWN loadReturn air=0.65
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.51 min=1.00 src=ballistic via=stableBaseline
+  [v14  872.12s] REJECT reason=belowMinRise h=0.51 min=1.00 src=ballistic via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7151.71
+🦘 v14 CANDIDATE takeoff=7151.71 baseline=n/a pop=false
+  [v14  884.87s] CANDIDATE takeoff=7151.71 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.46
+  [v14  885.23s] TOUCHDOWN loadReturn air=0.46
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.15 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14  887.64s] REJECT reason=belowMinRise h=0.15 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7154.48
+🦘 v14 CANDIDATE takeoff=7154.48 baseline=n/a pop=false
+  [v14  887.64s] CANDIDATE takeoff=7154.48 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN impact=1.98g air=0.48
+  [v14  887.77s] TOUCHDOWN impact=1.98g air=0.48
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.20 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14  892.64s] REJECT reason=belowMinRise h=0.20 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7200.50
+🦘 v14 CANDIDATE takeoff=7200.50 baseline=n/a pop=true
+  [v14  933.66s] CANDIDATE takeoff=7200.50 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=1.90g air=1.03
+  [v14  934.34s] TOUCHDOWN impact=1.90g air=1.03
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.60 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14  941.39s] REJECT reason=belowMinRise h=0.60 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7217.62
+🦘 v14 CANDIDATE takeoff=7217.62 baseline=-15.02 pop=true
+  [v14  950.78s] CANDIDATE takeoff=7217.62 baseline=-15.02 pop=true
+🦘 v14 TURBULENT flight flagged gyro=8.07 load=1.30
+  [v14  951.00s] TURBULENT flight flagged gyro=8.07 load=1.30
+🦘 v14 TOUCHDOWN impact=2.42g air=0.64
+  [v14  951.07s] TOUCHDOWN impact=2.42g air=0.64
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.50 min=1.00 src=ballistic via=stableBaseline
+  [v14  954.18s] REJECT reason=belowMinRise h=0.50 min=1.00 src=ballistic via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7287.12
+🦘 v14 CANDIDATE takeoff=7287.12 baseline=n/a pop=true
+  [v14 1020.28s] CANDIDATE takeoff=7287.12 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=1.98g air=0.63
+  [v14 1020.56s] TOUCHDOWN impact=1.98g air=0.63
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.12 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1023.44s] REJECT reason=belowMinRise h=0.12 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7302.06
+🦘 v14 CANDIDATE takeoff=7302.06 baseline=-6.39 pop=true
+  [v14 1035.22s] CANDIDATE takeoff=7302.06 baseline=-6.39 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.37
+  [v14 1035.49s] TOUCHDOWN loadReturn air=0.37
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+  [v14 1038.81s] REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7352.45
+🦘 v14 CANDIDATE takeoff=7352.45 baseline=-11.75 pop=false
+  [v14 1085.62s] CANDIDATE takeoff=7352.45 baseline=-11.75 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.47
+  [v14 1085.99s] TOUCHDOWN loadReturn air=0.47
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.16 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14 1090.41s] REJECT reason=belowMinRise h=0.16 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7357.25
+🦘 v14 CANDIDATE takeoff=7357.25 baseline=n/a pop=false
+  [v14 1090.41s] CANDIDATE takeoff=7357.25 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.45
+  [v14 1090.76s] TOUCHDOWN loadReturn air=0.45
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.16 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1096.52s] REJECT reason=belowMinRise h=0.16 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7398.24
+🦘 v14 CANDIDATE takeoff=7398.24 baseline=n/a pop=true
+  [v14 1131.40s] CANDIDATE takeoff=7398.24 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=1.49
+  [v14 1132.79s] TOUCHDOWN loadReturn air=1.49
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 JUMP h=1.28m src=imuIntegrated air=1.49s conf=0.64 via=nextTakeoff
+  [v14 1133.44s] JUMP h=1.28m src=imuIntegrated air=1.49s conf=0.64 via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7400.27
+🦘 v14 CANDIDATE takeoff=7400.27 baseline=n/a pop=true
+  [v14 1133.44s] CANDIDATE takeoff=7400.27 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.49
+  [v14 1133.83s] TOUCHDOWN loadReturn air=0.49
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1136.25s] REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7407.27
+🦘 v14 CANDIDATE takeoff=7407.27 baseline=-6.05 pop=false
+  [v14 1140.44s] CANDIDATE takeoff=7407.27 baseline=-6.05 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.52
+  [v14 1140.86s] TOUCHDOWN loadReturn air=0.52
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.20 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1143.94s] REJECT reason=belowMinRise h=0.20 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7489.64
+🦘 v14 CANDIDATE takeoff=7489.64 baseline=n/a pop=false
+  [v14 1222.81s] CANDIDATE takeoff=7489.64 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.54
+  [v14 1223.24s] TOUCHDOWN loadReturn air=0.54
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1225.99s] REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7491.85
+🦘 v14 CANDIDATE takeoff=7491.85 baseline=-8.91 pop=false
+  [v14 1225.02s] CANDIDATE takeoff=7491.85 baseline=-8.91 pop=false
+🦘 v14 TOUCHDOWN impact=1.94g air=0.51
+  [v14 1225.17s] TOUCHDOWN impact=1.94g air=0.51
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.31 min=1.00 src=ballistic via=nextTakeoff
+  [v14 1226.52s] REJECT reason=belowMinRise h=0.31 min=1.00 src=ballistic via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7493.36
+🦘 v14 CANDIDATE takeoff=7493.36 baseline=-9.96 pop=true
+  [v14 1226.52s] CANDIDATE takeoff=7493.36 baseline=-9.96 pop=true
+🦘 v14 TURBULENT flight flagged gyro=8.01 load=0.93
+  [v14 1226.77s] TURBULENT flight flagged gyro=8.01 load=0.93
+🦘 v14 TOUCHDOWN impact=2.12g air=0.72
+  [v14 1226.89s] TOUCHDOWN impact=2.12g air=0.72
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.64 min=1.00 src=ballistic via=confirmTimeout
+  [v14 1233.69s] REJECT reason=belowMinRise h=0.64 min=1.00 src=ballistic via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7519.98
+🦘 v14 CANDIDATE takeoff=7519.98 baseline=-15.48 pop=false
+  [v14 1253.15s] CANDIDATE takeoff=7519.98 baseline=-15.48 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.43
+  [v14 1253.48s] TOUCHDOWN loadReturn air=0.43
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.16 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1259.36s] REJECT reason=belowMinRise h=0.16 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7563.60
+🦘 v14 CANDIDATE takeoff=7563.60 baseline=-9.00 pop=true
+  [v14 1296.76s] CANDIDATE takeoff=7563.60 baseline=-9.00 pop=true
+🦘 v14 TOUCHDOWN impact=1.94g air=0.58
+  [v14 1296.99s] TOUCHDOWN impact=1.94g air=0.58
+🦘 v14 RELSPIKE skip delta=-10.92 n=1
+  [v14 1300.39s] RELSPIKE skip delta=-10.92 n=1
+🦘 v14 RELSPIKE skip delta=-13.54 n=2
+  [v14 1302.92s] RELSPIKE skip delta=-13.54 n=2
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.41 min=1.00 src=ballistic via=confirmTimeout
+  [v14 1303.00s] REJECT reason=belowMinRise h=0.41 min=1.00 src=ballistic via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7633.11
+🦘 v14 CANDIDATE takeoff=7633.11 baseline=n/a pop=false
+  [v14 1366.28s] CANDIDATE takeoff=7633.11 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14 1366.53s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+  [v14 1372.29s] REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7647.97
+🦘 v14 CANDIDATE takeoff=7647.97 baseline=-14.23 pop=false
+  [v14 1381.13s] CANDIDATE takeoff=7647.97 baseline=-14.23 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14 1381.39s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7657.19
+🦘 v14 CANDIDATE takeoff=7657.19 baseline=n/a pop=false
+  [v14 1390.36s] CANDIDATE takeoff=7657.19 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.42
+  [v14 1390.67s] TOUCHDOWN loadReturn air=0.42
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.10 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1396.43s] REJECT reason=belowMinRise h=0.10 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 RELSPIKE skip delta=-39.94 n=1
+  [v14 1423.46s] RELSPIKE skip delta=-39.94 n=1
+🦘 v14 RELSPIKE skip delta=-89.70 n=2
+  [v14 1426.00s] RELSPIKE skip delta=-89.70 n=2
+🦘 v14 RELSPIKE reaccept level=-65.60 after=3
+  [v14 1428.57s] RELSPIKE reaccept level=-65.60 after=3
+🦘 v14 RELSPIKE skip delta=54.80 n=1
+  [v14 1431.13s] RELSPIKE skip delta=54.80 n=1
+🦘 v14 RELSPIKE skip delta=59.46 n=2
+  [v14 1433.70s] RELSPIKE skip delta=59.46 n=2
+🦘 v14 RELSPIKE reaccept level=-0.07 after=3
+  [v14 1436.26s] RELSPIKE reaccept level=-0.07 after=3
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7713.36
+🦘 v14 CANDIDATE takeoff=7713.36 baseline=n/a pop=false
+  [v14 1446.53s] CANDIDATE takeoff=7713.36 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.48
+  [v14 1446.90s] TOUCHDOWN loadReturn air=0.48
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.13 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1452.66s] REJECT reason=belowMinRise h=0.13 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7719.85
+🦘 v14 CANDIDATE takeoff=7719.85 baseline=7.70 pop=false
+  [v14 1453.02s] CANDIDATE takeoff=7719.85 baseline=7.70 pop=false
+🦘 v14 TOUCHDOWN impact=2.09g air=0.55
+  [v14 1453.22s] TOUCHDOWN impact=2.09g air=0.55
+🦘 v14 RELSPIKE skip delta=-98.70 n=1
+  [v14 1456.78s] RELSPIKE skip delta=-98.70 n=1
+🦘 v14 RELSPIKE skip delta=-103.10 n=2
+  [v14 1459.37s] RELSPIKE skip delta=-103.10 n=2
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.37 min=1.00 src=ballistic via=confirmTimeout
+  [v14 1459.22s] REJECT reason=belowMinRise h=0.37 min=1.00 src=ballistic via=confirmTimeout
+🦘 v14 RELSPIKE reaccept level=-13.07 after=3
+  [v14 1461.90s] RELSPIKE reaccept level=-13.07 after=3
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7733.14
+🦘 v14 CANDIDATE takeoff=7733.14 baseline=n/a pop=true
+  [v14 1466.31s] CANDIDATE takeoff=7733.14 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=2.02g air=0.37
+  [v14 1466.33s] TOUCHDOWN impact=2.02g air=0.37
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.37 via=confirmTimeout
+  [v14 1472.33s] REJECT reason=airtimeTooShort air=0.37 via=confirmTimeout
+🦘 v14 RELSPIKE skip delta=-25.83 n=1
+  [v14 1490.11s] RELSPIKE skip delta=-25.83 n=1
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7756.29
+🦘 v14 CANDIDATE takeoff=7756.29 baseline=n/a pop=true
+  [v14 1489.46s] CANDIDATE takeoff=7756.29 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.41
+  [v14 1489.76s] TOUCHDOWN loadReturn air=0.41
+🦘 v14 RELSPIKE skip delta=-144.01 n=2
+  [v14 1492.68s] RELSPIKE skip delta=-144.01 n=2
+🦘 v14 RELSPIKE reaccept level=-192.63 after=3
+  [v14 1495.24s] RELSPIKE reaccept level=-192.63 after=3
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.20 min=1.00 src=ballistic via=confirmTimeout
+  [v14 1495.52s] REJECT reason=belowMinRise h=0.20 min=1.00 src=ballistic via=confirmTimeout
+🦘 v14 RELSPIKE skip delta=102.22 n=1
+  [v14 1497.80s] RELSPIKE skip delta=102.22 n=1
+🦘 v14 RELSPIKE skip delta=178.58 n=2
+  [v14 1500.40s] RELSPIKE skip delta=178.58 n=2
+🦘 v14 RELSPIKE reaccept level=-8.21 after=3
+  [v14 1502.93s] RELSPIKE reaccept level=-8.21 after=3
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7812.59
+🦘 v14 CANDIDATE takeoff=7812.59 baseline=-8.67 pop=false
+  [v14 1545.76s] CANDIDATE takeoff=7812.59 baseline=-8.67 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.67
+  [v14 1546.33s] TOUCHDOWN loadReturn air=0.67
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.29 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1552.08s] REJECT reason=belowMinRise h=0.29 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7844.37
+🦘 v14 CANDIDATE takeoff=7844.37 baseline=n/a pop=false
+  [v14 1577.54s] CANDIDATE takeoff=7844.37 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.40
+  [v14 1577.84s] TOUCHDOWN loadReturn air=0.40
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.11 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1584.98s] REJECT reason=belowMinRise h=0.11 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7855.45
+🦘 v14 CANDIDATE takeoff=7855.45 baseline=-5.21 pop=true
+  [v14 1588.62s] CANDIDATE takeoff=7855.45 baseline=-5.21 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.37
+  [v14 1588.88s] TOUCHDOWN loadReturn air=0.37
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+  [v14 1592.67s] REJECT reason=airtimeTooShort air=0.37 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7859.49
+🦘 v14 CANDIDATE takeoff=7859.49 baseline=n/a pop=false
+  [v14 1592.66s] CANDIDATE takeoff=7859.49 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.42
+  [v14 1592.98s] TOUCHDOWN loadReturn air=0.42
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.07 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1597.80s] REJECT reason=belowMinRise h=0.07 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7889.39
+🦘 v14 CANDIDATE takeoff=7889.39 baseline=-5.64 pop=false
+  [v14 1622.55s] CANDIDATE takeoff=7889.39 baseline=-5.64 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.39
+  [v14 1622.84s] TOUCHDOWN loadReturn air=0.39
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.39 via=confirmTimeout
+  [v14 1628.59s] REJECT reason=airtimeTooShort air=0.39 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7910.38
+🦘 v14 CANDIDATE takeoff=7910.38 baseline=n/a pop=true
+  [v14 1643.55s] CANDIDATE takeoff=7910.38 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.50
+  [v14 1643.94s] TOUCHDOWN loadReturn air=0.50
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.18 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1649.70s] REJECT reason=belowMinRise h=0.18 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7972.68
+🦘 v14 CANDIDATE takeoff=7972.68 baseline=n/a pop=true
+  [v14 1705.85s] CANDIDATE takeoff=7972.68 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=2.06g air=0.93
+  [v14 1706.42s] TOUCHDOWN impact=2.06g air=0.93
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 JUMP h=1.05m src=ballistic air=0.93s conf=0.60 via=nextTakeoff
+  [v14 1710.30s] JUMP h=1.05m src=ballistic air=0.93s conf=0.60 via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=7977.14
+🦘 v14 CANDIDATE takeoff=7977.14 baseline=n/a pop=true
+  [v14 1710.30s] CANDIDATE takeoff=7977.14 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.39
+  [v14 1710.59s] TOUCHDOWN loadReturn air=0.39
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.39 via=stableBaseline
+  [v14 1713.19s] REJECT reason=airtimeTooShort air=0.39 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8004.15
+🦘 v14 CANDIDATE takeoff=8004.15 baseline=-8.19 pop=true
+  [v14 1737.31s] CANDIDATE takeoff=8004.15 baseline=-8.19 pop=true
+🦘 v14 TOUCHDOWN impact=2.14g air=0.60
+  [v14 1737.56s] TOUCHDOWN impact=2.14g air=0.60
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1743.96s] REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8012.01
+🦘 v14 CANDIDATE takeoff=8012.01 baseline=-12.16 pop=true
+  [v14 1745.18s] CANDIDATE takeoff=8012.01 baseline=-12.16 pop=true
+🦘 v14 TOUCHDOWN impact=1.90g air=0.58
+  [v14 1745.41s] TOUCHDOWN impact=1.90g air=0.58
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.24 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1749.09s] REJECT reason=belowMinRise h=0.24 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8015.16
+🦘 v14 CANDIDATE takeoff=8015.16 baseline=n/a pop=true
+  [v14 1748.33s] CANDIDATE takeoff=8015.16 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=2.05g air=0.63
+  [v14 1748.60s] TOUCHDOWN impact=2.05g air=0.63
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.22 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1751.66s] REJECT reason=belowMinRise h=0.22 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8072.02
+🦘 v14 CANDIDATE takeoff=8072.02 baseline=n/a pop=true
+  [v14 1805.18s] CANDIDATE takeoff=8072.02 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.44
+  [v14 1805.52s] TOUCHDOWN loadReturn air=0.44
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1813.20s] REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8084.00
+🦘 v14 CANDIDATE takeoff=8084.00 baseline=-2.69 pop=false
+  [v14 1817.17s] CANDIDATE takeoff=8084.00 baseline=-2.69 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.36
+  [v14 1817.42s] TOUCHDOWN loadReturn air=0.36
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+  [v14 1823.46s] REJECT reason=airtimeTooShort air=0.36 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8100.33
+🦘 v14 CANDIDATE takeoff=8100.33 baseline=n/a pop=true
+  [v14 1833.49s] CANDIDATE takeoff=8100.33 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=2.42g air=0.51
+  [v14 1833.65s] TOUCHDOWN impact=2.42g air=0.51
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.22 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1839.66s] REJECT reason=belowMinRise h=0.22 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8137.88
+🦘 v14 CANDIDATE takeoff=8137.88 baseline=-9.07 pop=false
+  [v14 1871.04s] CANDIDATE takeoff=8137.88 baseline=-9.07 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.38
+  [v14 1871.32s] TOUCHDOWN loadReturn air=0.38
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=airtimeTooShort air=0.38 via=confirmTimeout
+  [v14 1877.31s] REJECT reason=airtimeTooShort air=0.38 via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8168.89
+🦘 v14 CANDIDATE takeoff=8168.89 baseline=-7.88 pop=true
+  [v14 1902.05s] CANDIDATE takeoff=8168.89 baseline=-7.88 pop=true
+🦘 v14 TOUCHDOWN impact=1.97g air=0.47
+  [v14 1902.17s] TOUCHDOWN impact=1.97g air=0.47
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.27 min=1.00 src=ballistic via=stableBaseline
+  [v14 1905.52s] REJECT reason=belowMinRise h=0.27 min=1.00 src=ballistic via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8184.38
+🦘 v14 CANDIDATE takeoff=8184.38 baseline=-5.21 pop=false
+  [v14 1917.55s] CANDIDATE takeoff=8184.38 baseline=-5.21 pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.38
+  [v14 1917.82s] TOUCHDOWN loadReturn air=0.38
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=airtimeTooShort air=0.38 via=stableBaseline
+  [v14 1920.90s] REJECT reason=airtimeTooShort air=0.38 via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8199.60
+🦘 v14 CANDIDATE takeoff=8199.60 baseline=-5.35 pop=true
+  [v14 1932.77s] CANDIDATE takeoff=8199.60 baseline=-5.35 pop=true
+🦘 v14 TOUCHDOWN impact=2.05g air=0.52
+  [v14 1932.94s] TOUCHDOWN impact=2.05g air=0.52
+🦘 v14 absoluteWindow CLOSE reason=stableBaseline
+🦘 v14 REJECT reason=belowMinRise h=0.12 min=1.00 src=imuIntegrated via=stableBaseline
+  [v14 1936.28s] REJECT reason=belowMinRise h=0.12 min=1.00 src=imuIntegrated via=stableBaseline
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8229.27
+🦘 v14 CANDIDATE takeoff=8229.27 baseline=-4.79 pop=true
+  [v14 1962.44s] CANDIDATE takeoff=8229.27 baseline=-4.79 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.52
+  [v14 1962.86s] TOUCHDOWN loadReturn air=0.52
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 HEIGHT relative=0.54 exceeds ceiling 0.43 (air=0.52) — discarded
+  [v14 1968.61s] HEIGHT relative=0.54 exceeds ceiling 0.43 (air=0.52) — discarded
+🦘 v14 REJECT reason=belowMinRise h=0.15 min=1.00 src=imuIntegrated via=confirmTimeout
+  [v14 1968.61s] REJECT reason=belowMinRise h=0.15 min=1.00 src=imuIntegrated via=confirmTimeout
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8258.06
+🦘 v14 CANDIDATE takeoff=8258.06 baseline=-9.29 pop=true
+  [v14 1991.22s] CANDIDATE takeoff=8258.06 baseline=-9.29 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.47
+  [v14 1991.59s] TOUCHDOWN loadReturn air=0.47
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.22 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14 1992.82s] REJECT reason=belowMinRise h=0.22 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8259.66
+🦘 v14 CANDIDATE takeoff=8259.66 baseline=n/a pop=true
+  [v14 1992.82s] CANDIDATE takeoff=8259.66 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.54
+  [v14 1993.26s] TOUCHDOWN loadReturn air=0.54
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.20 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14 1994.64s] REJECT reason=belowMinRise h=0.20 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8261.48
+🦘 v14 CANDIDATE takeoff=8261.48 baseline=n/a pop=true
+  [v14 1994.64s] CANDIDATE takeoff=8261.48 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN impact=1.91g air=0.54
+  [v14 1994.83s] TOUCHDOWN impact=1.91g air=0.54
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.11 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14 1998.11s] REJECT reason=belowMinRise h=0.11 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8264.94
+🦘 v14 CANDIDATE takeoff=8264.94 baseline=n/a pop=false
+  [v14 1998.11s] CANDIDATE takeoff=8264.94 baseline=n/a pop=false
+🦘 v14 TOUCHDOWN loadReturn air=0.43
+  [v14 1998.43s] TOUCHDOWN loadReturn air=0.43
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14 1999.67s] REJECT reason=belowMinRise h=0.14 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absolu════════════════════════════════════════════════
+File:    log_20260727_144243_F3386A6C.kslog
+Format:  onDevice  rate=199.5 Hz  samples=420368  dur=2108.0s
+Mode:    standard  mockSpeed=8.0 m/s
+Jumps:   5 (accepted=5)
+  [✓] #0  t=184.35s  air=1.67s phys=1.67s  h=3.28m(absoluteAltitude)  dist=11.4m  apex=1.31s  conf=80  rot=1
+  [✓] #1  t=296.58s  air=1.73s phys=1.73s  h=2.58m(absoluteAltitude)  dist=6.5m  apex=1.22s  conf=80  rot=1
+  [✓] #2  t=736.85s  air=1.44s phys=1.44s  h=2.85m(relativeAltitude)  dist=7.5m  apex=0.17s  conf=82  rot=0
+  [✓] #3  t=1131.05s  air=1.49s phys=1.49s  h=1.28m(imuIntegrated)  dist=8.6m  apex=0.00s  conf=63  rot=0
+  [✓] #4  t=1705.49s  air=0.93s phys=0.93s  h=1.05m(ballistic)  dist=5.1m  apex=0.00s  conf=60  rot=1
+════════════════════════════════════════════════
+→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/analysis_v14/log_20260727_144243_F3386A6C.actual.json
+teWindow OPEN reason=takeoff t=8266.51
+🦘 v14 CANDIDATE takeoff=8266.51 baseline=n/a pop=true
+  [v14 1999.67s] CANDIDATE takeoff=8266.51 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.47
+  [v14 2000.04s] TOUCHDOWN loadReturn air=0.47
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8269.56
+🦘 v14 CANDIDATE takeoff=8269.56 baseline=n/a pop=true
+  [v14 2002.73s] CANDIDATE takeoff=8269.56 baseline=n/a pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.49
+  [v14 2003.12s] TOUCHDOWN loadReturn air=0.49
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.19 min=1.00 src=imuIntegrated via=nextTakeoff
+  [v14 2004.34s] REJECT reason=belowMinRise h=0.19 min=1.00 src=imuIntegrated via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8271.17
+🦘 v14 CANDIDATE takeoff=8271.17 baseline=-9.04 pop=true
+  [v14 2004.34s] CANDIDATE takeoff=8271.17 baseline=-9.04 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.52
+  [v14 2004.76s] TOUCHDOWN loadReturn air=0.52
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.33 min=1.00 src=ballistic via=nextTakeoff
+  [v14 2005.74s] REJECT reason=belowMinRise h=0.33 min=1.00 src=ballistic via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8272.58
+🦘 v14 CANDIDATE takeoff=8272.58 baseline=n/a pop=true
+  [v14 2005.74s] CANDIDATE takeoff=8272.58 baseline=n/a pop=true
+🦘 v14 TURBULENT flight flagged gyro=8.02 load=0.89
+  [v14 2005.86s] TURBULENT flight flagged gyro=8.02 load=0.89
+🦘 v14 TOUCHDOWN loadReturn air=0.56
+  [v14 2006.20s] TOUCHDOWN loadReturn air=0.56
+🦘 v14 absoluteWindow CLOSE reason=nextTakeoff
+🦘 v14 REJECT reason=belowMinRise h=0.39 min=1.00 src=ballistic via=nextTakeoff
+  [v14 2007.19s] REJECT reason=belowMinRise h=0.39 min=1.00 src=ballistic via=nextTakeoff
+🦘 v14 absoluteWindow OPEN reason=takeoff t=8274.03
+🦘 v14 CANDIDATE takeoff=8274.03 baseline=-9.47 pop=true
+  [v14 2007.19s] CANDIDATE takeoff=8274.03 baseline=-9.47 pop=true
+🦘 v14 TOUCHDOWN loadReturn air=0.41
+  [v14 2007.50s] TOUCHDOWN loadReturn air=0.41
+🦘 v14 absoluteWindow CLOSE reason=confirmTimeout
+🦘 v14 REJECT reason=belowMinRise h=0.20 min=1.00 src=ballistic via=confirmTimeout
+  [v14 2013.25s] REJECT reason=belowMinRise h=0.20 min=1.00 src=ballistic via=confirmTimeout
+🦘 JumpDetector(v14) endSession flush lateJumps=0

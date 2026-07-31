@@ -1,0 +1,76 @@
+{
+  "detectedRateHz" : 199.4786703948007,
+  "detectionMode" : "standard",
+  "durationSec" : 2108.021747056335,
+  "file" : "log_20260727_144243_F3386A6C.kslog",
+  "format" : "onDevice",
+  "jumps" : [
+    {
+      "accepted" : true,
+      "airtime" : 1.67,
+      "apexTime" : 1.3089519999994081,
+      "confidence" : 75.83333333333333,
+      "height" : 3.28,
+      "heightSource" : "absoluteAltitude",
+      "index" : 0,
+      "jumpDistance" : 11.37,
+      "physicalAirtime" : 1.6678338050842285,
+      "rotations" : 1,
+      "takeoffOffsetSec" : 184.35465264320374
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.73,
+      "apexTime" : 1.2153819999994084,
+      "confidence" : 75.76461066666674,
+      "height" : 2.58,
+      "heightSource" : "absoluteAltitude",
+      "index" : 1,
+      "jumpDistance" : 6.53,
+      "physicalAirtime" : 1.727942943572998,
+      "rotations" : 1,
+      "takeoffOffsetSec" : 296.58033657073975
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.44,
+      "apexTime" : 0.16797699999915494,
+      "confidence" : 77.91035666666666,
+      "height" : 2.85,
+      "heightSource" : "relativeAltitude",
+      "index" : 2,
+      "jumpDistance" : 7.45,
+      "physicalAirtime" : 1.4373881816864014,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 736.8537714481354
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.49,
+      "apexTime" : 0,
+      "confidence" : 58.75,
+      "height" : 1.28,
+      "heightSource" : "imuIntegrated",
+      "index" : 3,
+      "jumpDistance" : 8.61,
+      "physicalAirtime" : 1.4924731254577637,
+      "rotations" : 0,
+      "takeoffOffsetSec" : 1131.049985408783
+    },
+    {
+      "accepted" : true,
+      "airtime" : 0.93,
+      "apexTime" : 0,
+      "confidence" : 55.00000000000001,
+      "height" : 1.05,
+      "heightSource" : "ballistic",
+      "index" : 4,
+      "jumpDistance" : 5.11,
+      "physicalAirtime" : 0.9265310764312744,
+      "rotations" : 1,
+      "takeoffOffsetSec" : 1705.4946415424347
+    }
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 420368
+}

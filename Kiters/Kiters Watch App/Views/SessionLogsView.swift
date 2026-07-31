@@ -30,7 +30,11 @@ struct SessionLogsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 12) {
+            // A regular VStack eagerly creates every row. Each log row reads a
+            // preview from disk, so a watch with many sessions can run out of
+            // memory (or be killed by the watchdog) as soon as this screen is
+            // opened. Only create rows as they approach the viewport.
+            LazyVStack(spacing: 12) {
                 Text(L("logs.title"))
                     .font(.headline)
 
@@ -197,7 +201,6 @@ struct SessionLogsView: View {
 struct LogFileRow: View {
     let url: URL
     @State private var fileSize: String = ""
-    @State private var fileSizeBytes: Int64 = 0
     @State private var rowCount: Int = 0
 
     // ── Sharing ──
@@ -317,21 +320,14 @@ struct LogFileRow: View {
 
     // MARK: - Helpers
 
-    /// Build share text: summary header + as much decoded log text as is safe for Messages.
-    /// Messages on watchOS can handle ~10–15 KB of text reliably.
-    private func buildShareText() -> String {
-        SessionLogger.shared.buildShareText(for: url, fileSize: fileSize, maxChars: 12_000)
-    }
-
-    /// Load file size, estimate row count, and prepare share text.
+    /// Load file size, estimate row count, and prepare share text without doing
+    /// file parsing on the watch's main thread.
     private func loadInfo() {
         DispatchQueue.global(qos: .utility).async {
             var size = "?"
-            var bytes: Int64 = 0
             var rows = 0
             if let attr = try? FileManager.default.attributesOfItem(atPath: url.path),
                let b = attr[.size] as? Int64 {
-                bytes = b
                 if b < 1024 {
                     size = "\(b) B"
                 } else if b < 1_048_576 {
@@ -341,12 +337,17 @@ struct LogFileRow: View {
                 }
                 rows = SessionLogger.shared.estimatedRowCount(for: url, fileSizeBytes: b)
             }
+
+            let preview = SessionLogger.shared.buildShareText(
+                for: url,
+                fileSize: size,
+                maxChars: 12_000
+            )
+
             DispatchQueue.main.async {
                 self.fileSize = size
-                self.fileSizeBytes = bytes
                 self.rowCount = rows
-                // Build share text after we have file info
-                self.shareText = self.buildShareText()
+                self.shareText = preview
             }
         }
     }

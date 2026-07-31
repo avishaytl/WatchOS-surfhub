@@ -96,6 +96,28 @@ struct HomeView: View {
                 .buttonStyle(.plain)
                 .disabled(waitingForPermission)
                 
+                // Sensor recording — a session that runs the full acquisition
+                // pipeline with NO detection engine: every sensor streams into
+                // the .kslog for ground-truth analysis, upload prompt at the end.
+                Button(action: {
+                    handleRecordSensorsTapped()
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "record.circle")
+                            .font(.system(size: 18))
+                            .foregroundColor(.red)
+                        Text(L("home.record_sensors"))
+                            .font(.headline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.3))
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
+                .disabled(waitingForPermission)
+
                 // Settings button
                 NavigationLink(destination: SettingsView()) {
                     HStack {
@@ -175,6 +197,15 @@ struct HomeView: View {
             sessionManager.requestLocationPermission()
         }
         showingSportSelection = true
+    }
+
+    private func handleRecordSensorsTapped() {
+        guard !waitingForPermission else { return }
+        if sessionManager.isLocationNotDetermined {
+            sessionManager.requestLocationPermission()
+        }
+        // Straight into the capture session — no sport selection, no engine.
+        sessionManager.startSession(sport: .kiteboarding, engineOverride: .sensorRecorder)
     }
     
     private func loadSessions() {

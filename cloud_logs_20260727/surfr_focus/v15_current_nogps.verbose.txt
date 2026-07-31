@@ -1,0 +1,2166 @@
+🦘 JumpDetector(v15) reset - ready=true minRise=1.0m base=6.0s-median@yank yank=1.2g quietStd=0.45g impact=1.9g float>=0.35 floatFactor=2.6 splashGuard=3.0s absolute=continuousSingleConsumer gps=metricsOnly offline replay: watch sensor readiness skipped
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15    2.35s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 CANDIDATE t0=6279.56 yank=1.23g quietAt=6280.46 B(abs)=n/a B(rel)=0.30
+  [v15   13.28s] CANDIDATE t0=6279.56 yank=1.23g quietAt=6280.46 B(abs)=n/a B(rel)=0.30
+🦘 v15 IMPACT pending=2.20g air=3.94
+  [v15   16.31s] IMPACT pending=2.20g air=3.94
+🦘 v15 LANDING impact+noRiseAbort impact=2.20g air=3.94
+  [v15   16.32s] LANDING impact+noRiseAbort impact=2.20g air=3.94
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.77 air=3.94
+  [v15   17.38s] REJECT reason=ballisticWithoutBaroLanding hBal=2.77 air=3.94
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.08 air=3.23
+  [v15   17.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.08 air=3.23
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.94 air=2.70
+  [v15   17.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.94 air=2.70
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.80 air=2.13
+  [v15   17.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.80 air=2.13
+🦘 v15 CANDIDATE t0=6283.50 yank=2.20g quietAt=6284.57 B(abs)=n/a B(rel)=0.23
+  [v15   17.38s] CANDIDATE t0=6283.50 yank=2.20g quietAt=6284.57 B(abs)=n/a B(rel)=0.23
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   17.65s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15   21.32s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=2.64 air=5.00
+  [v15   22.32s] REJECT reason=ballisticNeedsImpact hBal=2.64 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=1.77
+  [v15   22.32s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=1.77
+🦘 v15 CANDIDATE t0=6286.49 yank=1.78g quietAt=6289.51 B(abs)=n/a B(rel)=n/a
+  [v15   22.32s] CANDIDATE t0=6286.49 yank=1.78g quietAt=6289.51 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   22.64s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 IMPACT pending=1.99g air=3.76
+  [v15   23.06s] IMPACT pending=1.99g air=3.76
+🦘 v15 LANDING impact impact=1.99g air=3.76
+  [v15   23.07s] LANDING impact impact=1.99g air=3.76
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.11 air=3.76
+  [v15   24.58s] REJECT reason=ballisticWithoutBaroLanding hBal=2.11 air=3.76
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.04 air=6.23
+  [v15   24.58s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.04 air=6.23
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.25 air=5.67
+  [v15   24.58s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.25 air=5.67
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.16 air=5.15
+  [v15   24.58s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.16 air=5.15
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.65 air=3.00
+  [v15   24.58s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.65 air=3.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=1.88
+  [v15   24.58s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=1.88
+🦘 v15 CANDIDATE t0=6290.25 yank=1.99g quietAt=6291.76 B(abs)=n/a B(rel)=n/a
+  [v15   24.58s] CANDIDATE t0=6290.25 yank=1.99g quietAt=6291.76 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   24.64s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 IMPACT pending=2.03g air=2.30
+  [v15   25.37s] IMPACT pending=2.03g air=2.30
+🦘 v15 LANDING impact impact=2.24g air=2.64
+  [v15   25.71s] LANDING impact impact=2.24g air=2.64
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15   27.22s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.66 air=6.50
+  [v15   27.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.66 air=6.50
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.34 air=5.74
+  [v15   27.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.34 air=5.74
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.15 air=4.62
+  [v15   27.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.15 air=4.62
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.04 air=3.78
+  [v15   27.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.04 air=3.78
+🦘 v15 CANDIDATE t0=6292.89 yank=2.24g quietAt=6294.41 B(abs)=n/a B(rel)=n/a
+  [v15   27.22s] CANDIDATE t0=6292.89 yank=2.24g quietAt=6294.41 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   27.30s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   28.95s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15   55.71s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6319.54 yank=1.46g quietAt=6322.90 B(abs)=n/a B(rel)=0.27
+  [v15   55.71s] CANDIDATE t0=6319.54 yank=1.46g quietAt=6322.90 B(abs)=n/a B(rel)=0.27
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   55.91s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15   57.36s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.19
+  [v15   58.36s] REJECT reason=floatBelowMin float=0.19
+🦘 v15 CANDIDATE t0=6322.15 yank=1.24g quietAt=6325.54 B(abs)=n/a B(rel)=0.18
+  [v15   58.36s] CANDIDATE t0=6322.15 yank=1.24g quietAt=6325.54 B(abs)=n/a B(rel)=0.18
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   58.57s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15   59.97s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.20
+  [v15   60.97s] REJECT reason=floatBelowMin float=0.20
+🦘 v15 CANDIDATE t0=6326.96 yank=1.32g quietAt=6328.16 B(abs)=n/a B(rel)=-0.04
+  [v15   60.97s] CANDIDATE t0=6326.96 yank=1.32g quietAt=6328.16 B(abs)=n/a B(rel)=-0.04
+🦘 v15 IMPACT pending=2.19g air=1.30
+  [v15   61.08s] IMPACT pending=2.19g air=1.30
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   61.24s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 IMPACT discarded=3.61g — early mid-flight jolt (quiet resumed)
+  [v15   62.76s] IMPACT discarded=3.61g — early mid-flight jolt (quiet resumed)
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15   64.78s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.95 air=5.00
+  [v15   65.78s] REJECT reason=ballisticNeedsImpact hBal=1.95 air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15   65.78s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 CANDIDATE t0=6329.86 yank=1.64g quietAt=6332.96 B(abs)=n/a B(rel)=n/a
+  [v15   65.78s] CANDIDATE t0=6329.86 yank=1.64g quietAt=6332.96 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   65.89s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 IMPACT pending=2.35g air=11.78
+  [v15   74.46s] IMPACT pending=2.35g air=11.78
+🦘 v15 LANDING impact impact=2.55g air=11.80
+  [v15   74.47s] LANDING impact impact=2.55g air=11.80
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=25.25 air=11.80
+  [v15   75.98s] REJECT reason=ballisticAboveHardCap hBal=25.25 air=11.80
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=5.73
+  [v15   75.98s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=5.73
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=5.18
+  [v15   75.98s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=5.18
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.49 air=4.61
+  [v15   75.98s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.49 air=4.61
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=2.57
+  [v15   75.98s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=2.57
+🦘 v15 CANDIDATE t0=6341.66 yank=2.55g quietAt=6343.17 B(abs)=n/a B(rel)=-0.41
+  [v15   75.98s] CANDIDATE t0=6341.66 yank=2.55g quietAt=6343.17 B(abs)=n/a B(rel)=-0.41
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   76.21s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 IMPACT pending=1.93g air=2.47
+  [v15   76.94s] IMPACT pending=1.93g air=2.47
+🦘 v15 LANDING impact impact=2.04g air=2.49
+  [v15   76.97s] LANDING impact impact=2.04g air=2.49
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15   78.48s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.62 air=5.06
+  [v15   78.48s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.62 air=5.06
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.49 air=3.26
+  [v15   78.48s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.49 air=3.26
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.61
+  [v15   78.48s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.61
+🦘 v15 CANDIDATE t0=6341.67 yank=2.46g quietAt=6345.66 B(abs)=n/a B(rel)=-0.41
+  [v15   78.48s] CANDIDATE t0=6341.67 yank=2.46g quietAt=6345.66 B(abs)=n/a B(rel)=-0.41
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   78.54s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 IMPACT pending=2.50g air=14.05
+  [v15   88.53s] IMPACT pending=2.50g air=14.05
+🦘 v15 LANDING impact impact=2.51g air=14.05
+  [v15   88.54s] LANDING impact impact=2.51g air=14.05
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=35.81 air=14.05
+  [v15   90.05s] REJECT reason=ballisticAboveHardCap hBal=35.81 air=14.05
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.88 air=5.98
+  [v15   90.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.88 air=5.98
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=5.10
+  [v15   90.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=5.10
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=4.35
+  [v15   90.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=4.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.67
+  [v15   90.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.67
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=2.93
+  [v15   90.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=2.93
+🦘 v15 CANDIDATE t0=6355.72 yank=2.51g quietAt=6357.23 B(abs)=n/a B(rel)=1.33
+  [v15   90.05s] CANDIDATE t0=6355.72 yank=2.51g quietAt=6357.23 B(abs)=n/a B(rel)=1.33
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   90.18s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   93.18s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15   93.54s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.62 air=5.00
+  [v15   94.54s] REJECT reason=ballisticNeedsImpact hBal=1.62 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.57 air=1.96
+  [v15   94.54s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.57 air=1.96
+🦘 v15 CANDIDATE t0=6359.12 yank=1.39g quietAt=6361.73 B(abs)=n/a B(rel)=n/a
+  [v15   94.54s] CANDIDATE t0=6359.12 yank=1.39g quietAt=6361.73 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   94.84s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 IMPACT pending=1.95g air=18.50
+  [v15  110.44s] IMPACT pending=1.95g air=18.50
+🦘 v15 LANDING impact impact=1.95g air=18.50
+  [v15  110.44s] LANDING impact impact=1.95g air=18.50
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=62.07 air=18.50
+  [v15  111.95s] REJECT reason=ballisticAboveHardCap hBal=62.07 air=18.50
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.83 air=5.82
+  [v15  111.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.83 air=5.82
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=5.29
+  [v15  111.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=5.29
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.57 air=4.16
+  [v15  111.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.57 air=4.16
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=3.56
+  [v15  111.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=3.56
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.39 air=2.55
+  [v15  111.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.39 air=2.55
+🦘 v15 CANDIDATE t0=6377.62 yank=1.95g quietAt=6379.13 B(abs)=n/a B(rel)=-2.27
+  [v15  111.95s] CANDIDATE t0=6377.62 yank=1.95g quietAt=6379.13 B(abs)=n/a B(rel)=-2.27
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  112.14s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 IMPACT pending=2.05g air=6.94
+  [v15  117.38s] IMPACT pending=2.05g air=6.94
+🦘 v15 LANDING impact impact=2.25g air=7.79
+  [v15  118.23s] LANDING impact impact=2.25g air=7.79
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=11.00 air=7.79
+  [v15  119.74s] REJECT reason=ballisticAboveHardCap hBal=11.00 air=7.79
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.66 air=6.50
+  [v15  119.74s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.66 air=6.50
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.58
+  [v15  119.74s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.58
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=4.77
+  [v15  119.74s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=4.77
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=3.91
+  [v15  119.74s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=3.91
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.56 air=3.35
+  [v15  119.74s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.56 air=3.35
+🦘 v15 CANDIDATE t0=6385.41 yank=2.25g quietAt=6386.92 B(abs)=n/a B(rel)=-0.43
+  [v15  119.74s] CANDIDATE t0=6385.41 yank=2.25g quietAt=6386.92 B(abs)=n/a B(rel)=-0.43
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  119.79s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  123.23s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.66 air=5.00
+  [v15  124.23s] REJECT reason=ballisticNeedsImpact hBal=1.66 air=5.00
+🦘 v15 CANDIDATE t0=6389.96 yank=1.71g quietAt=6391.42 B(abs)=n/a B(rel)=n/a
+  [v15  124.23s] CANDIDATE t0=6389.96 yank=1.71g quietAt=6391.42 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  124.62s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 IMPACT pending=1.91g air=13.58
+  [v15  136.35s] IMPACT pending=1.91g air=13.58
+🦘 v15 LANDING impact impact=1.91g air=13.59
+  [v15  136.36s] LANDING impact impact=1.91g air=13.59
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=33.48 air=13.59
+  [v15  137.87s] REJECT reason=ballisticAboveHardCap hBal=33.48 air=13.59
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.89 air=6.17
+  [v15  137.87s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.89 air=6.17
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.25 air=5.29
+  [v15  137.87s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.25 air=5.29
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.13 air=3.73
+  [v15  137.87s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.13 air=3.73
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.95 air=2.36
+  [v15  137.87s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.95 air=2.36
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.86 air=1.71
+  [v15  137.87s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.86 air=1.71
+🦘 v15 CANDIDATE t0=6403.54 yank=1.91g quietAt=6405.05 B(abs)=n/a B(rel)=-2.26
+  [v15  137.87s] CANDIDATE t0=6403.54 yank=1.91g quietAt=6405.05 B(abs)=n/a B(rel)=-2.26
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  138.09s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  141.36s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  142.36s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.89 air=1.96
+  [v15  142.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.89 air=1.96
+🦘 v15 CANDIDATE t0=6407.62 yank=1.64g quietAt=6409.55 B(abs)=n/a B(rel)=n/a
+  [v15  142.36s] CANDIDATE t0=6407.62 yank=1.64g quietAt=6409.55 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  142.58s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  170.43s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6436.19 yank=1.40g quietAt=6437.62 B(abs)=n/a B(rel)=-3.26
+  [v15  170.43s] CANDIDATE t0=6436.19 yank=1.40g quietAt=6437.62 B(abs)=n/a B(rel)=-3.26
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  170.70s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  172.70s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=3.27g air=14.49
+  [v15  183.50s] IMPACT pending=3.27g air=14.49
+🦘 v15 LANDING impact impact=4.15g air=14.51
+  [v15  183.52s] LANDING impact impact=4.15g air=14.51
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=38.20 air=14.51
+  [v15  185.03s] REJECT reason=ballisticAboveHardCap hBal=38.20 air=14.51
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.72 air=6.53
+  [v15  185.03s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.72 air=6.53
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=5.97
+  [v15  185.03s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=5.97
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  185.03s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.57 air=3.98
+  [v15  185.03s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.57 air=3.98
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=3.43
+  [v15  185.03s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=3.43
+🦘 v15 CANDIDATE(reanchor) t0=6450.71 yank=4.15g
+  [v15  185.03s] CANDIDATE(reanchor) t0=6450.71 yank=4.15g
+🦘 v15 CANDIDATE t0=6450.71 yank=4.15g quietAt=6452.22 B(abs)=n/a B(rel)=-2.38
+  [v15  185.03s] CANDIDATE t0=6450.71 yank=4.15g quietAt=6452.22 B(abs)=n/a B(rel)=-2.38
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  185.33s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=1.92g air=2.85
+  [v15  186.38s] IMPACT pending=1.92g air=2.85
+🦘 v15 LANDING impact impact=2.15g air=2.96
+  [v15  186.48s] LANDING impact impact=2.15g air=2.96
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.68 air=2.96
+  [v15  187.99s] REJECT reason=ballisticWithoutBaroLanding hBal=1.68 air=2.96
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.35 air=6.37
+  [v15  187.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.35 air=6.37
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  187.99s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 CANDIDATE t0=6453.66 yank=2.15g quietAt=6455.17 B(abs)=n/a B(rel)=n/a
+  [v15  187.99s] CANDIDATE t0=6453.66 yank=2.15g quietAt=6455.17 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  188.00s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  216.48s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6481.53 yank=1.38g quietAt=6483.66 B(abs)=n/a B(rel)=-0.15
+  [v15  216.48s] CANDIDATE t0=6481.53 yank=1.38g quietAt=6483.66 B(abs)=n/a B(rel)=-0.15
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  216.61s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  219.35s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  220.35s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=6486.50 yank=1.81g quietAt=6487.54 B(abs)=n/a B(rel)=-0.44
+  [v15  220.35s] CANDIDATE t0=6486.50 yank=1.81g quietAt=6487.54 B(abs)=n/a B(rel)=-0.44
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  220.61s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=1.98g air=2.80
+  [v15  222.12s] IMPACT pending=1.98g air=2.80
+🦘 v15 LANDING impact impact=2.18g air=2.85
+  [v15  222.16s] LANDING impact impact=2.18g air=2.85
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.54 air=2.85
+  [v15  223.67s] REJECT reason=ballisticWithoutBaroLanding hBal=1.54 air=2.85
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.73 air=6.09
+  [v15  223.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.73 air=6.09
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=5.51
+  [v15  223.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=5.51
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=4.63
+  [v15  223.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=4.63
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.99
+  [v15  223.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.99
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.39 air=2.04
+  [v15  223.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.39 air=2.04
+🦘 v15 CANDIDATE t0=6489.35 yank=2.18g quietAt=6490.86 B(abs)=n/a B(rel)=n/a
+  [v15  223.67s] CANDIDATE t0=6489.35 yank=2.18g quietAt=6490.86 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  223.93s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=2.06g air=11.87
+  [v15  234.03s] IMPACT pending=2.06g air=11.87
+🦘 v15 LANDING impact impact=3.79g air=12.12
+  [v15  234.28s] LANDING impact impact=3.79g air=12.12
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=26.64 air=12.12
+  [v15  235.79s] REJECT reason=ballisticAboveHardCap hBal=26.64 air=12.12
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=5.95
+  [v15  235.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=5.95
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=4.90
+  [v15  235.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=4.90
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.82
+  [v15  235.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.82
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=3.23
+  [v15  235.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=3.23
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=2.72
+  [v15  235.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=2.72
+🦘 v15 CANDIDATE t0=6501.46 yank=3.79g quietAt=6502.98 B(abs)=n/a B(rel)=-0.27
+  [v15  235.79s] CANDIDATE t0=6501.46 yank=3.79g quietAt=6502.98 B(abs)=n/a B(rel)=-0.27
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  235.91s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=2.34g air=2.22
+  [v15  236.50s] IMPACT pending=2.34g air=2.22
+🦘 v15 LANDING impact impact=3.31g air=2.26
+  [v15  236.54s] LANDING impact impact=3.31g air=2.26
+🦘 v15 JUMP h=1.69m src=ballistic air=2.26s conf=0.50
+  [v15  238.05s] JUMP h=1.69m src=ballistic air=2.26s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  238.05s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  238.24s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  239.05s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  239.22s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  240.05s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  240.07s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  241.06s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  241.23s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  242.06s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  242.23s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  243.06s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  243.23s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 CANDIDATE t0=6509.08 yank=1.47g quietAt=6511.25 B(abs)=n/a B(rel)=n/a
+  [v15  244.06s] CANDIDATE t0=6509.08 yank=1.47g quietAt=6511.25 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  244.55s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  271.90s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6536.09 yank=1.44g quietAt=6539.08 B(abs)=n/a B(rel)=-5.21
+  [v15  271.90s] CANDIDATE t0=6536.09 yank=1.44g quietAt=6539.08 B(abs)=n/a B(rel)=-5.21
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  272.18s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 IMPACT pending=2.26g air=26.97
+  [v15  295.87s] IMPACT pending=2.26g air=26.97
+🦘 v15 LANDING impact impact=4.01g air=27.00
+  [v15  295.90s] LANDING impact impact=4.01g air=27.00
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=132.15 air=27.00
+  [v15  297.41s] REJECT reason=ballisticAboveHardCap hBal=132.15 air=27.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.33 air=6.36
+  [v15  297.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.33 air=6.36
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.78
+  [v15  297.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.78
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.62 air=5.21
+  [v15  297.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.62 air=5.21
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.01
+  [v15  297.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=2.30
+  [v15  297.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=2.30
+🦘 v15 CANDIDATE(reanchor) t0=6563.09 yank=4.01g
+  [v15  297.41s] CANDIDATE(reanchor) t0=6563.09 yank=4.01g
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  297.46s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 IMPACT pending=1.92g air=2.40
+  [v15  298.31s] IMPACT pending=1.92g air=2.40
+🦘 v15 LANDING impact impact=1.92g air=2.41
+  [v15  298.31s] LANDING impact impact=1.92g air=2.41
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.65 air=2.41
+  [v15  299.82s] REJECT reason=ballisticWithoutBaroLanding hBal=1.65 air=2.41
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.01
+  [v15  299.82s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=2.30
+  [v15  299.82s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=2.30
+🦘 v15 CANDIDATE t0=6563.09 yank=4.01g quietAt=6567.01 B(abs)=n/a B(rel)=-2.25
+  [v15  299.82s] CANDIDATE t0=6563.09 yank=4.01g quietAt=6567.01 B(abs)=n/a B(rel)=-2.25
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  300.12s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.65
+  [v15  301.55s] LANDING noRiseAbort-softClose impact=0.00g air=5.65
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=2.03 air=5.65
+  [v15  302.56s] REJECT reason=ballisticNeedsImpact hBal=2.03 air=5.65
+🦘 v15 CANDIDATE t0=6568.02 yank=1.82g quietAt=6569.74 B(abs)=n/a B(rel)=n/a
+  [v15  302.56s] CANDIDATE t0=6568.02 yank=1.82g quietAt=6569.74 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  302.79s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 IMPACT pending=1.92g air=6.55
+  [v15  307.38s] IMPACT pending=1.92g air=6.55
+🦘 v15 LANDING impact impact=1.92g air=6.56
+  [v15  307.39s] LANDING impact impact=1.92g air=6.56
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=7.79 air=6.56
+  [v15  308.90s] REJECT reason=ballisticAboveHardCap hBal=7.79 air=6.56
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.53 air=6.00
+  [v15  308.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.53 air=6.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=5.29
+  [v15  308.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=5.29
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=4.14
+  [v15  308.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=4.14
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=3.23
+  [v15  308.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=3.23
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.29 air=1.64
+  [v15  308.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.29 air=1.64
+🦘 v15 CANDIDATE t0=6574.57 yank=1.92g quietAt=6576.08 B(abs)=n/a B(rel)=n/a
+  [v15  308.90s] CANDIDATE t0=6574.57 yank=1.92g quietAt=6576.08 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  309.27s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  337.38s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6602.85 yank=1.56g quietAt=6604.57 B(abs)=n/a B(rel)=-0.17
+  [v15  337.38s] CANDIDATE t0=6602.85 yank=1.56g quietAt=6604.57 B(abs)=n/a B(rel)=-0.17
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  337.39s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 IMPACT pending=1.94g air=4.29
+  [v15  339.95s] IMPACT pending=1.94g air=4.29
+🦘 v15 LANDING impact+noRiseAbort impact=1.94g air=4.29
+  [v15  339.95s] LANDING impact+noRiseAbort impact=1.94g air=4.29
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.49 air=4.29
+  [v15  340.96s] REJECT reason=ballisticWithoutBaroLanding hBal=1.49 air=4.29
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.54 air=6.01
+  [v15  340.96s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.54 air=6.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.71
+  [v15  340.96s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.71
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=3.14
+  [v15  340.96s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=3.14
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.32 air=1.71
+  [v15  340.96s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.32 air=1.71
+🦘 v15 CANDIDATE t0=6607.13 yank=1.94g quietAt=6608.14 B(abs)=n/a B(rel)=-0.26
+  [v15  340.96s] CANDIDATE t0=6607.13 yank=1.94g quietAt=6608.14 B(abs)=n/a B(rel)=-0.26
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  341.05s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  344.95s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  345.95s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.32 air=1.71
+  [v15  345.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.32 air=1.71
+🦘 v15 CANDIDATE t0=6609.92 yank=1.83g quietAt=6613.14 B(abs)=n/a B(rel)=n/a
+  [v15  345.95s] CANDIDATE t0=6609.92 yank=1.83g quietAt=6613.14 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  346.04s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 IMPACT pending=2.03g air=5.14
+  [v15  347.88s] IMPACT pending=2.03g air=5.14
+🦘 v15 LANDING impact impact=4.94g air=5.55
+  [v15  348.29s] LANDING impact impact=4.94g air=5.55
+🦘 v15 JUMP h=1.79m src=ballistic air=5.55s conf=0.50
+  [v15  349.80s] JUMP h=1.79m src=ballistic air=5.55s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  349.80s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  350.03s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  350.80s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  351.03s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  352.11s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  352.35s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  353.11s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  353.36s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  354.11s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  354.36s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  355.12s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  355.36s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 CANDIDATE t0=6620.59 yank=1.56g quietAt=6623.30 B(abs)=n/a B(rel)=n/a
+  [v15  356.12s] CANDIDATE t0=6620.59 yank=1.56g quietAt=6623.30 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.08g air=27.07
+  [v15  380.48s] IMPACT pending=2.08g air=27.07
+🦘 v15 LANDING impact impact=2.08g air=27.08
+  [v15  380.48s] LANDING impact impact=2.08g air=27.08
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=132.94 air=27.08
+  [v15  381.99s] REJECT reason=ballisticAboveHardCap hBal=132.94 air=27.08
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.65
+  [v15  381.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.65
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=4.60
+  [v15  381.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=4.60
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.56 air=4.02
+  [v15  381.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.56 air=4.02
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=3.18
+  [v15  381.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=3.18
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.42 air=1.87
+  [v15  381.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.42 air=1.87
+🦘 v15 CANDIDATE t0=6647.67 yank=2.08g quietAt=6649.18 B(abs)=n/a B(rel)=-1.99
+  [v15  381.99s] CANDIDATE t0=6647.67 yank=2.08g quietAt=6649.18 B(abs)=n/a B(rel)=-1.99
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  382.31s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  385.49s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  386.49s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.42 air=1.87
+  [v15  386.49s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.42 air=1.87
+🦘 v15 CANDIDATE t0=6650.24 yank=1.48g quietAt=6653.67 B(abs)=n/a B(rel)=-2.17
+  [v15  386.49s] CANDIDATE t0=6650.24 yank=1.48g quietAt=6653.67 B(abs)=n/a B(rel)=-2.17
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  386.63s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  388.06s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  388.28s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  389.06s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=6654.16 yank=1.51g quietAt=6656.24 B(abs)=n/a B(rel)=n/a
+  [v15  389.06s] CANDIDATE t0=6654.16 yank=1.51g quietAt=6656.24 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  389.29s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=1.92g air=7.98
+  [v15  394.96s] IMPACT pending=1.92g air=7.98
+🦘 v15 LANDING impact impact=5.03g air=8.25
+  [v15  395.23s] LANDING impact impact=5.03g air=8.25
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=12.34 air=8.25
+  [v15  396.74s] REJECT reason=ballisticAboveHardCap hBal=12.34 air=8.25
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  396.74s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=4.68
+  [v15  396.74s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=4.68
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15  396.74s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.30
+  [v15  396.74s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.30
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15  396.74s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 CANDIDATE(reanchor) t0=6662.41 yank=5.03g
+  [v15  396.74s] CANDIDATE(reanchor) t0=6662.41 yank=5.03g
+🦘 v15 CANDIDATE t0=6662.41 yank=5.03g quietAt=6663.92 B(abs)=n/a B(rel)=-2.30
+  [v15  396.74s] CANDIDATE t0=6662.41 yank=5.03g quietAt=6663.92 B(abs)=n/a B(rel)=-2.30
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  396.94s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=2.06g air=2.90
+  [v15  398.13s] IMPACT pending=2.06g air=2.90
+🦘 v15 LANDING impact impact=2.06g air=2.91
+  [v15  398.13s] LANDING impact impact=2.06g air=2.91
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.60 air=2.91
+  [v15  399.64s] REJECT reason=ballisticWithoutBaroLanding hBal=1.60 air=2.91
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.30
+  [v15  399.64s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.30
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15  399.64s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  399.64s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.42 air=2.41
+  [v15  399.64s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.42 air=2.41
+🦘 v15 CANDIDATE t0=6665.31 yank=2.06g quietAt=6666.83 B(abs)=n/a B(rel)=-2.30
+  [v15  399.64s] CANDIDATE t0=6665.31 yank=2.06g quietAt=6666.83 B(abs)=n/a B(rel)=-2.30
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  399.94s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  428.13s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6693.77 yank=1.37g quietAt=6695.32 B(abs)=n/a B(rel)=-0.32
+  [v15  428.13s] CANDIDATE t0=6693.77 yank=1.37g quietAt=6695.32 B(abs)=n/a B(rel)=-0.32
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  428.22s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  431.59s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  432.59s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=6696.20 yank=1.38g quietAt=6699.78 B(abs)=n/a B(rel)=-0.36
+  [v15  432.59s] CANDIDATE t0=6696.20 yank=1.38g quietAt=6699.78 B(abs)=n/a B(rel)=-0.36
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  432.88s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  434.01s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  435.02s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=6700.96 yank=1.52g quietAt=6702.20 B(abs)=n/a B(rel)=-0.46
+  [v15  435.02s] CANDIDATE t0=6700.96 yank=1.52g quietAt=6702.20 B(abs)=n/a B(rel)=-0.46
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  435.21s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  438.78s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  439.78s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=6705.83 yank=1.52g quietAt=6706.97 B(abs)=n/a B(rel)=n/a
+  [v15  439.78s] CANDIDATE t0=6705.83 yank=1.52g quietAt=6706.97 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  439.86s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=1.99g air=7.24
+  [v15  445.88s] IMPACT pending=1.99g air=7.24
+🦘 v15 LANDING impact impact=3.38g air=7.84
+  [v15  446.48s] LANDING impact impact=3.38g air=7.84
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=11.14 air=7.84
+  [v15  447.99s] REJECT reason=ballisticAboveHardCap hBal=11.14 air=7.84
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.23 air=6.32
+  [v15  447.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.23 air=6.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=5.70
+  [v15  447.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=5.70
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=4.81
+  [v15  447.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=4.81
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=4.29
+  [v15  447.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=4.29
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=3.65
+  [v15  447.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=3.65
+🦘 v15 CANDIDATE t0=6713.67 yank=3.38g quietAt=6715.17 B(abs)=n/a B(rel)=0.15
+  [v15  447.99s] CANDIDATE t0=6713.67 yank=3.38g quietAt=6715.17 B(abs)=n/a B(rel)=0.15
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  448.18s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=1.93g air=2.49
+  [v15  448.98s] IMPACT pending=1.93g air=2.49
+🦘 v15 LANDING impact impact=2.28g air=2.52
+  [v15  449.01s] LANDING impact impact=2.28g air=2.52
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.61 air=2.52
+  [v15  450.51s] REJECT reason=ballisticWithoutBaroLanding hBal=1.61 air=2.52
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.80 air=6.13
+  [v15  450.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.80 air=6.13
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=2.71
+  [v15  450.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=2.71
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=1.55
+  [v15  450.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=1.55
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=1.95
+  [v15  450.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=1.95
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.33 air=1.37
+  [v15  450.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.33 air=1.37
+🦘 v15 CANDIDATE t0=6713.70 yank=2.99g quietAt=6717.70 B(abs)=n/a B(rel)=0.15
+  [v15  450.51s] CANDIDATE t0=6713.70 yank=2.99g quietAt=6717.70 B(abs)=n/a B(rel)=0.15
+🦘 v15 IMPACT pending=1.93g air=4.23
+  [v15  450.75s] IMPACT pending=1.93g air=4.23
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  450.84s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 LANDING impact impact=2.09g air=4.24
+  [v15  450.76s] LANDING impact impact=2.09g air=4.24
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.83 air=4.24
+  [v15  452.27s] REJECT reason=ballisticWithoutBaroLanding hBal=1.83 air=4.24
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=1.55
+  [v15  452.27s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=1.55
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=3.70
+  [v15  452.27s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=3.70
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.11
+  [v15  452.27s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.11
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=1.76
+  [v15  452.27s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=1.76
+🦘 v15 CANDIDATE t0=6716.19 yank=2.28g quietAt=6719.68 B(abs)=n/a B(rel)=0.15
+  [v15  452.49s] CANDIDATE t0=6716.19 yank=2.28g quietAt=6719.68 B(abs)=n/a B(rel)=0.15
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  452.51s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  454.01s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  455.01s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=3.70
+  [v15  455.01s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=3.70
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.11
+  [v15  455.01s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=3.11
+🦘 v15 CANDIDATE t0=6718.52 yank=1.82g quietAt=6722.20 B(abs)=n/a B(rel)=n/a
+  [v15  455.01s] CANDIDATE t0=6718.52 yank=1.82g quietAt=6722.20 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  455.17s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=1.90g air=12.40
+  [v15  463.73s] IMPACT pending=1.90g air=12.40
+🦘 v15 LANDING impact impact=3.19g air=13.52
+  [v15  464.86s] LANDING impact impact=3.19g air=13.52
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  466.36s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.23 air=6.32
+  [v15  466.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.23 air=6.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.13 air=5.32
+  [v15  466.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.13 air=5.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.05 air=4.57
+  [v15  466.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.05 air=4.57
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.93 air=3.60
+  [v15  466.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.93 air=3.60
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=1.43
+  [v15  466.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.36 air=1.43
+🦘 v15 CANDIDATE t0=6732.04 yank=3.19g quietAt=6733.55 B(abs)=n/a B(rel)=-3.51
+  [v15  466.36s] CANDIDATE t0=6732.04 yank=3.19g quietAt=6733.55 B(abs)=n/a B(rel)=-3.51
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  466.48s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  494.86s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6758.55 yank=1.80g quietAt=6762.04 B(abs)=n/a B(rel)=-3.04
+  [v15  494.86s] CANDIDATE t0=6758.55 yank=1.80g quietAt=6762.04 B(abs)=n/a B(rel)=-3.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  495.09s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=2.03g air=22.65
+  [v15  514.02s] IMPACT pending=2.03g air=22.65
+🦘 v15 LANDING impact impact=2.14g air=22.66
+  [v15  514.03s] LANDING impact impact=2.14g air=22.66
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=93.14 air=22.66
+  [v15  515.54s] REJECT reason=ballisticAboveHardCap hBal=93.14 air=22.66
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.66 air=5.41
+  [v15  515.54s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.66 air=5.41
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  515.54s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  515.54s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 CANDIDATE t0=6781.22 yank=2.14g quietAt=6782.72 B(abs)=n/a B(rel)=-1.41
+  [v15  515.54s] CANDIDATE t0=6781.22 yank=2.14g quietAt=6782.72 B(abs)=n/a B(rel)=-1.41
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  515.72s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=1.92g air=2.85
+  [v15  516.88s] IMPACT pending=1.92g air=2.85
+🦘 v15 LANDING impact impact=2.14g air=2.87
+  [v15  516.91s] LANDING impact impact=2.14g air=2.87
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.85 air=2.87
+  [v15  518.41s] REJECT reason=ballisticWithoutBaroLanding hBal=1.85 air=2.87
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.61 air=6.04
+  [v15  518.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.61 air=6.04
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=4.85
+  [v15  518.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=4.85
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=2.37
+  [v15  518.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=2.37
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=1.82
+  [v15  518.41s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=1.82
+🦘 v15 REJECT reason=floatBelowMin float=0.26
+  [v15  518.41s] REJECT reason=floatBelowMin float=0.26
+🦘 v15 CANDIDATE t0=6784.09 yank=2.14g quietAt=6785.60 B(abs)=n/a B(rel)=n/a
+  [v15  518.41s] CANDIDATE t0=6784.09 yank=2.14g quietAt=6785.60 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  518.70s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=2.18g air=11.89
+  [v15  528.79s] IMPACT pending=2.18g air=11.89
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  532.02s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 LANDING impact impact=2.72g air=13.74
+  [v15  530.65s] LANDING impact impact=2.72g air=13.74
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=34.25 air=13.74
+  [v15  532.16s] REJECT reason=ballisticAboveHardCap hBal=34.25 air=13.74
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.15 air=5.51
+  [v15  532.16s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.15 air=5.51
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.43 air=2.21
+  [v15  532.16s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.43 air=2.21
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.32 air=1.25
+  [v15  532.16s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.32 air=1.25
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  532.35s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 CANDIDATE t0=6797.83 yank=2.72g quietAt=6800.46 B(abs)=n/a B(rel)=-0.22
+  [v15  533.28s] CANDIDATE t0=6797.83 yank=2.72g quietAt=6800.46 B(abs)=n/a B(rel)=-0.22
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  535.65s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.79 air=5.00
+  [v15  536.65s] REJECT reason=ballisticNeedsImpact hBal=1.79 air=5.00
+🦘 v15 CANDIDATE t0=6802.38 yank=1.85g quietAt=6803.84 B(abs)=n/a B(rel)=n/a
+  [v15  536.65s] CANDIDATE t0=6802.38 yank=1.85g quietAt=6803.84 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  536.67s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 IMPACT pending=1.92g air=4.31
+  [v15  539.50s] IMPACT pending=1.92g air=4.31
+🦘 v15 LANDING impact impact=1.96g air=4.35
+  [v15  539.54s] LANDING impact impact=1.96g air=4.35
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.80 air=4.35
+  [v15  541.05s] REJECT reason=ballisticWithoutBaroLanding hBal=1.80 air=4.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.66 air=6.50
+  [v15  541.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.66 air=6.50
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.66 air=5.35
+  [v15  541.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.66 air=5.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=3.63
+  [v15  541.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=3.63
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=2.58
+  [v15  541.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=2.58
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.66
+  [v15  541.05s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.66
+🦘 v15 CANDIDATE t0=6806.72 yank=1.96g quietAt=6808.24 B(abs)=n/a B(rel)=n/a
+  [v15  541.05s] CANDIDATE t0=6806.72 yank=1.96g quietAt=6808.24 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  541.34s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  569.54s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6833.22 yank=1.30g quietAt=6836.73 B(abs)=n/a B(rel)=-1.27
+  [v15  569.54s] CANDIDATE t0=6833.22 yank=1.30g quietAt=6836.73 B(abs)=n/a B(rel)=-1.27
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  569.62s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 IMPACT pending=2.04g air=4.91
+  [v15  570.94s] IMPACT pending=2.04g air=4.91
+🦘 v15 LANDING impact+noRiseAbort impact=2.26g air=4.93
+  [v15  570.96s] LANDING impact+noRiseAbort impact=2.26g air=4.93
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.58 air=4.93
+  [v15  571.96s] REJECT reason=ballisticWithoutBaroLanding hBal=1.58 air=4.93
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=3.75
+  [v15  571.96s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=3.75
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=2.23
+  [v15  571.96s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=2.23
+🦘 v15 CANDIDATE t0=6838.28 yank=3.31g quietAt=6839.28 B(abs)=n/a B(rel)=-1.34
+  [v15  572.09s] CANDIDATE t0=6838.28 yank=3.31g quietAt=6839.28 B(abs)=n/a B(rel)=-1.34
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  572.26s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 BARO rel datumStep delta=-43.40 — window reset
+  [v15  574.67s] BARO rel datumStep delta=-43.40 — window reset
+🦘 v15 BARO rel datumStep delta=18.49 — window reset
+  [v15  579.80s] BARO rel datumStep delta=18.49 — window reset
+🦘 v15 IMPACT pending=2.07g air=11.31
+  [v15  582.41s] IMPACT pending=2.07g air=11.31
+🦘 v15 BARO rel datumStep delta=10.68 — window reset
+  [v15  584.93s] BARO rel datumStep delta=10.68 — window reset
+🦘 v15 LANDING impact+splash(rel) impact=2.29g air=11.32
+  [v15  582.42s] LANDING impact+splash(rel) impact=2.29g air=11.32
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=23.25 air=11.32
+  [v15  583.42s] REJECT reason=ballisticAboveHardCap hBal=23.25 air=11.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=8.88 air=7.00
+  [v15  583.42s] REJECT reason=rescueNeedsMeasuredHeight hBal=8.88 air=7.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.13 air=6.27
+  [v15  583.42s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.13 air=6.27
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=5.43
+  [v15  583.42s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=5.43
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=4.61
+  [v15  583.42s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=4.61
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.59 air=3.75
+  [v15  583.42s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.59 air=3.75
+🦘 v15 CANDIDATE t0=6849.61 yank=2.29g quietAt=6850.61 B(abs)=n/a B(rel)=n/a
+  [v15  583.42s] CANDIDATE t0=6849.61 yank=2.29g quietAt=6850.61 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  583.59s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 ABS frozen (cross-liveness)
+  [v15  597.75s] ABS frozen (cross-liveness)
+🦘 v15 IMPACT pending=1.93g air=23.92
+  [v15  606.34s] IMPACT pending=1.93g air=23.92
+🦘 v15 LANDING impact impact=1.98g air=23.94
+  [v15  606.36s] LANDING impact impact=1.98g air=23.94
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=103.88 air=23.94
+  [v15  607.86s] REJECT reason=ballisticAboveHardCap hBal=103.88 air=23.94
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=5.69
+  [v15  607.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=5.69
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=4.04
+  [v15  607.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=4.04
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=3.05
+  [v15  607.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=3.05
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.30 air=2.01
+  [v15  607.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.30 air=2.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.46
+  [v15  607.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.46
+🦘 v15 CANDIDATE t0=6873.54 yank=1.98g quietAt=6875.05 B(abs)=n/a B(rel)=-2.08
+  [v15  607.86s] CANDIDATE t0=6873.54 yank=1.98g quietAt=6875.05 B(abs)=n/a B(rel)=-2.08
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  611.36s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  612.36s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.30 air=2.00
+  [v15  612.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.30 air=2.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.46
+  [v15  612.36s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.46
+🦘 v15 CANDIDATE t0=6876.17 yank=1.40g quietAt=6879.54 B(abs)=n/a B(rel)=n/a
+  [v15  612.36s] CANDIDATE t0=6876.17 yank=1.40g quietAt=6879.54 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  638.99s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6905.03 yank=1.52g quietAt=6906.18 B(abs)=n/a B(rel)=-3.04
+  [v15  638.99s] CANDIDATE t0=6905.03 yank=1.52g quietAt=6906.18 B(abs)=n/a B(rel)=-3.04
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  642.85s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  643.85s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=6908.73 yank=1.36g quietAt=6911.03 B(abs)=n/a B(rel)=-2.97
+  [v15  643.85s] CANDIDATE t0=6908.73 yank=1.36g quietAt=6911.03 B(abs)=n/a B(rel)=-2.97
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  646.55s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=6913.51 yank=1.42g quietAt=6914.74 B(abs)=n/a B(rel)=n/a
+  [v15  647.55s] CANDIDATE t0=6913.51 yank=1.42g quietAt=6914.74 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.04g air=19.14
+  [v15  665.46s] IMPACT pending=2.04g air=19.14
+🦘 v15 LANDING impact impact=5.83g air=20.12
+  [v15  666.45s] LANDING impact impact=5.83g air=20.12
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=73.43 air=20.12
+  [v15  667.95s] REJECT reason=ballisticAboveHardCap hBal=73.43 air=20.12
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.95 air=6.19
+  [v15  667.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.95 air=6.19
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.32
+  [v15  667.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.85
+  [v15  667.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.85
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=3.32
+  [v15  667.95s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=3.32
+🦘 v15 CANDIDATE(reanchor) t0=6933.63 yank=5.83g
+  [v15  667.95s] CANDIDATE(reanchor) t0=6933.63 yank=5.83g
+🦘 v15 IMPACT pending=2.36g air=1.93
+  [v15  668.37s] IMPACT pending=2.36g air=1.93
+🦘 v15 LANDING impact impact=2.41g air=2.72
+  [v15  669.17s] LANDING impact impact=2.41g air=2.72
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  670.68s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.79
+  [v15  670.68s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.79
+🦘 v15 REJECT reason=floatBelowMin float=0.15
+  [v15  670.68s] REJECT reason=floatBelowMin float=0.15
+🦘 v15 CANDIDATE t0=6936.36 yank=2.41g quietAt=6937.86 B(abs)=n/a B(rel)=n/a
+  [v15  670.68s] CANDIDATE t0=6936.36 yank=2.41g quietAt=6937.86 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.90g air=1.62
+  [v15  670.79s] IMPACT pending=1.90g air=1.62
+🦘 v15 IMPACT discarded=1.90g — early mid-flight jolt (quiet resumed)
+  [v15  672.30s] IMPACT discarded=1.90g — early mid-flight jolt (quiet resumed)
+🦘 v15 BARO rel datumStep delta=-5.16 — window reset
+  [v15  679.80s] BARO rel datumStep delta=-5.16 — window reset
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  699.18s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6964.46 yank=1.44g quietAt=6966.36 B(abs)=n/a B(rel)=-12.77
+  [v15  699.18s] CANDIDATE t0=6964.46 yank=1.44g quietAt=6966.36 B(abs)=n/a B(rel)=-12.77
+🦘 v15 CANDIDATE t0=6993.20 yank=1.65g quietAt=6994.47 B(abs)=n/a B(rel)=-14.16
+  [v15  727.28s] CANDIDATE t0=6993.20 yank=1.65g quietAt=6994.47 B(abs)=n/a B(rel)=-14.16
+🦘 v15 IMPACT pending=2.21g air=9.89
+  [v15  735.91s] IMPACT pending=2.21g air=9.89
+🦘 v15 LANDING impact impact=5.52g air=9.99
+  [v15  736.01s] LANDING impact impact=5.52g air=9.99
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=18.10 air=9.99
+  [v15  737.51s] REJECT reason=ballisticAboveHardCap hBal=18.10 air=9.99
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.63 air=6.05
+  [v15  737.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.63 air=6.05
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=5.50
+  [v15  737.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.68 air=5.50
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=4.08
+  [v15  737.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=4.08
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=3.08
+  [v15  737.51s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=3.08
+🦘 v15 CANDIDATE(reanchor) t0=7003.19 yank=5.52g
+  [v15  737.51s] CANDIDATE(reanchor) t0=7003.19 yank=5.52g
+🦘 v15 CANDIDATE t0=7003.19 yank=5.52g quietAt=7004.70 B(abs)=n/a B(rel)=-11.18
+  [v15  737.51s] CANDIDATE t0=7003.19 yank=5.52g quietAt=7004.70 B(abs)=n/a B(rel)=-11.18
+🦘 v15 IMPACT pending=2.00g air=2.28
+  [v15  738.29s] IMPACT pending=2.00g air=2.28
+🦘 v15 LANDING impact impact=2.00g air=2.28
+  [v15  738.29s] LANDING impact impact=2.00g air=2.28
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.53 air=2.28
+  [v15  739.80s] REJECT reason=ballisticWithoutBaroLanding hBal=1.53 air=2.28
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=4.08
+  [v15  739.80s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.52 air=4.08
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=3.08
+  [v15  739.80s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=3.08
+🦘 v15 CANDIDATE t0=7003.19 yank=5.52g quietAt=7006.98 B(abs)=n/a B(rel)=-11.18
+  [v15  739.80s] CANDIDATE t0=7003.19 yank=5.52g quietAt=7006.98 B(abs)=n/a B(rel)=-11.18
+🦘 v15 IMPACT pending=1.92g air=6.14
+  [v15  742.15s] IMPACT pending=1.92g air=6.14
+🦘 v15 LANDING impact impact=1.94g air=6.16
+  [v15  742.16s] LANDING impact impact=1.94g air=6.16
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=6.87 air=6.16
+  [v15  743.67s] REJECT reason=ballisticAboveHardCap hBal=6.87 air=6.16
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=3.87
+  [v15  743.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=3.87
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.65 air=3.06
+  [v15  743.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.65 air=3.06
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=1.64
+  [v15  743.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=1.64
+🦘 v15 CANDIDATE t0=7009.35 yank=1.94g quietAt=7010.86 B(abs)=n/a B(rel)=n/a
+  [v15  743.67s] CANDIDATE t0=7009.35 yank=1.94g quietAt=7010.86 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  772.17s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7036.58 yank=1.56g quietAt=7039.35 B(abs)=n/a B(rel)=-7.69
+  [v15  772.17s] CANDIDATE t0=7036.58 yank=1.56g quietAt=7039.35 B(abs)=n/a B(rel)=-7.69
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  774.40s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  775.40s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7039.76 yank=1.51g quietAt=7042.59 B(abs)=n/a B(rel)=-7.57
+  [v15  775.40s] CANDIDATE t0=7039.76 yank=1.51g quietAt=7042.59 B(abs)=n/a B(rel)=-7.57
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=6.29
+  [v15  778.86s] LANDING noRiseAbort-softClose impact=0.00g air=6.29
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=7.16 air=6.29
+  [v15  779.87s] REJECT reason=ballisticNeedsImpact hBal=7.16 air=6.29
+🦘 v15 CANDIDATE t0=7045.77 yank=1.39g quietAt=7047.05 B(abs)=n/a B(rel)=n/a
+  [v15  779.87s] CANDIDATE t0=7045.77 yank=1.39g quietAt=7047.05 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.91g air=19.96
+  [v15  798.55s] IMPACT pending=1.91g air=19.96
+🦘 v15 LANDING impact impact=5.72g air=20.54
+  [v15  799.13s] LANDING impact impact=5.72g air=20.54
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=76.50 air=20.54
+  [v15  800.63s] REJECT reason=ballisticAboveHardCap hBal=76.50 air=20.54
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.70 air=5.63
+  [v15  800.63s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.70 air=5.63
+🦘 v15 RESCUE folded jump t0=7061.80 land=7066.34 air=4.54
+  [v15  800.63s] RESCUE folded jump t0=7061.80 land=7066.34 air=4.54
+🦘 v15 JUMP h=5.38m src=relativeParabola air=4.54s conf=0.65
+  [v15  800.63s] JUMP h=5.38m src=relativeParabola air=4.54s conf=0.65
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  800.63s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=-5.10 — window reset
+  [v15  808.02s] BARO rel datumStep delta=-5.10 — window reset
+🦘 v15 CANDIDATE t0=7072.32 yank=1.47g quietAt=7074.51 B(abs)=n/a B(rel)=n/a
+  [v15  807.32s] CANDIDATE t0=7072.32 yank=1.47g quietAt=7074.51 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=5.60 — window reset
+  [v15  828.54s] BARO rel datumStep delta=5.60 — window reset
+🦘 v15 IMPACT pending=1.96g air=23.14
+  [v15  828.28s] IMPACT pending=1.96g air=23.14
+🦘 v15 LANDING impact impact=1.96g air=23.15
+  [v15  828.29s] LANDING impact impact=1.96g air=23.15
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=97.17 air=23.15
+  [v15  829.79s] REJECT reason=ballisticAboveHardCap hBal=97.17 air=23.15
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.14 air=6.28
+  [v15  829.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.14 air=6.28
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.05 air=5.16
+  [v15  829.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.05 air=5.16
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.91 air=4.40
+  [v15  829.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.91 air=4.40
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=3.27
+  [v15  829.79s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=3.27
+🦘 v15 CANDIDATE t0=7095.47 yank=1.96g quietAt=7096.98 B(abs)=n/a B(rel)=n/a
+  [v15  829.79s] CANDIDATE t0=7095.47 yank=1.96g quietAt=7096.98 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  858.29s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7124.24 yank=1.41g quietAt=7125.48 B(abs)=n/a B(rel)=-13.54
+  [v15  858.29s] CANDIDATE t0=7124.24 yank=1.41g quietAt=7125.48 B(abs)=n/a B(rel)=-13.54
+🦘 v15 IMPACT pending=2.03g air=6.06
+  [v15  863.11s] IMPACT pending=2.03g air=6.06
+🦘 v15 LANDING impact impact=3.33g air=6.21
+  [v15  863.26s] LANDING impact impact=3.33g air=6.21
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=6.99 air=6.21
+  [v15  864.77s] REJECT reason=ballisticAboveHardCap hBal=6.99 air=6.21
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15  864.77s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  864.77s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=7130.45 yank=3.33g quietAt=7131.96 B(abs)=n/a B(rel)=-12.29
+  [v15  864.77s] CANDIDATE t0=7130.45 yank=3.33g quietAt=7131.96 B(abs)=n/a B(rel)=-12.29
+🦘 v15 IMPACT pending=1.91g air=2.89
+  [v15  866.15s] IMPACT pending=1.91g air=2.89
+🦘 v15 LANDING impact impact=1.91g air=2.89
+  [v15  866.16s] LANDING impact impact=1.91g air=2.89
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.12 air=2.89
+  [v15  867.67s] REJECT reason=ballisticWithoutBaroLanding hBal=2.12 air=2.89
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.65 air=6.06
+  [v15  867.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.65 air=6.06
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.13 air=5.13
+  [v15  867.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.13 air=5.13
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=2.09
+  [v15  867.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.61 air=2.09
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=1.34
+  [v15  867.67s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=1.34
+🦘 v15 CANDIDATE t0=7133.34 yank=1.91g quietAt=7134.85 B(abs)=n/a B(rel)=n/a
+  [v15  867.67s] CANDIDATE t0=7133.34 yank=1.91g quietAt=7134.85 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.23g air=1.72
+  [v15  867.88s] IMPACT pending=2.23g air=1.72
+🦘 v15 IMPACT discarded=3.39g — early mid-flight jolt (quiet resumed)
+  [v15  869.41s] IMPACT discarded=3.39g — early mid-flight jolt (quiet resumed)
+🦘 v15 IMPACT pending=1.99g air=8.30
+  [v15  874.46s] IMPACT pending=1.99g air=8.30
+🦘 v15 LANDING impact impact=2.17g air=8.32
+  [v15  874.48s] LANDING impact impact=2.17g air=8.32
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=12.56 air=8.32
+  [v15  875.99s] REJECT reason=ballisticAboveHardCap hBal=12.56 air=8.32
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  875.99s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  875.99s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=4.09
+  [v15  875.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=4.09
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=3.25
+  [v15  875.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=3.25
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  875.99s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=7141.67 yank=2.17g quietAt=7143.18 B(abs)=n/a B(rel)=-9.09
+  [v15  875.99s] CANDIDATE t0=7141.67 yank=2.17g quietAt=7143.18 B(abs)=n/a B(rel)=-9.09
+🦘 v15 IMPACT pending=1.98g air=13.29
+  [v15  887.77s] IMPACT pending=1.98g air=13.29
+🦘 v15 LANDING impact impact=2.68g air=13.32
+  [v15  887.80s] LANDING impact impact=2.68g air=13.32
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=32.16 air=13.32
+  [v15  889.31s] REJECT reason=ballisticAboveHardCap hBal=32.16 air=13.32
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.74 air=6.10
+  [v15  889.31s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.74 air=6.10
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=4.81
+  [v15  889.31s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=4.81
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=4.15
+  [v15  889.31s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=4.15
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.58
+  [v15  889.31s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.58
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=2.68
+  [v15  889.31s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=2.68
+🦘 v15 CANDIDATE t0=7154.99 yank=2.68g quietAt=7156.49 B(abs)=n/a B(rel)=-7.22
+  [v15  889.31s] CANDIDATE t0=7154.99 yank=2.68g quietAt=7156.49 B(abs)=n/a B(rel)=-7.22
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  892.80s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  893.80s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=7159.78 yank=1.59g quietAt=7160.99 B(abs)=n/a B(rel)=n/a
+  [v15  893.80s] CANDIDATE t0=7159.78 yank=1.59g quietAt=7160.99 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  922.60s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7187.11 yank=1.28g quietAt=7189.78 B(abs)=n/a B(rel)=-8.20
+  [v15  922.60s] CANDIDATE t0=7187.11 yank=1.28g quietAt=7189.78 B(abs)=n/a B(rel)=-8.20
+🦘 v15 IMPACT pending=1.94g air=12.18
+  [v15  932.10s] IMPACT pending=1.94g air=12.18
+🦘 v15 LANDING impact impact=2.60g air=12.22
+  [v15  932.14s] LANDING impact impact=2.60g air=12.22
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=27.06 air=12.22
+  [v15  933.65s] REJECT reason=ballisticAboveHardCap hBal=27.06 air=12.22
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.87 air=6.59
+  [v15  933.65s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.87 air=6.59
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.68
+  [v15  933.65s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.68
+🦘 v15 RESCUE folded jump t0=7195.00 land=7199.42 air=4.42
+  [v15  933.65s] RESCUE folded jump t0=7195.00 land=7199.42 air=4.42
+🦘 v15 JUMP h=2.10m src=relativeParabola air=4.42s conf=0.65
+  [v15  933.65s] JUMP h=2.10m src=relativeParabola air=4.42s conf=0.65
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  933.65s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=7204.44 yank=1.78g quietAt=7207.90 B(abs)=n/a B(rel)=n/a
+  [v15  940.72s] CANDIDATE t0=7204.44 yank=1.78g quietAt=7207.90 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.02g air=5.98
+  [v15  943.24s] IMPACT pending=2.02g air=5.98
+🦘 v15 LANDING impact impact=2.97g air=6.07
+  [v15  943.33s] LANDING impact impact=2.97g air=6.07
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15  944.83s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.27
+  [v15  944.83s] REJECT reason=floatBelowMin float=0.27
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15  944.83s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=3.44
+  [v15  944.83s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=3.44
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=2.49
+  [v15  944.83s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=2.49
+🦘 v15 CANDIDATE t0=7210.51 yank=2.97g quietAt=7212.02 B(abs)=n/a B(rel)=-10.63
+  [v15  944.83s] CANDIDATE t0=7210.51 yank=2.97g quietAt=7212.02 B(abs)=n/a B(rel)=-10.63
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  948.33s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.74 air=5.00
+  [v15  949.33s] REJECT reason=ballisticNeedsImpact hBal=1.74 air=5.00
+🦘 v15 CANDIDATE t0=7212.55 yank=1.28g quietAt=7216.52 B(abs)=n/a B(rel)=n/a
+  [v15  949.33s] CANDIDATE t0=7212.55 yank=1.28g quietAt=7216.52 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.98g air=4.77
+  [v15  950.13s] IMPACT pending=1.98g air=4.77
+🦘 v15 LANDING impact impact=2.78g air=5.75
+  [v15  951.12s] LANDING impact impact=2.78g air=5.75
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.17 air=5.75
+  [v15  952.63s] REJECT reason=ballisticWithoutBaroLanding hBal=2.17 air=5.75
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.96 air=5.25
+  [v15  952.63s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.96 air=5.25
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.88 air=4.30
+  [v15  952.63s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.88 air=4.30
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.37
+  [v15  952.63s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.37
+🦘 v15 CANDIDATE t0=7218.31 yank=2.78g quietAt=7219.81 B(abs)=n/a B(rel)=n/a
+  [v15  952.63s] CANDIDATE t0=7218.31 yank=2.78g quietAt=7219.81 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.01g air=14.63
+  [v15  965.75s] IMPACT pending=2.01g air=14.63
+🦘 v15 LANDING impact impact=2.01g air=14.63
+  [v15  965.75s] LANDING impact impact=2.01g air=14.63
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=38.84 air=14.63
+  [v15  967.26s] REJECT reason=ballisticAboveHardCap hBal=38.84 air=14.63
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.69 air=5.56
+  [v15  967.26s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.69 air=5.56
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=2.90
+  [v15  967.26s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.44 air=2.90
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=1.38
+  [v15  967.26s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=1.38
+🦘 v15 CANDIDATE t0=7232.94 yank=2.01g quietAt=7234.45 B(abs)=n/a B(rel)=-16.11
+  [v15  967.26s] CANDIDATE t0=7232.94 yank=2.01g quietAt=7234.45 B(abs)=n/a B(rel)=-16.11
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  995.75s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7259.93 yank=1.30g quietAt=7262.94 B(abs)=n/a B(rel)=-11.39
+  [v15  995.75s] CANDIDATE t0=7259.93 yank=1.30g quietAt=7262.94 B(abs)=n/a B(rel)=-11.39
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  997.75s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15  998.75s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7262.32 yank=1.55g quietAt=7265.94 B(abs)=n/a B(rel)=-11.43
+  [v15  998.75s] CANDIDATE t0=7262.32 yank=1.55g quietAt=7265.94 B(abs)=n/a B(rel)=-11.43
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1000.14s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7266.13 yank=1.46g quietAt=7268.32 B(abs)=n/a B(rel)=n/a
+  [v15 1001.14s] CANDIDATE t0=7266.13 yank=1.46g quietAt=7268.32 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.50g air=19.31
+  [v15 1018.26s] IMPACT pending=2.50g air=19.31
+🦘 v15 LANDING impact impact=3.92g air=19.33
+  [v15 1018.28s] LANDING impact impact=3.92g air=19.33
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=floatBelowMin float=0.28
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.28
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=floatBelowMin float=0.28
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.28
+🦘 v15 CANDIDATE t0=7285.46 yank=3.92g quietAt=7286.97 B(abs)=n/a B(rel)=-10.18
+  [v15 1019.78s] CANDIDATE t0=7285.46 yank=3.92g quietAt=7286.97 B(abs)=n/a B(rel)=-10.18
+🦘 v15 IMPACT pending=1.94g air=1.87
+  [v15 1020.15s] IMPACT pending=1.94g air=1.87
+🦘 v15 LANDING impact impact=3.24g air=1.93
+  [v15 1020.21s] LANDING impact impact=3.24g air=1.93
+🦘 v15 JUMP h=2.05m src=ballistic air=1.93s conf=0.50
+  [v15 1021.71s] JUMP h=2.05m src=ballistic air=1.93s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1021.71s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=7296.18 yank=1.36g quietAt=7297.11 B(abs)=n/a B(rel)=-8.68
+  [v15 1029.93s] CANDIDATE t0=7296.18 yank=1.36g quietAt=7297.11 B(abs)=n/a B(rel)=-8.68
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1059.00s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7322.64 yank=1.60g quietAt=7326.19 B(abs)=n/a B(rel)=-4.73
+  [v15 1059.00s] CANDIDATE t0=7322.64 yank=1.60g quietAt=7326.19 B(abs)=n/a B(rel)=-4.73
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1060.46s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1061.46s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7325.73 yank=1.46g quietAt=7328.65 B(abs)=n/a B(rel)=-4.50
+  [v15 1061.46s] CANDIDATE t0=7325.73 yank=1.46g quietAt=7328.65 B(abs)=n/a B(rel)=-4.50
+🦘 v15 IMPACT pending=1.94g air=12.28
+  [v15 1070.82s] IMPACT pending=1.94g air=12.28
+🦘 v15 LANDING impact impact=2.84g air=13.43
+  [v15 1071.98s] LANDING impact impact=2.84g air=13.43
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=32.72 air=13.43
+  [v15 1073.48s] REJECT reason=ballisticAboveHardCap hBal=32.72 air=13.43
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.71 air=6.09
+  [v15 1073.48s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.71 air=6.09
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=4.99
+  [v15 1073.48s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.72 air=4.99
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=4.01
+  [v15 1073.48s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=4.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=2.72
+  [v15 1073.48s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=2.72
+🦘 v15 CANDIDATE t0=7339.16 yank=2.84g quietAt=7340.67 B(abs)=n/a B(rel)=-3.34
+  [v15 1073.48s] CANDIDATE t0=7339.16 yank=2.84g quietAt=7340.67 B(abs)=n/a B(rel)=-3.34
+🦘 v15 IMPACT pending=2.02g air=2.42
+  [v15 1074.40s] IMPACT pending=2.02g air=2.42
+🦘 v15 LANDING impact impact=2.60g air=2.64
+  [v15 1074.62s] LANDING impact impact=2.60g air=2.64
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.83 air=2.64
+  [v15 1076.13s] REJECT reason=ballisticWithoutBaroLanding hBal=1.83 air=2.64
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.03 air=6.23
+  [v15 1076.13s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.03 air=6.23
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.84 air=5.36
+  [v15 1076.13s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.84 air=5.36
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.70 air=3.81
+  [v15 1076.13s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.70 air=3.81
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.43 air=2.16
+  [v15 1076.13s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.43 air=2.16
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.39 air=1.66
+  [v15 1076.13s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.39 air=1.66
+🦘 v15 CANDIDATE t0=7341.81 yank=2.60g quietAt=7343.31 B(abs)=n/a B(rel)=n/a
+  [v15 1076.13s] CANDIDATE t0=7341.81 yank=2.60g quietAt=7343.31 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=-5.61 — window reset
+  [v15 1079.83s] BARO rel datumStep delta=-5.61 — window reset
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1104.63s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7369.70 yank=1.61g quietAt=7371.81 B(abs)=n/a B(rel)=-9.73
+  [v15 1104.63s] CANDIDATE t0=7369.70 yank=1.61g quietAt=7371.81 B(abs)=n/a B(rel)=-9.73
+🦘 v15 IMPACT pending=2.31g air=27.85
+  [v15 1130.36s] IMPACT pending=2.31g air=27.85
+🦘 v15 LANDING impact impact=3.79g air=27.88
+  [v15 1130.39s] LANDING impact impact=3.79g air=27.88
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=140.91 air=27.88
+  [v15 1131.90s] REJECT reason=ballisticAboveHardCap hBal=140.91 air=27.88
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.21 air=6.31
+  [v15 1131.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.21 air=6.31
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=5.73
+  [v15 1131.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.73 air=5.73
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.60 air=5.13
+  [v15 1131.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.60 air=5.13
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=4.09
+  [v15 1131.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=4.09
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=3.07
+  [v15 1131.90s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=3.07
+🦘 v15 CANDIDATE t0=7397.58 yank=3.79g quietAt=7399.39 B(abs)=n/a B(rel)=-9.19
+  [v15 1132.20s] CANDIDATE t0=7397.58 yank=3.79g quietAt=7399.39 B(abs)=n/a B(rel)=-9.19
+🦘 v15 IMPACT pending=2.02g air=4.56
+  [v15 1134.95s] IMPACT pending=2.02g air=4.56
+🦘 v15 LANDING impact impact=2.02g air=4.56
+  [v15 1134.95s] LANDING impact impact=2.02g air=4.56
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.06 air=4.56
+  [v15 1136.46s] REJECT reason=ballisticWithoutBaroLanding hBal=2.06 air=4.56
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.90 air=5.61
+  [v15 1136.46s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.90 air=5.61
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=2.12
+  [v15 1136.46s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=2.12
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=1.27
+  [v15 1136.46s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=1.27
+🦘 v15 CANDIDATE t0=7402.14 yank=2.02g quietAt=7403.64 B(abs)=n/a B(rel)=n/a
+  [v15 1136.46s] CANDIDATE t0=7402.14 yank=2.02g quietAt=7403.64 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1164.96s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7431.14 yank=1.52g quietAt=7432.14 B(abs)=n/a B(rel)=-4.14
+  [v15 1164.96s] CANDIDATE t0=7431.14 yank=1.52g quietAt=7432.14 B(abs)=n/a B(rel)=-4.14
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1168.96s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1169.96s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7434.03 yank=1.40g quietAt=7437.15 B(abs)=n/a B(rel)=-3.65
+  [v15 1169.96s] CANDIDATE t0=7434.03 yank=1.40g quietAt=7437.15 B(abs)=n/a B(rel)=-3.65
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1171.85s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7437.50 yank=1.37g quietAt=7440.04 B(abs)=n/a B(rel)=-3.48
+  [v15 1172.85s] CANDIDATE t0=7437.50 yank=1.37g quietAt=7440.04 B(abs)=n/a B(rel)=-3.48
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.66
+  [v15 1175.98s] LANDING noRiseAbort-softClose impact=0.00g air=5.66
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.71 air=5.66
+  [v15 1176.98s] REJECT reason=ballisticNeedsImpact hBal=1.71 air=5.66
+🦘 v15 CANDIDATE t0=7443.03 yank=1.60g quietAt=7444.17 B(abs)=n/a B(rel)=n/a
+  [v15 1176.98s] CANDIDATE t0=7443.03 yank=1.60g quietAt=7444.17 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1205.85s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7471.57 yank=1.44g quietAt=7473.04 B(abs)=n/a B(rel)=-5.88
+  [v15 1205.85s] CANDIDATE t0=7471.57 yank=1.44g quietAt=7473.04 B(abs)=n/a B(rel)=-5.88
+🦘 v15 IMPACT pending=1.94g air=20.79
+  [v15 1225.17s] IMPACT pending=1.94g air=20.79
+🦘 v15 LANDING impact impact=2.40g air=20.80
+  [v15 1225.19s] LANDING impact impact=2.40g air=20.80
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=78.49 air=20.80
+  [v15 1226.69s] REJECT reason=ballisticAboveHardCap hBal=78.49 air=20.80
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.65
+  [v15 1226.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.65
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.59 air=4.99
+  [v15 1226.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.59 air=4.99
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=3.81
+  [v15 1226.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=3.81
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.49 air=3.24
+  [v15 1226.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.49 air=3.24
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=2.15
+  [v15 1226.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=2.15
+🦘 v15 CANDIDATE t0=7494.03 yank=2.73g quietAt=7495.04 B(abs)=n/a B(rel)=-8.91
+  [v15 1227.85s] CANDIDATE t0=7494.03 yank=2.73g quietAt=7495.04 B(abs)=n/a B(rel)=-8.91
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1231.85s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1232.85s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7497.08 yank=1.51g quietAt=7500.04 B(abs)=n/a B(rel)=n/a
+  [v15 1232.85s] CANDIDATE t0=7497.08 yank=1.51g quietAt=7500.04 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1259.90s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7524.28 yank=1.47g quietAt=7527.09 B(abs)=n/a B(rel)=-15.40
+  [v15 1259.90s] CANDIDATE t0=7524.28 yank=1.47g quietAt=7527.09 B(abs)=n/a B(rel)=-15.40
+🦘 v15 CANDIDATE t0=7550.45 yank=1.71g quietAt=7554.29 B(abs)=n/a B(rel)=-11.23
+  [v15 1287.10s] CANDIDATE t0=7550.45 yank=1.71g quietAt=7554.29 B(abs)=n/a B(rel)=-11.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1288.27s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1289.27s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7553.02 yank=1.34g quietAt=7556.46 B(abs)=n/a B(rel)=-11.32
+  [v15 1289.27s] CANDIDATE t0=7553.02 yank=1.34g quietAt=7556.46 B(abs)=n/a B(rel)=-11.32
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1290.84s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1291.84s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=7557.38 yank=1.33g quietAt=7559.02 B(abs)=n/a B(rel)=-10.96
+  [v15 1291.84s] CANDIDATE t0=7557.38 yank=1.33g quietAt=7559.02 B(abs)=n/a B(rel)=-10.96
+🦘 v15 IMPACT pending=1.91g air=4.95
+  [v15 1295.15s] IMPACT pending=1.91g air=4.95
+🦘 v15 LANDING impact impact=2.11g air=4.99
+  [v15 1295.19s] LANDING impact impact=2.11g air=4.99
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.95 air=4.99
+  [v15 1296.70s] REJECT reason=ballisticWithoutBaroLanding hBal=1.95 air=4.99
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1296.70s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=floatBelowMin float=0.28
+  [v15 1296.70s] REJECT reason=floatBelowMin float=0.28
+🦘 v15 REJECT reason=floatBelowMin float=0.22
+  [v15 1296.70s] REJECT reason=floatBelowMin float=0.22
+🦘 v15 CANDIDATE t0=7562.37 yank=2.11g quietAt=7563.88 B(abs)=n/a B(rel)=n/a
+  [v15 1296.70s] CANDIDATE t0=7562.37 yank=2.11g quietAt=7563.88 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.94g air=1.80
+  [v15 1296.99s] IMPACT pending=1.94g air=1.80
+🦘 v15 LANDING impact impact=2.43g air=1.85
+  [v15 1297.04s] LANDING impact impact=2.43g air=1.85
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.85 air=1.85
+  [v15 1298.54s] REJECT reason=ballisticWithoutBaroLanding hBal=1.85 air=1.85
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.91 air=4.33
+  [v15 1298.54s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.91 air=4.33
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.85 air=3.15
+  [v15 1298.54s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.85 air=3.15
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=1.31
+  [v15 1298.54s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.50 air=1.31
+🦘 v15 CANDIDATE t0=7564.22 yank=2.43g quietAt=7565.73 B(abs)=n/a B(rel)=n/a
+  [v15 1298.54s] CANDIDATE t0=7564.22 yank=2.43g quietAt=7565.73 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=-6.27 — window reset
+  [v15 1300.39s] BARO rel datumStep delta=-6.27 — window reset
+🦘 v15 IMPACT pending=2.20g air=3.44
+  [v15 1300.48s] IMPACT pending=2.20g air=3.44
+🦘 v15 LANDING impact impact=2.20g air=3.45
+  [v15 1300.48s] LANDING impact impact=2.20g air=3.45
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.94 air=3.45
+  [v15 1301.99s] REJECT reason=ballisticWithoutBaroLanding hBal=1.94 air=3.45
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.87 air=6.59
+  [v15 1301.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.87 air=6.59
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.10 air=5.39
+  [v15 1301.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.10 air=5.39
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.91 air=4.83
+  [v15 1301.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.91 air=4.83
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=4.33
+  [v15 1301.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=4.33
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=3.04
+  [v15 1301.99s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=3.04
+🦘 v15 CANDIDATE t0=7567.66 yank=2.20g quietAt=7569.17 B(abs)=n/a B(rel)=n/a
+  [v15 1301.99s] CANDIDATE t0=7567.66 yank=2.20g quietAt=7569.17 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.07g air=1.57
+  [v15 1302.05s] IMPACT pending=2.07g air=1.57
+🦘 v15 IMPACT discarded=2.50g — early mid-flight jolt (quiet resumed)
+  [v15 1303.57s] IMPACT discarded=2.50g — early mid-flight jolt (quiet resumed)
+🦘 v15 BARO rel datumStep delta=10.31 — window reset
+  [v15 1305.49s] BARO rel datumStep delta=10.31 — window reset
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1330.48s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7593.82 yank=1.36g quietAt=7597.67 B(abs)=n/a B(rel)=-1.41
+  [v15 1330.48s] CANDIDATE t0=7593.82 yank=1.36g quietAt=7597.67 B(abs)=n/a B(rel)=-1.41
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1331.63s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1332.63s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7598.25 yank=1.57g quietAt=7599.82 B(abs)=n/a B(rel)=-1.88
+  [v15 1332.63s] CANDIDATE t0=7598.25 yank=1.57g quietAt=7599.82 B(abs)=n/a B(rel)=-1.88
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1336.07s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7600.60 yank=1.59g quietAt=7604.26 B(abs)=n/a B(rel)=-1.50
+  [v15 1337.07s] CANDIDATE t0=7600.60 yank=1.59g quietAt=7604.26 B(abs)=n/a B(rel)=-1.50
+🦘 v15 IMPACT pending=1.90g air=11.96
+  [v15 1345.37s] IMPACT pending=1.90g air=11.96
+🦘 v15 LANDING impact impact=1.90g air=11.96
+  [v15 1345.38s] LANDING impact impact=1.90g air=11.96
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=25.96 air=11.96
+  [v15 1346.88s] REJECT reason=ballisticAboveHardCap hBal=25.96 air=11.96
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.80
+  [v15 1346.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.80
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.62 air=5.22
+  [v15 1346.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.62 air=5.22
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=4.48
+  [v15 1346.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=4.48
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=2.65
+  [v15 1346.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=2.65
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.31 air=2.00
+  [v15 1346.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.31 air=2.00
+🦘 v15 CANDIDATE t0=7612.56 yank=1.90g quietAt=7614.07 B(abs)=n/a B(rel)=-0.39
+  [v15 1346.88s] CANDIDATE t0=7612.56 yank=1.90g quietAt=7614.07 B(abs)=n/a B(rel)=-0.39
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1350.37s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1351.38s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.31 air=2.00
+  [v15 1351.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.31 air=2.00
+🦘 v15 CANDIDATE t0=7614.87 yank=1.68g quietAt=7618.56 B(abs)=n/a B(rel)=n/a
+  [v15 1351.38s] CANDIDATE t0=7614.87 yank=1.68g quietAt=7618.56 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.03g air=6.89
+  [v15 1354.58s] IMPACT pending=2.03g air=6.89
+🦘 v15 LANDING impact impact=2.04g air=6.90
+  [v15 1354.58s] LANDING impact impact=2.04g air=6.90
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=8.62 air=6.90
+  [v15 1356.09s] REJECT reason=ballisticAboveHardCap hBal=8.62 air=6.90
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.54 air=6.00
+  [v15 1356.09s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.54 air=6.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=5.06
+  [v15 1356.09s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=5.06
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1356.09s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.22
+  [v15 1356.09s] REJECT reason=floatBelowMin float=0.22
+🦘 v15 CANDIDATE t0=7621.77 yank=2.04g quietAt=7623.27 B(abs)=n/a B(rel)=-1.16
+  [v15 1356.09s] CANDIDATE t0=7621.77 yank=2.04g quietAt=7623.27 B(abs)=n/a B(rel)=-1.16
+🦘 v15 IMPACT pending=1.95g air=1.99
+  [v15 1356.57s] IMPACT pending=1.95g air=1.99
+🦘 v15 LANDING impact impact=2.12g air=2.23
+  [v15 1356.81s] LANDING impact impact=2.12g air=2.23
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.64 air=2.23
+  [v15 1358.32s] REJECT reason=ballisticWithoutBaroLanding hBal=1.64 air=2.23
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=floatBelowMin float=0.22
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.22
+🦘 v15 REJECT reason=floatBelowMin float=0.18
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.18
+🦘 v15 REJECT reason=floatBelowMin float=0.14
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.14
+🦘 v15 CANDIDATE t0=7624.00 yank=2.12g quietAt=7625.51 B(abs)=n/a B(rel)=n/a
+  [v15 1358.32s] CANDIDATE t0=7624.00 yank=2.12g quietAt=7625.51 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=-5.58 — window reset
+  [v15 1364.47s] BARO rel datumStep delta=-5.58 — window reset
+🦘 v15 IMPACT pending=1.94g air=27.07
+  [v15 1383.88s] IMPACT pending=1.94g air=27.07
+🦘 v15 LANDING impact impact=2.47g air=28.21
+  [v15 1385.02s] LANDING impact impact=2.47g air=28.21
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=144.27 air=28.21
+  [v15 1386.53s] REJECT reason=ballisticAboveHardCap hBal=144.27 air=28.21
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.75 air=6.10
+  [v15 1386.53s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.75 air=6.10
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=4.53
+  [v15 1386.53s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.78 air=4.53
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.80
+  [v15 1386.53s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.67 air=3.80
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=3.30
+  [v15 1386.53s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=3.30
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.60 air=2.56
+  [v15 1386.53s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.60 air=2.56
+🦘 v15 CANDIDATE t0=7652.21 yank=2.47g quietAt=7653.71 B(abs)=n/a B(rel)=-14.71
+  [v15 1386.53s] CANDIDATE t0=7652.21 yank=2.47g quietAt=7653.71 B(abs)=n/a B(rel)=-14.71
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1415.03s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7678.83 yank=1.51g quietAt=7682.21 B(abs)=n/a B(rel)=-10.41
+  [v15 1415.03s] CANDIDATE t0=7678.83 yank=1.51g quietAt=7682.21 B(abs)=n/a B(rel)=-10.41
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1416.64s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1417.65s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 CANDIDATE t0=7681.32 yank=1.33g quietAt=7684.83 B(abs)=n/a B(rel)=-11.59
+  [v15 1417.65s] CANDIDATE t0=7681.32 yank=1.33g quietAt=7684.83 B(abs)=n/a B(rel)=-11.59
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1419.14s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1420.14s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7687.05 yank=2.81g quietAt=7688.05 B(abs)=n/a B(rel)=n/a
+  [v15 1420.87s] CANDIDATE t0=7687.05 yank=2.81g quietAt=7688.05 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.04g air=1.10
+  [v15 1420.97s] IMPACT pending=2.04g air=1.10
+🦘 v15 BARO rel datumStep delta=-36.53 — window reset
+  [v15 1423.46s] BARO rel datumStep delta=-36.53 — window reset
+🦘 v15 LANDING impact impact=5.56g air=2.04
+  [v15 1421.91s] LANDING impact impact=5.56g air=2.04
+🦘 v15 JUMP h=2.93m src=ballistic air=2.04s conf=0.50
+  [v15 1423.41s] JUMP h=2.93m src=ballistic air=2.04s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1425.16s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=32.06 — window reset
+  [v15 1428.57s] BARO rel datumStep delta=32.06 — window reset
+🦘 v15 BARO rel datumStep delta=54.80 — window reset
+  [v15 1431.13s] BARO rel datumStep delta=54.80 — window reset
+🦘 v15 CANDIDATE t0=7697.49 yank=6.27g quietAt=7698.66 B(abs)=n/a B(rel)=n/a
+  [v15 1431.47s] CANDIDATE t0=7697.49 yank=6.27g quietAt=7698.66 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=6.07 — window reset
+  [v15 1436.26s] BARO rel datumStep delta=6.07 — window reset
+🦘 v15 IMPACT pending=1.98g air=20.83
+  [v15 1451.14s] IMPACT pending=1.98g air=20.83
+🦘 v15 LANDING impact impact=3.10g air=20.90
+  [v15 1451.20s] LANDING impact impact=3.10g air=20.90
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=79.20 air=20.90
+  [v15 1452.71s] REJECT reason=ballisticAboveHardCap hBal=79.20 air=20.90
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1452.71s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.70 air=5.61
+  [v15 1452.71s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.70 air=5.61
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=3.96
+  [v15 1452.71s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.51 air=3.96
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.10
+  [v15 1452.71s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=3.10
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=2.54
+  [v15 1452.71s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=2.54
+🦘 v15 CANDIDATE t0=7718.39 yank=3.10g quietAt=7719.89 B(abs)=n/a B(rel)=7.67
+  [v15 1452.71s] CANDIDATE t0=7718.39 yank=3.10g quietAt=7719.89 B(abs)=n/a B(rel)=7.67
+🦘 v15 BARO rel datumStep delta=-10.99 — window reset
+  [v15 1454.21s] BARO rel datumStep delta=-10.99 — window reset
+🦘 v15 IMPACT pending=2.09g air=2.02
+  [v15 1453.22s] IMPACT pending=2.09g air=2.02
+🦘 v15 LANDING impact impact=3.00g air=2.52
+  [v15 1453.72s] LANDING impact impact=3.00g air=2.52
+🦘 v15 JUMP h=2.11m src=ballistic air=2.52s conf=0.50
+  [v15 1455.23s] JUMP h=2.11m src=ballistic air=2.52s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1455.23s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=7726.41 yank=1.83g quietAt=7727.43 B(abs)=n/a B(rel)=n/a
+  [v15 1460.24s] CANDIDATE t0=7726.41 yank=1.83g quietAt=7727.43 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=92.67 — window reset
+  [v15 1461.90s] BARO rel datumStep delta=92.67 — window reset
+🦘 v15 BARO rel datumStep delta=-5.07 — window reset
+  [v15 1464.47s] BARO rel datumStep delta=-5.07 — window reset
+🦘 v15 IMPACT pending=2.12g air=6.47
+  [v15 1465.70s] IMPACT pending=2.12g air=6.47
+🦘 v15 LANDING impact impact=3.18g air=6.51
+  [v15 1465.73s] LANDING impact impact=3.18g air=6.51
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=7.67 air=6.51
+  [v15 1467.24s] REJECT reason=ballisticAboveHardCap hBal=7.67 air=6.51
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.79 air=5.10
+  [v15 1467.24s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.79 air=5.10
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=3.22
+  [v15 1467.24s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=3.22
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=1.76
+  [v15 1467.24s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=1.76
+🦘 v15 CANDIDATE t0=7732.91 yank=3.18g quietAt=7734.54 B(abs)=n/a B(rel)=n/a
+  [v15 1467.35s] CANDIDATE t0=7732.91 yank=3.18g quietAt=7734.54 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=7.67 — window reset
+  [v15 1469.60s] BARO rel datumStep delta=7.67 — window reset
+🦘 v15 BARO rel datumStep delta=9.78 — window reset
+  [v15 1472.16s] BARO rel datumStep delta=9.78 — window reset
+🦘 v15 BARO rel datumStep delta=-25.83 — window reset
+  [v15 1490.11s] BARO rel datumStep delta=-25.83 — window reset
+🦘 v15 BARO rel datumStep delta=-118.18 — window reset
+  [v15 1492.68s] BARO rel datumStep delta=-118.18 — window reset
+🦘 v15 BARO rel datumStep delta=-45.07 — window reset
+  [v15 1495.24s] BARO rel datumStep delta=-45.07 — window reset
+🦘 v15 IMPACT pending=2.06g air=29.76
+  [v15 1495.49s] IMPACT pending=2.06g air=29.76
+🦘 v15 LANDING impact+maxFlightExceeded impact=2.06g air=29.76
+  [v15 1495.49s] LANDING impact+maxFlightExceeded impact=2.06g air=29.76
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=160.58 air=29.76
+  [v15 1496.49s] REJECT reason=ballisticAboveHardCap hBal=160.58 air=29.76
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.26 air=6.33
+  [v15 1496.49s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.26 air=6.33
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.27 air=5.78
+  [v15 1496.49s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.27 air=5.78
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.94 air=4.26
+  [v15 1496.49s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.94 air=4.26
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.56 air=1.42
+  [v15 1496.49s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.56 air=1.42
+🦘 v15 CANDIDATE t0=7762.67 yank=2.06g quietAt=7763.67 B(abs)=n/a B(rel)=n/a
+  [v15 1496.49s] CANDIDATE t0=7762.67 yank=2.06g quietAt=7763.67 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.01g air=1.98
+  [v15 1497.47s] IMPACT pending=2.01g air=1.98
+🦘 v15 LANDING impact impact=2.01g air=1.99
+  [v15 1497.48s] LANDING impact impact=2.01g air=1.99
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.52 air=1.99
+  [v15 1498.98s] REJECT reason=ballisticWithoutBaroLanding hBal=1.52 air=1.99
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.06 air=6.24
+  [v15 1498.98s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.06 air=6.24
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=3.41
+  [v15 1498.98s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=3.41
+🦘 v15 CANDIDATE t0=7762.67 yank=2.06g quietAt=7766.17 B(abs)=n/a B(rel)=n/a
+  [v15 1498.98s] CANDIDATE t0=7762.67 yank=2.06g quietAt=7766.17 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=184.42 — window reset
+  [v15 1502.93s] BARO rel datumStep delta=184.42 — window reset
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1525.49s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7791.10 yank=1.26g quietAt=7792.68 B(abs)=n/a B(rel)=-12.52
+  [v15 1525.49s] CANDIDATE t0=7791.10 yank=1.26g quietAt=7792.68 B(abs)=n/a B(rel)=-12.52
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1528.92s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1529.92s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7794.59 yank=1.43g quietAt=7797.10 B(abs)=n/a B(rel)=-15.03
+  [v15 1529.92s] CANDIDATE t0=7794.59 yank=1.43g quietAt=7797.10 B(abs)=n/a B(rel)=-15.03
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1532.41s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7798.74 yank=1.37g quietAt=7800.60 B(abs)=n/a B(rel)=-15.16
+  [v15 1533.41s] CANDIDATE t0=7798.74 yank=1.37g quietAt=7800.60 B(abs)=n/a B(rel)=-15.16
+🦘 v15 IMPACT pending=2.17g air=12.83
+  [v15 1544.38s] IMPACT pending=2.17g air=12.83
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1546.52s] ABS frozen (cross-liveness)
+🦘 v15 LANDING impact impact=3.16g air=12.87
+  [v15 1544.42s] LANDING impact impact=3.16g air=12.87
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=30.02 air=12.87
+  [v15 1545.92s] REJECT reason=ballisticAboveHardCap hBal=30.02 air=12.87
+🦘 v15 ARC invalid fit b=-0.01 c=0.00 tApex=1.41 h=-0.01
+  [v15 1545.92s] ARC invalid fit b=-0.01 c=0.00 tApex=1.41 h=-0.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.75 air=5.32
+  [v15 1545.92s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.75 air=5.32
+🦘 v15 ARC invalid fit b=-0.01 c=0.00 tApex=1.16 h=-0.01
+  [v15 1545.92s] ARC invalid fit b=-0.01 c=0.00 tApex=1.16 h=-0.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.66 air=4.52
+  [v15 1545.92s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.66 air=4.52
+🦘 v15 ARC invalid fit b=-0.01 c=0.01 tApex=0.84 h=-0.01
+  [v15 1545.92s] ARC invalid fit b=-0.01 c=0.01 tApex=0.84 h=-0.01
+🦘 v15 RESCUE folded jump t0=7808.20 land=7811.69 air=3.49
+  [v15 1545.92s] RESCUE folded jump t0=7808.20 land=7811.69 air=3.49
+🦘 v15 JUMP h=1.89m src=relativeParabola air=3.49s conf=0.65
+  [v15 1545.92s] JUMP h=1.89m src=relativeParabola air=3.49s conf=0.65
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1545.92s] REJECT(open) reason=retriggerGuard
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1549.09s] ABS frozen (cross-liveness)
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1551.65s] ABS frozen (cross-liveness)
+🦘 v15 BARO rel datumStep delta=5.75 — window reset
+  [v15 1554.22s] BARO rel datumStep delta=5.75 — window reset
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1554.22s] ABS frozen (cross-liveness)
+🦘 v15 CANDIDATE t0=7818.73 yank=1.62g quietAt=7820.28 B(abs)=n/a B(rel)=n/a
+  [v15 1553.09s] CANDIDATE t0=7818.73 yank=1.62g quietAt=7820.28 B(abs)=n/a B(rel)=n/a
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1556.78s] ABS frozen (cross-liveness)
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1559.37s] ABS frozen (cross-liveness)
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1581.55s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7847.59 yank=1.37g quietAt=7848.74 B(abs)=n/a B(rel)=-3.49
+  [v15 1581.55s] CANDIDATE t0=7847.59 yank=1.37g quietAt=7848.74 B(abs)=n/a B(rel)=-3.49
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1585.41s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1586.41s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7851.29 yank=1.62g quietAt=7853.59 B(abs)=n/a B(rel)=-4.24
+  [v15 1586.41s] CANDIDATE t0=7851.29 yank=1.62g quietAt=7853.59 B(abs)=n/a B(rel)=-4.24
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1589.10s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7855.86 yank=1.77g quietAt=7857.29 B(abs)=n/a B(rel)=n/a
+  [v15 1590.11s] CANDIDATE t0=7855.86 yank=1.77g quietAt=7857.29 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1618.68s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7881.99 yank=1.36g quietAt=7885.87 B(abs)=n/a B(rel)=-4.57
+  [v15 1618.68s] CANDIDATE t0=7881.99 yank=1.36g quietAt=7885.87 B(abs)=n/a B(rel)=-4.57
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1619.81s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1620.81s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7885.58 yank=1.29g quietAt=7888.00 B(abs)=n/a B(rel)=-5.09
+  [v15 1620.81s] CANDIDATE t0=7885.58 yank=1.29g quietAt=7888.00 B(abs)=n/a B(rel)=-5.09
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1623.40s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7889.20 yank=1.42g quietAt=7891.59 B(abs)=n/a B(rel)=n/a
+  [v15 1624.40s] CANDIDATE t0=7889.20 yank=1.42g quietAt=7891.59 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1652.02s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7915.21 yank=1.51g quietAt=7919.21 B(abs)=n/a B(rel)=-9.13
+  [v15 1652.02s] CANDIDATE t0=7915.21 yank=1.51g quietAt=7919.21 B(abs)=n/a B(rel)=-9.13
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1653.03s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1654.03s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7917.62 yank=1.32g quietAt=7921.22 B(abs)=n/a B(rel)=-10.36
+  [v15 1654.03s] CANDIDATE t0=7917.62 yank=1.32g quietAt=7921.22 B(abs)=n/a B(rel)=-10.36
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1655.44s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7922.33 yank=1.31g quietAt=7923.62 B(abs)=n/a B(rel)=n/a
+  [v15 1656.44s] CANDIDATE t0=7922.33 yank=1.31g quietAt=7923.62 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1685.15s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7948.51 yank=1.22g quietAt=7952.34 B(abs)=n/a B(rel)=-11.55
+  [v15 1685.15s] CANDIDATE t0=7948.51 yank=1.22g quietAt=7952.34 B(abs)=n/a B(rel)=-11.55
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1686.32s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1687.32s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=7953.09 yank=1.25g quietAt=7954.51 B(abs)=n/a B(rel)=-14.09
+  [v15 1687.32s] CANDIDATE t0=7953.09 yank=1.25g quietAt=7954.51 B(abs)=n/a B(rel)=-14.09
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1690.91s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=7956.62 yank=1.26g quietAt=7959.10 B(abs)=n/a B(rel)=n/a
+  [v15 1691.91s] CANDIDATE t0=7956.62 yank=1.26g quietAt=7959.10 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.13g air=15.33
+  [v15 1704.77s] IMPACT pending=2.13g air=15.33
+🦘 v15 LANDING impact impact=3.01g air=15.36
+  [v15 1704.80s] LANDING impact impact=3.01g air=15.36
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1706.31s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=floatBelowMin float=0.26
+  [v15 1706.31s] REJECT reason=floatBelowMin float=0.26
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1706.31s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=1.66
+  [v15 1706.31s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=1.66
+🦘 v15 CANDIDATE t0=7973.65 yank=3.43g quietAt=7974.76 B(abs)=n/a B(rel)=n/a
+  [v15 1707.57s] CANDIDATE t0=7973.65 yank=3.43g quietAt=7974.76 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.09g air=29.30
+  [v15 1735.76s] IMPACT pending=2.09g air=29.30
+🦘 v15 LANDING impact+maxFlightExceeded impact=2.28g air=29.39
+  [v15 1735.85s] LANDING impact+maxFlightExceeded impact=2.28g air=29.39
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=156.67 air=29.39
+  [v15 1736.86s] REJECT reason=ballisticAboveHardCap hBal=156.67 air=29.39
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=8.70 air=6.93
+  [v15 1736.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=8.70 air=6.93
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.80
+  [v15 1736.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.74 air=5.80
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.60 air=5.13
+  [v15 1736.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.60 air=5.13
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=3.92
+  [v15 1736.86s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=3.92
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1736.86s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 CANDIDATE t0=8003.04 yank=2.28g quietAt=8004.23 B(abs)=n/a B(rel)=-8.08
+  [v15 1737.05s] CANDIDATE t0=8003.04 yank=2.28g quietAt=8004.23 B(abs)=n/a B(rel)=-8.08
+🦘 v15 IMPACT pending=2.14g air=1.71
+  [v15 1737.56s] IMPACT pending=2.14g air=1.71
+🦘 v15 LANDING impact impact=2.30g air=2.01
+  [v15 1737.87s] LANDING impact impact=2.30g air=2.01
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.93 air=2.01
+  [v15 1739.38s] REJECT reason=ballisticWithoutBaroLanding hBal=1.93 air=2.01
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.07 air=5.83
+  [v15 1739.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.07 air=5.83
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.98 air=4.12
+  [v15 1739.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.98 air=4.12
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=1.56
+  [v15 1739.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=1.56
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=1.29
+  [v15 1739.38s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.48 air=1.29
+🦘 v15 CANDIDATE t0=8005.05 yank=2.30g quietAt=8006.56 B(abs)=n/a B(rel)=n/a
+  [v15 1739.38s] CANDIDATE t0=8005.05 yank=2.30g quietAt=8006.56 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.92g air=6.70
+  [v15 1744.56s] IMPACT pending=1.92g air=6.70
+🦘 v15 LANDING impact impact=2.33g air=6.73
+  [v15 1744.60s] LANDING impact impact=2.33g air=6.73
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=8.22 air=6.73
+  [v15 1746.11s] REJECT reason=ballisticAboveHardCap hBal=8.22 air=6.73
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.28
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.28
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=floatBelowMin float=0.13
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.13
+🦘 v15 CANDIDATE t0=8011.78 yank=2.33g quietAt=8013.53 B(abs)=n/a B(rel)=-12.16
+  [v15 1746.34s] CANDIDATE t0=8011.78 yank=2.33g quietAt=8013.53 B(abs)=n/a B(rel)=-12.16
+🦘 v15 IMPACT pending=1.97g air=3.13
+  [v15 1747.72s] IMPACT pending=1.97g air=3.13
+🦘 v15 LANDING impact impact=2.58g air=3.19
+  [v15 1747.78s] LANDING impact impact=2.58g air=3.19
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.59 air=3.19
+  [v15 1749.29s] REJECT reason=ballisticWithoutBaroLanding hBal=1.59 air=3.19
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=4.62
+  [v15 1749.29s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=4.62
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=2.38
+  [v15 1749.29s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=2.38
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.29 air=1.71
+  [v15 1749.29s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.29 air=1.71
+🦘 v15 CANDIDATE t0=8014.97 yank=2.58g quietAt=8016.49 B(abs)=n/a B(rel)=n/a
+  [v15 1749.31s] CANDIDATE t0=8014.97 yank=2.58g quietAt=8016.49 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.00g air=5.06
+  [v15 1752.84s] IMPACT pending=2.00g air=5.06
+🦘 v15 LANDING impact impact=2.40g air=5.10
+  [v15 1752.88s] LANDING impact impact=2.40g air=5.10
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.75 air=5.10
+  [v15 1754.39s] REJECT reason=ballisticWithoutBaroLanding hBal=1.75 air=5.10
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1754.39s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15 1754.39s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 REJECT reason=floatBelowMin float=0.24
+  [v15 1754.39s] REJECT reason=floatBelowMin float=0.24
+🦘 v15 CANDIDATE t0=8020.07 yank=2.40g quietAt=8021.58 B(abs)=n/a B(rel)=n/a
+  [v15 1754.39s] CANDIDATE t0=8020.07 yank=2.40g quietAt=8021.58 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1782.89s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=8047.76 yank=1.32g quietAt=8050.07 B(abs)=n/a B(rel)=-15.04
+  [v15 1782.89s] CANDIDATE t0=8047.76 yank=1.32g quietAt=8050.07 B(abs)=n/a B(rel)=-15.04
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1785.58s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1786.58s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=8052.41 yank=1.20g quietAt=8053.76 B(abs)=n/a B(rel)=-14.70
+  [v15 1786.58s] CANDIDATE t0=8052.41 yank=1.20g quietAt=8053.76 B(abs)=n/a B(rel)=-14.70
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1790.23s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1791.23s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=8056.60 yank=1.37g quietAt=8058.41 B(abs)=n/a B(rel)=n/a
+  [v15 1791.23s] CANDIDATE t0=8056.60 yank=1.37g quietAt=8058.41 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.02g air=11.18
+  [v15 1800.60s] IMPACT pending=2.02g air=11.18
+🦘 v15 LANDING impact impact=3.38g air=11.22
+  [v15 1800.64s] LANDING impact impact=3.38g air=11.22
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=22.84 air=11.22
+  [v15 1802.15s] REJECT reason=ballisticAboveHardCap hBal=22.84 air=11.22
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.22 air=6.31
+  [v15 1802.15s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.22 air=6.31
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=2.13
+  [v15 1802.15s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=2.13
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=1.48
+  [v15 1802.15s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=1.48
+🦘 v15 CANDIDATE t0=8067.83 yank=3.38g quietAt=8069.34 B(abs)=n/a B(rel)=-15.21
+  [v15 1802.15s] CANDIDATE t0=8067.83 yank=3.38g quietAt=8069.34 B(abs)=n/a B(rel)=-15.21
+🦘 v15 IMPACT pending=2.03g air=1.72
+  [v15 1802.36s] IMPACT pending=2.03g air=1.72
+🦘 v15 LANDING impact impact=2.68g air=2.14
+  [v15 1802.78s] LANDING impact impact=2.68g air=2.14
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.17 air=2.14
+  [v15 1804.29s] REJECT reason=ballisticWithoutBaroLanding hBal=2.17 air=2.14
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=2.17
+  [v15 1804.29s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=2.17
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=1.48
+  [v15 1804.29s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.34 air=1.48
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=1.34
+  [v15 1804.29s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=1.34
+🦘 v15 CANDIDATE t0=8067.83 yank=3.38g quietAt=8071.47 B(abs)=n/a B(rel)=-15.21
+  [v15 1804.29s] CANDIDATE t0=8067.83 yank=3.38g quietAt=8071.47 B(abs)=n/a B(rel)=-15.21
+🦘 v15 BARO rel datumStep delta=5.30 — window reset
+  [v15 1808.07s] BARO rel datumStep delta=5.30 — window reset
+🦘 v15 BARO rel datumStep delta=5.75 — window reset
+  [v15 1810.64s] BARO rel datumStep delta=5.75 — window reset
+🦘 v15 IMPACT pending=1.94g air=19.70
+  [v15 1820.34s] IMPACT pending=1.94g air=19.70
+🦘 v15 LANDING impact impact=1.94g air=19.70
+  [v15 1820.35s] LANDING impact impact=1.94g air=19.70
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=70.39 air=19.70
+  [v15 1821.85s] REJECT reason=ballisticAboveHardCap hBal=70.39 air=19.70
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.65
+  [v15 1821.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.71 air=5.65
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=4.80
+  [v15 1821.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.53 air=4.80
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=3.91
+  [v15 1821.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=3.91
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.33 air=3.18
+  [v15 1821.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.33 air=3.18
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.30 air=2.48
+  [v15 1821.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.30 air=2.48
+🦘 v15 CANDIDATE t0=8087.53 yank=1.94g quietAt=8089.04 B(abs)=n/a B(rel)=-2.46
+  [v15 1821.85s] CANDIDATE t0=8087.53 yank=1.94g quietAt=8089.04 B(abs)=n/a B(rel)=-2.46
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1825.34s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1826.35s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.26 air=1.46
+  [v15 1826.35s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.26 air=1.46
+🦘 v15 CANDIDATE t0=8092.49 yank=1.27g quietAt=8093.53 B(abs)=n/a B(rel)=n/a
+  [v15 1826.35s] CANDIDATE t0=8092.49 yank=1.27g quietAt=8093.53 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.96g air=7.59
+  [v15 1832.89s] IMPACT pending=1.96g air=7.59
+🦘 v15 LANDING impact impact=3.89g air=8.40
+  [v15 1833.71s] LANDING impact impact=3.89g air=8.40
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=12.81 air=8.40
+  [v15 1835.22s] REJECT reason=ballisticAboveHardCap hBal=12.81 air=8.40
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.16 air=6.29
+  [v15 1835.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.16 air=6.29
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=3.86
+  [v15 1835.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=3.86
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.11
+  [v15 1835.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.11
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.40
+  [v15 1835.22s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.40
+🦘 v15 CANDIDATE t0=8100.89 yank=3.89g quietAt=8102.40 B(abs)=n/a B(rel)=-4.50
+  [v15 1835.22s] CANDIDATE t0=8100.89 yank=3.89g quietAt=8102.40 B(abs)=n/a B(rel)=-4.50
+🦘 v15 IMPACT pending=2.06g air=1.92
+  [v15 1835.63s] IMPACT pending=2.06g air=1.92
+🦘 v15 LANDING impact impact=2.32g air=2.90
+  [v15 1836.60s] LANDING impact impact=2.32g air=2.90
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.76 air=2.90
+  [v15 1838.11s] REJECT reason=ballisticWithoutBaroLanding hBal=1.76 air=2.90
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.11
+  [v15 1838.11s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.41 air=3.11
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.40
+  [v15 1838.11s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.28 air=1.40
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.29
+  [v15 1838.11s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.35 air=1.29
+🦘 v15 CANDIDATE t0=8103.79 yank=2.32g quietAt=8105.30 B(abs)=n/a B(rel)=n/a
+  [v15 1838.11s] CANDIDATE t0=8103.79 yank=2.32g quietAt=8105.30 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1866.61s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=8132.72 yank=1.28g quietAt=8133.79 B(abs)=n/a B(rel)=-7.96
+  [v15 1866.61s] CANDIDATE t0=8132.72 yank=1.28g quietAt=8133.79 B(abs)=n/a B(rel)=-7.96
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1870.54s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1871.54s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 CANDIDATE t0=8138.25 yank=1.27g quietAt=8139.15 B(abs)=n/a B(rel)=-9.07
+  [v15 1871.97s] CANDIDATE t0=8138.25 yank=1.27g quietAt=8139.15 B(abs)=n/a B(rel)=-9.07
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1876.07s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 CANDIDATE t0=8141.57 yank=1.31g quietAt=8144.25 B(abs)=n/a B(rel)=n/a
+  [v15 1877.07s] CANDIDATE t0=8141.57 yank=1.31g quietAt=8144.25 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.02g air=25.87
+  [v15 1900.25s] IMPACT pending=2.02g air=25.87
+🦘 v15 LANDING impact impact=2.02g air=25.87
+  [v15 1900.25s] LANDING impact impact=2.02g air=25.87
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=121.39 air=25.87
+  [v15 1901.76s] REJECT reason=ballisticAboveHardCap hBal=121.39 air=25.87
+🦘 v15 REJECT reason=floatBelowMin float=0.20
+  [v15 1901.76s] REJECT reason=floatBelowMin float=0.20
+🦘 v15 CANDIDATE t0=8167.44 yank=2.02g quietAt=8168.95 B(abs)=n/a B(rel)=-7.86
+  [v15 1901.76s] CANDIDATE t0=8167.44 yank=2.02g quietAt=8168.95 B(abs)=n/a B(rel)=-7.86
+🦘 v15 IMPACT pending=1.97g air=1.91
+  [v15 1902.17s] IMPACT pending=1.97g air=1.91
+🦘 v15 LANDING impact impact=3.36g air=1.97
+  [v15 1902.22s] LANDING impact impact=3.36g air=1.97
+🦘 v15 JUMP h=2.05m src=ballistic air=1.97s conf=0.50
+  [v15 1903.73s] JUMP h=2.05m src=ballistic air=1.97s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1903.73s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=8174.84 yank=1.34g quietAt=8175.92 B(abs)=n/a B(rel)=n/a
+  [v15 1908.74s] CANDIDATE t0=8174.84 yank=1.34g quietAt=8175.92 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.05g air=24.57
+  [v15 1932.23s] IMPACT pending=2.05g air=24.57
+🦘 v15 LANDING impact impact=2.05g air=25.28
+  [v15 1932.94s] LANDING impact impact=2.05g air=25.28
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=115.91 air=25.28
+  [v15 1934.44s] REJECT reason=ballisticAboveHardCap hBal=115.91 air=25.28
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=6.89 air=6.17
+  [v15 1934.44s] REJECT reason=rescueNeedsMeasuredHeight hBal=6.89 air=6.17
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=5.34
+  [v15 1934.44s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.64 air=5.34
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=4.84
+  [v15 1934.44s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.54 air=4.84
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=4.25
+  [v15 1934.44s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.45 air=4.25
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.43 air=3.40
+  [v15 1934.44s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.43 air=3.40
+🦘 v15 CANDIDATE t0=8199.42 yank=2.05g quietAt=8201.63 B(abs)=n/a B(rel)=-5.35
+  [v15 1934.44s] CANDIDATE t0=8199.42 yank=2.05g quietAt=8201.63 B(abs)=n/a B(rel)=-5.35
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1937.23s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1938.24s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=2.35
+  [v15 1938.24s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.38 air=2.35
+🦘 v15 CANDIDATE t0=8202.41 yank=1.39g quietAt=8205.42 B(abs)=n/a B(rel)=n/a
+  [v15 1938.24s] CANDIDATE t0=8202.41 yank=1.39g quietAt=8205.42 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.93g air=17.10
+  [v15 1952.33s] IMPACT pending=1.93g air=17.10
+🦘 v15 LANDING impact impact=1.93g air=17.12
+  [v15 1952.34s] LANDING impact impact=1.93g air=17.12
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=53.14 air=17.12
+  [v15 1953.85s] REJECT reason=ballisticAboveHardCap hBal=53.14 air=17.12
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.08 air=6.25
+  [v15 1953.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.08 air=6.25
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.69 air=5.57
+  [v15 1953.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.69 air=5.57
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=4.18
+  [v15 1953.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.47 air=4.18
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=3.13
+  [v15 1953.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.40 air=3.13
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=2.61
+  [v15 1953.85s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.37 air=2.61
+🦘 v15 CANDIDATE t0=8219.53 yank=1.93g quietAt=8221.04 B(abs)=n/a B(rel)=-1.53
+  [v15 1953.85s] CANDIDATE t0=8219.53 yank=1.93g quietAt=8221.04 B(abs)=n/a B(rel)=-1.53
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1957.35s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+  [v15 1958.35s] REJECT reason=ballisticNeedsImpact hBal=1.57 air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1958.35s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=8223.10 yank=1.45g quietAt=8225.53 B(abs)=n/a B(rel)=n/a
+  [v15 1958.35s] CANDIDATE t0=8223.10 yank=1.45g quietAt=8225.53 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.91g air=5.86
+  [v15 1961.78s] IMPACT pending=1.91g air=5.86
+🦘 v15 LANDING impact impact=2.15g air=5.88
+  [v15 1961.80s] LANDING impact impact=2.15g air=5.88
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=1.76 air=5.88
+  [v15 1963.31s] REJECT reason=ballisticWithoutBaroLanding hBal=1.76 air=5.88
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 CANDIDATE t0=8228.98 yank=2.15g quietAt=8230.49 B(abs)=n/a B(rel)=n/a
+  [v15 1963.31s] CANDIDATE t0=8228.98 yank=2.15g quietAt=8230.49 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.96g air=6.93
+  [v15 1968.73s] IMPACT pending=1.96g air=6.93
+🦘 v15 LANDING impact impact=2.43g air=6.96
+  [v15 1968.76s] LANDING impact impact=2.43g air=6.96
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=8.79 air=6.96
+  [v15 1970.26s] REJECT reason=ballisticAboveHardCap hBal=8.79 air=6.96
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 CANDIDATE t0=8235.94 yank=2.43g quietAt=8237.45 B(abs)=n/a B(rel)=n/a
+  [v15 1970.26s] CANDIDATE t0=8235.94 yank=2.43g quietAt=8237.45 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.30g air=5.24
+  [v15 1974.00s] IMPACT pending=2.30g air=5.24
+🦘 v15 LANDING impact impact=2.94g air=5.27
+  [v15 1974.03s] LANDING impact impact=2.94g air=5.27
+🦘 v15 JUMP h=1.76m src=ballistic air=5.27s conf=0.50
+  [v15 1975.54s] JUMP h=1.76m src=ballistic air=5.27s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1975.54s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=8247.74 yank=1.59g quietAt=8248.73 B(abs)=n/a B(rel)=n/a
+  [v15 1981.55s] CANDIDATE t0=8247.74 yank=1.59g quietAt=8248.73 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.02g air=1.38
+  [v15 1981.93s] IMPACT pending=2.02g air=1.38
+🦘 v15 IMPACT discarded=2.02g — early mid-flight jolt (quiet resumed)
+  [v15 1983.43s] IMPACT discarded=2.02g — early mid-flight jolt (quiet resumed)
+🦘 v15 IMPACT pending=1.96g air=5.62
+  [v15 1986.18s] IMPACT pending=1.96g air=5.62
+🦘 v15 LANDING impact impact=1.96g air=5.63
+  [v15 1986.18s] LANDING impact impact=1.96g air=5.63
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.11 air=5.63
+  [v15 1987.69s] REJECT reason=ballisticWithoutBaroLanding hBal=2.11 air=5.63
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=4.91
+  [v15 1987.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.77 air=4.91
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.69 air=4.25
+  [v15 1987.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.69 air=4.25
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=3.50
+  [v15 1987.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.58 air=3.50
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=2.25
+  [v15 1987.69s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.46 air=2.25
+🦘 v15 CANDIDATE t0=8253.37 yank=1.96g quietAt=8254.87 B(abs)=n/a B(rel)=-6.14
+  [v15 1987.69s] CANDIDATE t0=8253.37 yank=1.96g quietAt=8254.87 B(abs)=n/a B(rel)=-6.14
+🦘 v15 IMPACT pending=2.40g air=2.61
+  [v15 1988.79s] IMPACT pending=2.40g air=2.61
+🦘 v15 LANDING impact+splash(rel) impact=2.62g air=2.62
+  [v15 1988.80s] LANDING impact+splash(rel) impact=2.62g air=2.62
+🦘 v15 JUMP h=1.69m src=ballistic air=2.62s conf=0.50
+  [v15 1989.80s] JUMP h=1.69m src=ballistic air=2.62s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1989.80s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=-5.98 — window reset
+  [v15 1992.70s] BARO rel datumStep delta=-5.98 — window reset
+🦘 v15 CANDIDATE t0=8262.03 yank=1.93g quietAt=8263.00 B(abs)=n/a B(rel)=n/a
+  [v15 1995.81s] CANDIDATE t0=8262.03 yank=1.93g quietAt=8263.00 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.90g air=10.28
+  [v15 2005.13s] IMPACT pending=1.90g air=10.28
+🦘 v15 LANDING impact impact=2.02g air=11.81
+  [v15 2006.66s] LANDING impact impact=2.02g air=11.81
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=25.31 air=11.81
+  [v15 2008.17s] REJECT reason=ballisticAboveHardCap hBal=25.31 air=11.81
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.05 air=6.24
+  [v15 2008.17s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.05 air=6.24
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.36 air=4.53
+  [v15 2008.17s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.36 air=4.53
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=2.11
+  [v15 2008.17s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.63 air=2.11
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=1.40
+  [v15 2008.17s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.55 air=1.40
+🦘 v15 CANDIDATE t0=8273.85 yank=2.02g quietAt=8275.35 B(abs)=n/a B(rel)=-9.47
+  [v15 2008.17s] CANDIDATE t0=8273.85 yank=2.02g quietAt=8275.35 B(abs)=n/a B(rel)=-9.47
+🦘 v15 IMPACT pending=1.90g air=2.31
+  [v15 2008.97s] IMPACT pending=1.90g air=2.31
+🦘 v15 LANDING impact impact=2.67g air=2.71
+  [v15 2009.37s] LANDING impact impact=2.67g air=2.71
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.06 air=2.71
+  [v15 2010.88s] REJECT reason=ballisticWithoutBaroLanding hBal=2.06 air=2.71
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=7.════════════════════════════════════════════════
+File:    log_20260727_144243_F3386A6C.kslog
+Format:  onDevice  rate=199.5 Hz  samples=420368  dur=2108.0s
+Mode:    standard  mockSpeed=8.0 m/s
+Jumps:   11 (accepted=11)
+  [✓] #0  t=234.28s  air=2.26s phys=2.26s  h=1.69m(ballistic)  dist=0.0m  apex=1.13s  conf=50  rot=1
+  [✓] #1  t=342.74s  air=5.55s phys=5.55s  h=1.79m(ballistic)  dist=0.0m  apex=2.78s  conf=50  rot=1
+  [✓] #2  t=794.61s  air=4.54s phys=4.54s  h=5.38m(relativeParabola)  dist=0.0m  apex=2.27s  conf=65  rot=1
+  [✓] #3  t=927.82s  air=4.42s phys=4.42s  h=2.10m(relativeParabola)  dist=0.0m  apex=2.21s  conf=65  rot=1
+  [✓] #4  t=1018.28s  air=1.93s phys=1.93s  h=2.05m(ballistic)  dist=0.0m  apex=0.96s  conf=50  rot=1
+  [✓] #5  t=1419.87s  air=2.04s phys=2.04s  h=2.93m(ballistic)  dist=0.0m  apex=1.02s  conf=50  rot=3
+  [✓] #6  t=1451.20s  air=2.52s phys=2.52s  h=2.11m(ballistic)  dist=0.0m  apex=1.26s  conf=50  rot=1
+  [✓] #7  t=1541.01s  air=3.49s phys=3.49s  h=1.89m(relativeParabola)  dist=0.0m  apex=1.75s  conf=65  rot=0
+  [✓] #8  t=1900.25s  air=1.97s phys=1.97s  h=2.05m(ballistic)  dist=0.0m  apex=0.98s  conf=50  rot=1
+  [✓] #9  t=1968.76s  air=5.27s phys=5.27s  h=1.76m(ballistic)  dist=0.0m  apex=2.64s  conf=50  rot=1
+  [✓] #10  t=1986.18s  air=2.62s phys=2.62s  h=1.69m(ballistic)  dist=0.0m  apex=1.31s  conf=50  rot=1
+════════════════════════════════════════════════
+→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/surfr_focus/log_20260727_144243_F3386A6C.actual.json
+36 air=6.37
+  [v15 2010.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.36 air=6.37
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.53 air=5.66
+  [v15 2010.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.53 air=5.66
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.18 air=4.26
+  [v15 2010.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=2.18 air=4.26
+🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=1.90 air=3.48
+  [v15 2010.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=1.90 air=3.48
+🦘 v15 CANDIDATE t0=8276.55 yank=2.67g quietAt=8278.06 B(abs)=n/a B(rel)=n/a
+  [v15 2010.88s] CANDIDATE t0=8276.55 yank=2.67g quietAt=8278.06 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=14.79
+  [v15 2013.16s] BARO abs drop reason=degradedAccuracy acc=14.79
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 2039.37s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=8342.16 yank=1.20g quietAt=8343.06 B(abs)=n/a B(rel)=-7.12
+  [v15 2075.88s] CANDIDATE t0=8342.16 yank=1.20g quietAt=8343.06 B(abs)=n/a B(rel)=-7.12
+🦘 v15 IMPACT pending=2.28g air=1.33
+  [v15 2076.31s] IMPACT pending=2.28g air=1.33
+🦘 v15 IMPACT discarded=2.29g — early mid-flight jolt (quiet resumed)
+  [v15 2077.81s] IMPACT discarded=2.29g — early mid-flight jolt (quiet resumed)
+🦘 v15 SUMMARY absReceived=3304 absAccepted=1306 absNonMonotonicDropped=8 absWindowSize=60 relReceived=820
+  [v15 2107.33s] SUMMARY absReceived=3304 absAccepted=1306 absNonMonotonicDropped=8 absWindowSize=60 relReceived=820
+🦘 JumpDetector(v15) endSession flush lateJumps=0

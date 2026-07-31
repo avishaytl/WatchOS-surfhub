@@ -1,0 +1,37 @@
+{
+  "detectedRateHz" : 196.6266358672877,
+  "detectionMode" : "standard",
+  "durationSec" : 96.86377000408538,
+  "file" : "log_20260721_135817_C1061480.kslog",
+  "format" : "onDevice",
+  "jumps" : [
+    {
+      "accepted" : true,
+      "airtime" : 0.99,
+      "apexTime" : 0.9907899999961955,
+      "confidence" : 65.00000000000001,
+      "height" : 1.2,
+      "heightSource" : "ballistic",
+      "index" : 0,
+      "jumpDistance" : 7.93,
+      "physicalAirtime" : 0.9907898902893066,
+      "rotations" : 2,
+      "takeoffOffsetSec" : 12.597220659255981
+    },
+    {
+      "accepted" : true,
+      "airtime" : 1.19,
+      "apexTime" : 0,
+      "confidence" : 65.00000000000001,
+      "height" : 1.72,
+      "heightSource" : "ballistic",
+      "index" : 1,
+      "jumpDistance" : 9.49,
+      "physicalAirtime" : 1.1859381198883057,
+      "rotations" : 1,
+      "takeoffOffsetSec" : 44.022228479385376
+    }
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 19047
+}

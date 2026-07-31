@@ -5,6 +5,7 @@
 
 // MARK: - Home View
 "home.start_session" = "Start Session";
+"home.record_sensors" = "Record Sensors";
 "home.settings" = "Settings";
 "home.recent_sessions" = "Recent Sessions";
 "home.no_sessions" = "No sessions yet";
@@ -128,7 +129,10 @@
 "settings.absolute_altitude_error" = "Sensor error";
 "settings.absolute_altitude_unavailable" = "Absolute altitude unavailable";
 "settings.engine.section" = "Jump Engine";
-"settings.v13_min_rise" = "V13 Min Jump Height";
+"settings.v13_min_counted_height" = "Count Jumps From";
+"settings.v13_min_counted_height_hint" = "Final count only · detection remains fully sensitive · applies next session";
+"settings.v13_absolute_interval" = "Absolute Sample Interval";
+"settings.v13_absolute_interval_hint" = "0.25–1.0 s processing cadence · Core Motion may deliver the sensor more slowly · applies next session";
 "settings.v12_disable_speed_gate" = "Test: V12 no speed gate";
 "settings.v12_debug" = "V12 Debug Lab";
 "settings.v12_debug_hint" = "Tune or bypass only V12 gates";

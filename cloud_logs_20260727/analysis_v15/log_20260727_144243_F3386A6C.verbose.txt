@@ -1,0 +1,2498 @@
+🦘 JumpDetector(v15) reset - ready=true minRise=1.0m base=6.0s-median@yank yank=1.2g quietStd=0.45g impact=1.9g float>=0.35 floatFactor=2.6 splashGuard=3.0s absolute=continuousSingleConsumer gps=metricsOnly offline replay: watch sensor readiness skipped
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15    2.35s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 CANDIDATE t0=6279.56 yank=1.23g quietAt=6280.46 B(abs)=n/a B(rel)=0.30
+  [v15   13.28s] CANDIDATE t0=6279.56 yank=1.23g quietAt=6280.46 B(abs)=n/a B(rel)=0.30
+🦘 v15 IMPACT pending=2.20g air=3.94
+  [v15   16.31s] IMPACT pending=2.20g air=3.94
+🦘 v15 LANDING impact+noRiseAbort impact=2.20g air=3.94
+  [v15   16.32s] LANDING impact+noRiseAbort impact=2.20g air=3.94
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.23
+  [v15   17.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=2.10
+  [v15   17.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=2.10
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.23
+  [v15   17.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.43
+  [v15   17.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.43
+🦘 v15 CANDIDATE t0=6283.50 yank=2.20g quietAt=6284.57 B(abs)=n/a B(rel)=0.23
+  [v15   17.38s] CANDIDATE t0=6283.50 yank=2.20g quietAt=6284.57 B(abs)=n/a B(rel)=0.23
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   17.65s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15   21.32s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 JUMP h=2.64m src=ballistic air=5.00s conf=0.35
+  [v15   22.32s] JUMP h=2.64m src=ballistic air=5.00s conf=0.35
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   22.32s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   22.64s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   23.32s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   23.64s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   24.33s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   24.64s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   25.33s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   25.64s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   26.33s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   26.64s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   27.33s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   27.63s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   28.33s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.18
+  [v15   28.62s] BARO abs drop reason=degradedAccuracy acc=23.18
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   28.95s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15   29.33s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   29.80s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.53
+  [v15   30.34s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.53
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   30.63s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.53
+  [v15   31.34s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.53
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   31.63s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.53
+  [v15   32.34s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.53
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   32.62s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.24
+  [v15   33.34s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.24
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   33.62s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+  [v15   35.32s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   35.62s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+  [v15   36.33s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   36.61s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+  [v15   37.33s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   37.45s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+  [v15   38.33s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   38.61s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+  [v15   39.33s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   39.61s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+  [v15   40.33s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   40.61s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+  [v15   41.33s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   41.61s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+  [v15   42.34s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   42.60s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+  [v15   43.34s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.60
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   43.59s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.10
+  [v15   44.34s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.10
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   44.77s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.10
+  [v15   45.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.10
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   45.60s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+  [v15   46.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   46.57s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+  [v15   47.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   47.76s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+  [v15   48.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   48.59s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+  [v15   49.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   49.59s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+  [v15   50.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   50.59s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+  [v15   51.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   51.59s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.18
+  [v15   52.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.18
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   52.59s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+  [v15   53.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   53.58s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+  [v15   54.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   54.56s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+  [v15   55.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   55.41s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15   56.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   56.58s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15   57.39s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   57.58s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+  [v15   58.39s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   58.57s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15   59.39s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   59.57s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15   60.39s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   60.57s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15   62.25s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   62.57s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15   63.26s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   63.56s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15   64.26s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   64.54s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15   65.26s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   65.73s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+  [v15   66.26s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   66.56s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.72
+  [v15   67.26s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.72
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   67.56s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.72
+  [v15   68.26s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.72
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   68.55s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.72
+  [v15   69.27s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.72
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   69.55s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+  [v15   70.27s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   70.55s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+  [v15   71.27s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   71.55s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+  [v15   72.27s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   72.53s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+  [v15   73.27s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.71
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   73.38s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.29
+  [v15   74.27s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.29
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   74.54s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.29
+  [v15   75.28s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.29
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   75.54s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.37
+  [v15   76.28s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.37
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   76.54s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.37
+  [v15   77.28s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.37
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   77.54s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.37
+  [v15   78.28s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.37
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   78.54s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 CANDIDATE t0=6344.15 yank=2.04g quietAt=6346.47 B(abs)=n/a B(rel)=-0.65
+  [v15   79.28s] CANDIDATE t0=6344.15 yank=2.04g quietAt=6346.47 B(abs)=n/a B(rel)=-0.65
+🦘 v15 IMPACT pending=2.50g air=11.57
+  [v15   88.53s] IMPACT pending=2.50g air=11.57
+🦘 v15 LANDING impact impact=2.51g air=11.57
+  [v15   88.54s] LANDING impact impact=2.51g air=11.57
+🦘 v15 REJECT reason=gateEntrySpeed vin=2.10
+  [v15   90.05s] REJECT reason=gateEntrySpeed vin=2.10
+🦘 v15 REJECT reason=gateEntrySpeed vin=1.34
+  [v15   90.05s] REJECT reason=gateEntrySpeed vin=1.34
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.48
+  [v15   90.05s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.48
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   90.18s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.48
+  [v15   91.05s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.48
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   91.18s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.48
+  [v15   92.05s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.48
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.19
+  [v15   92.18s] BARO abs drop reason=degradedAccuracy acc=23.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.93
+  [v15   93.05s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.93
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   93.18s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.93
+  [v15   94.05s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.93
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   94.17s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.93
+  [v15   95.05s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.93
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   95.17s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.82
+  [v15   96.06s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.82
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   96.17s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.82
+  [v15   97.06s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.82
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   97.17s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.80
+  [v15   98.06s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.80
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   98.16s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.64
+  [v15   99.06s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.64
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15   99.16s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.64
+  [v15  100.06s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.64
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  100.16s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+  [v15  101.06s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  101.16s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+  [v15  102.07s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  102.16s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+  [v15  103.07s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  103.16s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.46
+  [v15  104.07s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.46
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  104.16s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.88
+  [v15  105.07s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.88
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  105.15s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.56
+  [v15  106.07s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.56
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  106.15s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.56
+  [v15  107.07s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.56
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  107.15s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+  [v15  108.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  108.15s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+  [v15  109.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  109.15s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+  [v15  110.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  110.14s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.45
+  [v15  111.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.45
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  111.14s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+  [v15  112.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  112.14s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+  [v15  113.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  113.14s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+  [v15  114.09s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  114.14s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+  [v15  115.09s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  115.13s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.44
+  [v15  116.09s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.44
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  116.12s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.44
+  [v15  117.09s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.44
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  117.13s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.35
+  [v15  118.09s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.35
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  118.13s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.35
+  [v15  119.09s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.35
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  119.13s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.03
+  [v15  120.10s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.03
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  120.13s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.03
+  [v15  121.10s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.03
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  121.12s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.03
+  [v15  122.10s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.03
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  122.12s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.01
+  [v15  123.10s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.01
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  123.12s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.11
+  [v15  124.10s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.11
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  124.11s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.11
+  [v15  125.10s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.11
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  125.12s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.11
+  [v15  126.11s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.11
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  126.11s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.56
+  [v15  127.11s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.56
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  127.11s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.34
+  [v15  128.11s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.34
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  128.11s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  129.11s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  129.44s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  130.11s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  130.44s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  131.11s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  131.44s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+  [v15  132.12s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  132.44s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+  [v15  133.12s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  133.43s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+  [v15  134.12s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  134.42s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.49
+  [v15  135.12s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.49
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  135.43s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.49
+  [v15  136.12s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.49
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  136.43s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.49
+  [v15  137.12s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.49
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  137.43s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 CANDIDATE t0=6403.54 yank=1.91g quietAt=6405.31 B(abs)=n/a B(rel)=-2.26
+  [v15  138.13s] CANDIDATE t0=6403.54 yank=1.91g quietAt=6405.31 B(abs)=n/a B(rel)=-2.26
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  141.36s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  142.36s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 CANDIDATE t0=6407.62 yank=1.64g quietAt=6409.55 B(abs)=n/a B(rel)=-2.16
+  [v15  142.36s] CANDIDATE t0=6407.62 yank=1.64g quietAt=6409.55 B(abs)=n/a B(rel)=-2.16
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  142.58s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  145.43s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.06 yank=1.64
+  [v15  146.44s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.06 yank=1.64
+🦘 v15 CANDIDATE t0=6410.76 yank=1.46g quietAt=6413.62 B(abs)=n/a B(rel)=-1.82
+  [v15  146.44s] CANDIDATE t0=6410.76 yank=1.46g quietAt=6413.62 B(abs)=n/a B(rel)=-1.82
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  146.74s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  148.58s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.06 yank=1.46
+  [v15  149.58s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.06 yank=1.46
+🦘 v15 CANDIDATE t0=6414.45 yank=1.55g quietAt=6416.77 B(abs)=n/a B(rel)=n/a
+  [v15  149.58s] CANDIDATE t0=6414.45 yank=1.55g quietAt=6416.77 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.20
+  [v15  149.74s] BARO abs drop reason=degradedAccuracy acc=23.20
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  172.70s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  177.26s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6443.19 yank=1.45g quietAt=6444.45 B(abs)=n/a B(rel)=-2.10
+  [v15  177.26s] CANDIDATE t0=6443.19 yank=1.45g quietAt=6444.45 B(abs)=n/a B(rel)=-2.10
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  177.34s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  181.01s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.45
+  [v15  182.01s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.45
+🦘 v15 CANDIDATE t0=6446.76 yank=1.37g quietAt=6449.20 B(abs)=n/a B(rel)=-2.29
+  [v15  182.01s] CANDIDATE t0=6446.76 yank=1.37g quietAt=6449.20 B(abs)=n/a B(rel)=-2.29
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  182.01s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=3.27g air=3.93
+  [v15  183.50s] IMPACT pending=3.27g air=3.93
+🦘 v15 LANDING impact+noRiseAbort impact=4.15g air=3.95
+  [v15  183.52s] LANDING impact+noRiseAbort impact=4.15g air=3.95
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.37
+  [v15  184.59s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.37
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.60
+  [v15  184.59s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.60
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.34
+  [v15  184.59s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.34
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  184.59s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.35
+  [v15  184.59s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.35
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  184.59s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 CANDIDATE(reanchor) t0=6450.71 yank=4.15g
+  [v15  184.59s] CANDIDATE(reanchor) t0=6450.71 yank=4.15g
+🦘 v15 CANDIDATE t0=6450.71 yank=4.15g quietAt=6451.77 B(abs)=n/a B(rel)=n/a
+  [v15  184.59s] CANDIDATE t0=6450.71 yank=4.15g quietAt=6451.77 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  184.67s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=1.92g air=2.85
+  [v15  186.38s] IMPACT pending=1.92g air=2.85
+🦘 v15 LANDING impact impact=2.15g air=2.96
+  [v15  186.48s] LANDING impact impact=2.15g air=2.96
+🦘 v15 JUMP h=1.68m src=ballistic air=2.96s conf=0.50
+  [v15  187.99s] JUMP h=1.68m src=ballistic air=2.96s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  187.99s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  188.00s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  188.99s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  189.00s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  189.99s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  190.00s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  190.99s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  190.99s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  191.99s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  191.99s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  192.99s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  193.32s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 CANDIDATE t0=6459.84 yank=1.44g quietAt=6461.18 B(abs)=n/a B(rel)=-1.10
+  [v15  194.00s] CANDIDATE t0=6459.84 yank=1.44g quietAt=6461.18 B(abs)=n/a B(rel)=-1.10
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  197.66s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=softEcho dt=6.18
+  [v15  198.66s] REJECT reason=softEcho dt=6.18
+🦘 v15 CANDIDATE t0=6464.04 yank=1.49g quietAt=6465.85 B(abs)=n/a B(rel)=-0.84
+  [v15  198.66s] CANDIDATE t0=6464.04 yank=1.49g quietAt=6465.85 B(abs)=n/a B(rel)=-0.84
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  198.98s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  201.85s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.79 yank=1.49
+  [v15  202.86s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.79 yank=1.49
+🦘 v15 CANDIDATE t0=6467.06 yank=1.39g quietAt=6470.04 B(abs)=n/a B(rel)=n/a
+  [v15  202.86s] CANDIDATE t0=6467.06 yank=1.39g quietAt=6470.04 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  202.96s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=1.98g air=22.25
+  [v15  222.12s] IMPACT pending=1.98g air=22.25
+🦘 v15 LANDING impact impact=2.18g air=22.29
+  [v15  222.16s] LANDING impact impact=2.18g air=22.29
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.08 yank=1.39
+  [v15  223.67s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.08 yank=1.39
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.36
+  [v15  223.67s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.36
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.30
+  [v15  223.67s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.30
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.31
+  [v15  223.67s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.25
+  [v15  223.67s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.81
+  [v15  223.67s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.81
+🦘 v15 CANDIDATE t0=6489.35 yank=2.18g quietAt=6490.86 B(abs)=n/a B(rel)=-0.33
+  [v15  223.67s] CANDIDATE t0=6489.35 yank=2.18g quietAt=6490.86 B(abs)=n/a B(rel)=-0.33
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  223.93s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  227.17s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=2.18
+  [v15  228.17s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=2.18
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.46
+  [v15  228.17s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.46
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.10 yank=1.52
+  [v15  228.17s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.10 yank=1.52
+🦘 v15 CANDIDATE t0=6493.56 yank=1.61g quietAt=6495.35 B(abs)=n/a B(rel)=-0.09
+  [v15  228.17s] CANDIDATE t0=6493.56 yank=1.61g quietAt=6495.35 B(abs)=n/a B(rel)=-0.09
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  228.26s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  231.37s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.80 yank=1.61
+  [v15  232.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.80 yank=1.61
+🦘 v15 CANDIDATE t0=6495.58 yank=1.52g quietAt=6499.56 B(abs)=n/a B(rel)=n/a
+  [v15  232.38s] CANDIDATE t0=6495.58 yank=1.52g quietAt=6499.56 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  232.58s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=2.06g air=5.63
+  [v15  234.03s] IMPACT pending=2.06g air=5.63
+🦘 v15 LANDING impact impact=3.79g air=5.89
+  [v15  234.28s] LANDING impact impact=3.79g air=5.89
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.52
+  [v15  235.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.52
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.46
+  [v15  235.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.46
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.27
+  [v15  235.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.27
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.34
+  [v15  235.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.34
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.30
+  [v15  235.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.30
+🦘 v15 CANDIDATE t0=6501.46 yank=3.79g quietAt=6502.98 B(abs)=n/a B(rel)=n/a
+  [v15  235.79s] CANDIDATE t0=6501.46 yank=3.79g quietAt=6502.98 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  235.91s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 IMPACT pending=2.34g air=2.22
+  [v15  236.50s] IMPACT pending=2.34g air=2.22
+🦘 v15 LANDING impact impact=3.31g air=2.26
+  [v15  236.54s] LANDING impact impact=3.31g air=2.26
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.56 yank=3.79
+  [v15  238.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.56 yank=3.79
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.27
+  [v15  238.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.27
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.34
+  [v15  238.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.34
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.30
+  [v15  238.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.30
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.37
+  [v15  238.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.37
+🦘 v15 CANDIDATE t0=6501.46 yank=3.79g quietAt=6505.24 B(abs)=n/a B(rel)=n/a
+  [v15  238.05s] CANDIDATE t0=6501.46 yank=3.79g quietAt=6505.24 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.21
+  [v15  238.24s] BARO abs drop reason=degradedAccuracy acc=23.21
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  244.55s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  264.28s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6527.84 yank=1.61g quietAt=6531.47 B(abs)=n/a B(rel)=-5.40
+  [v15  264.28s] CANDIDATE t0=6527.84 yank=1.61g quietAt=6531.47 B(abs)=n/a B(rel)=-5.40
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  264.51s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  265.66s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.61
+  [v15  266.66s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.61
+🦘 v15 CANDIDATE t0=6531.85 yank=1.48g quietAt=6533.85 B(abs)=n/a B(rel)=-5.63
+  [v15  266.66s] CANDIDATE t0=6531.85 yank=1.48g quietAt=6533.85 B(abs)=n/a B(rel)=-5.63
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  266.85s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  294.66s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6560.84 yank=1.43g quietAt=6561.85 B(abs)=n/a B(rel)=-2.19
+  [v15  294.66s] CANDIDATE t0=6560.84 yank=1.43g quietAt=6561.85 B(abs)=n/a B(rel)=-2.19
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  294.80s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 IMPACT pending=2.26g air=2.22
+  [v15  295.87s] IMPACT pending=2.26g air=2.22
+🦘 v15 LANDING impact impact=4.01g air=2.25
+  [v15  295.90s] LANDING impact impact=4.01g air=2.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.43
+  [v15  297.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.43
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.52 yank=1.33
+  [v15  297.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.52 yank=1.33
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.52 yank=1.23
+  [v15  297.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.52 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.25
+  [v15  297.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.38
+  [v15  297.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.38
+🦘 v15 CANDIDATE(reanchor) t0=6563.09 yank=4.01g
+  [v15  297.41s] CANDIDATE(reanchor) t0=6563.09 yank=4.01g
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  297.46s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 IMPACT pending=1.92g air=2.40
+  [v15  298.31s] IMPACT pending=1.92g air=2.40
+🦘 v15 LANDING impact impact=1.92g air=2.41
+  [v15  298.31s] LANDING impact impact=1.92g air=2.41
+🦘 v15 JUMP h=1.65m src=ballistic air=2.41s conf=0.50
+  [v15  299.82s] JUMP h=1.65m src=ballistic air=2.41s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  299.82s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  300.12s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  300.82s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  301.12s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  301.82s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  302.12s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  302.83s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  303.12s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  303.83s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  304.12s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  304.83s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  305.12s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  305.83s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.22
+  [v15  306.11s] BARO abs drop reason=degradedAccuracy acc=23.22
+🦘 v15 CANDIDATE t0=6572.94 yank=1.50g quietAt=6574.02 B(abs)=n/a B(rel)=-1.25
+  [v15  306.83s] CANDIDATE t0=6572.94 yank=1.50g quietAt=6574.02 B(abs)=n/a B(rel)=-1.25
+🦘 v15 IMPACT pending=1.92g air=1.63
+  [v15  307.38s] IMPACT pending=1.92g air=1.63
+🦘 v15 IMPACT discarded=1.92g — early mid-flight jolt (quiet resumed)
+  [v15  308.89s] IMPACT discarded=1.92g — early mid-flight jolt (quiet resumed)
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  309.27s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  310.75s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=softEcho dt=7.44
+  [v15  311.76s] REJECT reason=softEcho dt=7.44
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.08 yank=1.26
+  [v15  311.76s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.08 yank=1.26
+🦘 v15 CANDIDATE t0=6575.18 yank=1.41g quietAt=6578.94 B(abs)=n/a B(rel)=-1.06
+  [v15  311.76s] CANDIDATE t0=6575.18 yank=1.41g quietAt=6578.94 B(abs)=n/a B(rel)=-1.06
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  311.77s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  313.00s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.41
+  [v15  314.00s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.41
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.14 yank=1.34
+  [v15  314.00s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.14 yank=1.34
+🦘 v15 CANDIDATE t0=6578.22 yank=1.53g quietAt=6581.19 B(abs)=n/a B(rel)=-0.58
+  [v15  314.00s] CANDIDATE t0=6578.22 yank=1.53g quietAt=6581.19 B(abs)=n/a B(rel)=-0.58
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  314.10s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.58
+  [v15  316.61s] LANDING noRiseAbort-softClose impact=0.00g air=5.58
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.53
+  [v15  317.61s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.53
+🦘 v15 CANDIDATE t0=6581.81 yank=1.82g quietAt=6584.80 B(abs)=n/a B(rel)=n/a
+  [v15  317.61s] CANDIDATE t0=6581.81 yank=1.82g quietAt=6584.80 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  317.76s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 IMPACT pending=1.94g air=25.32
+  [v15  339.95s] IMPACT pending=1.94g air=25.32
+🦘 v15 LANDING impact impact=1.94g air=25.33
+  [v15  339.95s] LANDING impact impact=1.94g air=25.33
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.89 yank=1.82
+  [v15  341.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.89 yank=1.82
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.32
+  [v15  341.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.56
+  [v15  341.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.56
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.32
+  [v15  341.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.25
+  [v15  341.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.55
+  [v15  341.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.55
+🦘 v15 CANDIDATE t0=6607.13 yank=1.94g quietAt=6608.65 B(abs)=n/a B(rel)=-0.26
+  [v15  341.46s] CANDIDATE t0=6607.13 yank=1.94g quietAt=6608.65 B(abs)=n/a B(rel)=-0.26
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  341.71s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  344.95s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.10 yank=1.94
+  [v15  345.95s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.10 yank=1.94
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.55
+  [v15  345.95s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.55
+🦘 v15 CANDIDATE t0=6609.92 yank=1.83g quietAt=6613.14 B(abs)=n/a B(rel)=n/a
+  [v15  345.95s] CANDIDATE t0=6609.92 yank=1.83g quietAt=6613.14 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  346.04s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 IMPACT pending=2.03g air=5.14
+  [v15  347.88s] IMPACT pending=2.03g air=5.14
+🦘 v15 LANDING impact impact=4.94g air=5.55
+  [v15  348.29s] LANDING impact impact=4.94g air=5.55
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.83
+  [v15  349.80s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.83
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.51
+  [v15  349.80s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.51
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.61
+  [v15  349.80s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.61
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.47 yank=1.28
+  [v15  349.80s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.47 yank=1.28
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.47 yank=1.56
+  [v15  349.80s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.47 yank=1.56
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.40
+  [v15  349.80s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.40
+🦘 v15 CANDIDATE(reanchor) t0=6615.48 yank=4.94g
+  [v15  349.80s] CANDIDATE(reanchor) t0=6615.48 yank=4.94g
+🦘 v15 CANDIDATE t0=6615.48 yank=4.94g quietAt=6616.99 B(abs)=n/a B(rel)=n/a
+  [v15  349.80s] CANDIDATE t0=6615.48 yank=4.94g quietAt=6616.99 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.99g air=1.54
+  [v15  349.84s] IMPACT pending=1.99g air=1.54
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  350.03s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING impact impact=2.82g air=2.74
+  [v15  351.04s] LANDING impact impact=2.82g air=2.74
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15  352.55s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.47 yank=1.56
+  [v15  352.55s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.47 yank=1.56
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.40
+  [v15  352.55s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.40
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.46
+  [v15  352.55s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.46
+🦘 v15 REJECT reason=floatBelowMin float=0.22
+  [v15  352.55s] REJECT reason=floatBelowMin float=0.22
+🦘 v15 CANDIDATE t0=6618.22 yank=2.82g quietAt=6619.73 B(abs)=n/a B(rel)=n/a
+  [v15  352.55s] CANDIDATE t0=6618.22 yank=2.82g quietAt=6619.73 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  352.86s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 IMPACT pending=2.08g air=29.44
+  [v15  380.48s] IMPACT pending=2.08g air=29.44
+🦘 v15 LANDING impact+maxFlightExceeded impact=2.08g air=29.45
+  [v15  380.48s] LANDING impact+maxFlightExceeded impact=2.08g air=29.45
+🦘 v15 REJECT reason=gateEntrySpeed vin=3.84
+  [v15  381.49s] REJECT reason=gateEntrySpeed vin=3.84
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.21
+  [v15  381.49s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.21
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.25
+  [v15  381.49s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.44
+  [v15  381.49s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.44
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.31
+  [v15  381.49s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.58
+  [v15  381.49s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.58
+🦘 v15 CANDIDATE t0=6647.67 yank=2.08g quietAt=6648.67 B(abs)=n/a B(rel)=-1.99
+  [v15  381.49s] CANDIDATE t0=6647.67 yank=2.08g quietAt=6648.67 B(abs)=n/a B(rel)=-1.99
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  381.64s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  385.49s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=2.08
+  [v15  386.49s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=2.08
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.57
+  [v15  386.49s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.57
+🦘 v15 CANDIDATE t0=6650.24 yank=1.48g quietAt=6653.67 B(abs)=n/a B(rel)=-2.17
+  [v15  386.49s] CANDIDATE t0=6650.24 yank=1.48g quietAt=6653.67 B(abs)=n/a B(rel)=-2.17
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.23
+  [v15  386.63s] BARO abs drop reason=degradedAccuracy acc=23.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  388.06s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  388.28s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.48
+  [v15  389.06s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.48
+🦘 v15 CANDIDATE t0=6654.16 yank=1.51g quietAt=6656.24 B(abs)=n/a B(rel)=n/a
+  [v15  389.06s] CANDIDATE t0=6654.16 yank=1.51g quietAt=6656.24 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  389.29s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=1.92g air=7.98
+  [v15  394.96s] IMPACT pending=1.92g air=7.98
+🦘 v15 LANDING impact impact=5.03g air=8.25
+  [v15  395.23s] LANDING impact impact=5.03g air=8.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.51
+  [v15  396.74s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.51
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  396.74s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.79 yank=1.22
+  [v15  396.74s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.79 yank=1.22
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15  396.74s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.30
+  [v15  396.74s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.30
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15  396.74s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 CANDIDATE(reanchor) t0=6662.41 yank=5.03g
+  [v15  396.74s] CANDIDATE(reanchor) t0=6662.41 yank=5.03g
+🦘 v15 CANDIDATE t0=6662.41 yank=5.03g quietAt=6663.92 B(abs)=n/a B(rel)=-2.30
+  [v15  396.74s] CANDIDATE t0=6662.41 yank=5.03g quietAt=6663.92 B(abs)=n/a B(rel)=-2.30
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  396.94s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=2.06g air=2.90
+  [v15  398.13s] IMPACT pending=2.06g air=2.90
+🦘 v15 LANDING impact impact=2.06g air=2.91
+  [v15  398.13s] LANDING impact impact=2.06g air=2.91
+🦘 v15 JUMP h=1.60m src=ballistic air=2.91s conf=0.50
+  [v15  399.64s] JUMP h=1.60m src=ballistic air=2.91s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  399.64s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  399.94s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  400.64s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  400.94s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  401.64s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  401.94s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  402.65s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  402.93s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  403.65s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  403.93s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  404.65s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  404.93s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  405.65s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  405.91s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 CANDIDATE t0=6672.77 yank=1.52g quietAt=6673.84 B(abs)=n/a B(rel)=-0.76
+  [v15  406.65s] CANDIDATE t0=6672.77 yank=1.52g quietAt=6673.84 B(abs)=n/a B(rel)=-0.76
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  435.59s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6700.96 yank=1.52g quietAt=6702.77 B(abs)=n/a B(rel)=-0.46
+  [v15  435.59s] CANDIDATE t0=6700.96 yank=1.52g quietAt=6702.77 B(abs)=n/a B(rel)=-0.46
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  435.87s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  438.78s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.52
+  [v15  439.78s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.52
+🦘 v15 CANDIDATE t0=6705.83 yank=1.52g quietAt=6706.97 B(abs)=n/a B(rel)=-0.17
+  [v15  439.78s] CANDIDATE t0=6705.83 yank=1.52g quietAt=6706.97 B(abs)=n/a B(rel)=-0.17
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  439.86s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  443.65s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.52
+  [v15  444.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.52
+🦘 v15 CANDIDATE t0=6708.03 yank=1.51g quietAt=6711.83 B(abs)=n/a B(rel)=0.01
+  [v15  444.65s] CANDIDATE t0=6708.03 yank=1.51g quietAt=6711.83 B(abs)=n/a B(rel)=0.01
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  444.85s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=1.99g air=5.04
+  [v15  445.88s] IMPACT pending=1.99g air=5.04
+🦘 v15 LANDING impact impact=3.38g air=5.64
+  [v15  446.48s] LANDING impact impact=3.38g air=5.64
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.51
+  [v15  447.99s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.51
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.33
+  [v15  447.99s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.33
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.48
+  [v15  447.99s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.48
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.44
+  [v15  447.99s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.44
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.34
+  [v15  447.99s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.34
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.45
+  [v15  447.99s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.45
+🦘 v15 CANDIDATE t0=6713.67 yank=3.38g quietAt=6715.17 B(abs)=n/a B(rel)=n/a
+  [v15  447.99s] CANDIDATE t0=6713.67 yank=3.38g quietAt=6715.17 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  448.18s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 IMPACT pending=1.93g air=2.49
+  [v15  448.98s] IMPACT pending=1.93g air=2.49
+🦘 v15 LANDING impact impact=2.28g air=2.52
+  [v15  449.01s] LANDING impact impact=2.28g air=2.52
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.64 yank=3.38
+  [v15  450.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.64 yank=3.38
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.34
+  [v15  450.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.34
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.45
+  [v15  450.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.45
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.31
+  [v15  450.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.58
+  [v15  450.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.58
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.32
+  [v15  450.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.32
+🦘 v15 CANDIDATE t0=6713.70 yank=2.99g quietAt=6717.70 B(abs)=n/a B(rel)=n/a
+  [v15  450.51s] CANDIDATE t0=6713.70 yank=2.99g quietAt=6717.70 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.93g air=4.23
+  [v15  450.75s] IMPACT pending=1.93g air=4.23
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.24
+  [v15  450.84s] BARO abs drop reason=degradedAccuracy acc=23.24
+🦘 v15 LANDING impact impact=2.09g air=4.24
+  [v15  450.76s] LANDING impact impact=2.09g air=4.24
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=2.99
+  [v15  452.27s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=2.99
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.31
+  [v15  452.27s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.86 yank=1.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.58
+  [v15  452.27s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.58
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.32
+  [v15  452.27s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.79 yank=2.28
+  [v15  452.27s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.79 yank=2.28
+🦘 v15 CANDIDATE t0=6716.19 yank=2.28g quietAt=6719.68 B(abs)=n/a B(rel)=n/a
+  [v15  452.49s] CANDIDATE t0=6716.19 yank=2.28g quietAt=6719.68 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  452.51s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=1.90g air=14.73
+  [v15  463.73s] IMPACT pending=1.90g air=14.73
+🦘 v15 LANDING impact impact=3.19g air=15.85
+  [v15  464.86s] LANDING impact impact=3.19g air=15.85
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  466.36s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.22
+  [v15  466.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.22
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.83 yank=1.39
+  [v15  466.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.83 yank=1.39
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.83 yank=1.61
+  [v15  466.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.83 yank=1.61
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.65
+  [v15  466.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.65
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.27
+  [v15  466.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.27
+🦘 v15 CANDIDATE t0=6732.04 yank=3.19g quietAt=6733.55 B(abs)=n/a B(rel)=-3.51
+  [v15  466.36s] CANDIDATE t0=6732.04 yank=3.19g quietAt=6733.55 B(abs)=n/a B(rel)=-3.51
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  466.48s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  494.86s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6758.55 yank=1.80g quietAt=6762.04 B(abs)=n/a B(rel)=-3.04
+  [v15  494.86s] CANDIDATE t0=6758.55 yank=1.80g quietAt=6762.04 B(abs)=n/a B(rel)=-3.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  495.09s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=2.03g air=22.65
+  [v15  514.02s] IMPACT pending=2.03g air=22.65
+🦘 v15 LANDING impact impact=2.14g air=22.66
+  [v15  514.03s] LANDING impact impact=2.14g air=22.66
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.93 yank=1.80
+  [v15  515.54s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.93 yank=1.80
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.24
+  [v15  515.54s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.24
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  515.54s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  515.54s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 CANDIDATE t0=6781.22 yank=2.14g quietAt=6782.72 B(abs)=n/a B(rel)=-1.41
+  [v15  515.54s] CANDIDATE t0=6781.22 yank=2.14g quietAt=6782.72 B(abs)=n/a B(rel)=-1.41
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  515.72s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=1.92g air=2.85
+  [v15  516.88s] IMPACT pending=1.92g air=2.85
+🦘 v15 LANDING impact impact=2.14g air=2.87
+  [v15  516.91s] LANDING impact impact=2.14g air=2.87
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=2.14
+  [v15  518.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=2.14
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.25
+  [v15  518.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.23
+  [v15  518.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.69
+  [v15  518.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.69
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.52
+  [v15  518.41s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.52
+🦘 v15 REJECT reason=floatBelowMin float=0.26
+  [v15  518.41s] REJECT reason=floatBelowMin float=0.26
+🦘 v15 CANDIDATE t0=6784.09 yank=2.14g quietAt=6785.60 B(abs)=n/a B(rel)=n/a
+  [v15  518.41s] CANDIDATE t0=6784.09 yank=2.14g quietAt=6785.60 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.25
+  [v15  518.70s] BARO abs drop reason=degradedAccuracy acc=23.25
+🦘 v15 IMPACT pending=2.18g air=11.89
+  [v15  528.79s] IMPACT pending=2.18g air=11.89
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  532.02s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 LANDING impact impact=2.72g air=13.74
+  [v15  530.65s] LANDING impact impact=2.72g air=13.74
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=2.14
+  [v15  532.16s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=2.14
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.75 yank=1.32
+  [v15  532.16s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.75 yank=1.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.42
+  [v15  532.16s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.54
+  [v15  532.16s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.54
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  532.35s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 CANDIDATE t0=6797.83 yank=2.72g quietAt=6800.46 B(abs)=n/a B(rel)=-0.22
+  [v15  533.28s] CANDIDATE t0=6797.83 yank=2.72g quietAt=6800.46 B(abs)=n/a B(rel)=-0.22
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  535.65s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.72 yank=2.72
+  [v15  536.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.72 yank=2.72
+🦘 v15 CANDIDATE t0=6802.38 yank=1.85g quietAt=6803.84 B(abs)=n/a B(rel)=n/a
+  [v15  536.65s] CANDIDATE t0=6802.38 yank=1.85g quietAt=6803.84 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  536.67s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 IMPACT pending=1.92g air=4.31
+  [v15  539.50s] IMPACT pending=1.92g air=4.31
+🦘 v15 LANDING impact impact=1.96g air=4.35
+  [v15  539.54s] LANDING impact impact=1.96g air=4.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.74 yank=1.85
+  [v15  541.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.74 yank=1.85
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.12 yank=1.52
+  [v15  541.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.12 yank=1.52
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.74 yank=1.75
+  [v15  541.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.74 yank=1.75
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.54
+  [v15  541.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.54
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.79
+  [v15  541.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.79
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.49
+  [v15  541.05s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.63 yank=1.49
+🦘 v15 CANDIDATE t0=6806.72 yank=1.96g quietAt=6808.24 B(abs)=n/a B(rel)=n/a
+  [v15  541.05s] CANDIDATE t0=6806.72 yank=1.96g quietAt=6808.24 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  541.34s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 LANDING gpsSpeedRecovery impact=0.00g air=12.91
+  [v15  552.45s] LANDING gpsSpeedRecovery impact=0.00g air=12.91
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  553.45s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 CANDIDATE t0=6817.46 yank=1.33g quietAt=6820.64 B(abs)=n/a B(rel)=-0.97
+  [v15  553.45s] CANDIDATE t0=6817.46 yank=1.33g quietAt=6820.64 B(abs)=n/a B(rel)=-0.97
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  553.65s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  555.28s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateEntrySpeed vin=3.20
+  [v15  556.28s] REJECT reason=gateEntrySpeed vin=3.20
+🦘 v15 CANDIDATE t0=6820.99 yank=1.46g quietAt=6823.47 B(abs)=n/a B(rel)=-1.21
+  [v15  556.28s] CANDIDATE t0=6820.99 yank=1.46g quietAt=6823.47 B(abs)=n/a B(rel)=-1.21
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  556.31s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  558.81s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.12 yank=1.46
+  [v15  559.81s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.12 yank=1.46
+🦘 v15 CANDIDATE t0=6823.37 yank=1.47g quietAt=6826.99 B(abs)=n/a B(rel)=n/a
+  [v15  559.81s] CANDIDATE t0=6823.37 yank=1.47g quietAt=6826.99 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  559.97s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 IMPACT pending=2.04g air=14.75
+  [v15  570.94s] IMPACT pending=2.04g air=14.75
+🦘 v15 LANDING impact impact=3.31g air=14.91
+  [v15  571.10s] LANDING impact impact=3.31g air=14.91
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.47
+  [v15  572.61s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.47
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.30
+  [v15  572.61s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.30
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.30
+  [v15  572.61s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.30
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.52 yank=1.46
+  [v15  572.61s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.52 yank=1.46
+🦘 v15 CANDIDATE t0=6838.28 yank=3.31g quietAt=6839.79 B(abs)=n/a B(rel)=-1.34
+  [v15  572.61s] CANDIDATE t0=6838.28 yank=3.31g quietAt=6839.79 B(abs)=n/a B(rel)=-1.34
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  572.93s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 BARO rel datumStep delta=-43.40 — window reset
+  [v15  574.67s] BARO rel datumStep delta=-43.40 — window reset
+🦘 v15 BARO rel datumStep delta=18.49 — window reset
+  [v15  579.80s] BARO rel datumStep delta=18.49 — window reset
+🦘 v15 IMPACT pending=2.07g air=11.31
+  [v15  582.41s] IMPACT pending=2.07g air=11.31
+🦘 v15 BARO rel datumStep delta=10.68 — window reset
+  [v15  584.93s] BARO rel datumStep delta=10.68 — window reset
+🦘 v15 LANDING impact+splash(rel) impact=2.29g air=11.32
+  [v15  582.42s] LANDING impact+splash(rel) impact=2.29g air=11.32
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=24.48 air=11.32
+  [v15  583.42s] REJECT reason=ballisticAboveHardCap hBal=24.48 air=11.32
+🦘 v15 REJECT reason=gateEntrySpeed vin=2.43
+  [v15  583.42s] REJECT reason=gateEntrySpeed vin=2.43
+🦘 v15 REJECT reason=gateEntrySpeed vin=2.41
+  [v15  583.42s] REJECT reason=gateEntrySpeed vin=2.41
+🦘 v15 REJECT reason=gateEntrySpeed vin=1.52
+  [v15  583.42s] REJECT reason=gateEntrySpeed vin=1.52
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+  [v15  583.42s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  583.59s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+  [v15  584.43s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  584.59s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+  [v15  585.43s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  585.58s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  586.43s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  586.58s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  587.43s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  587.58s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  588.43s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  588.58s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15  589.43s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  589.57s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15  590.44s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  590.57s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15  591.44s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  591.57s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15  592.44s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  592.57s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.78
+  [v15  593.70s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.78
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  593.90s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.78
+  [v15  594.70s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.78
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=23.26
+  [v15  594.90s] BARO abs drop reason=degradedAccuracy acc=23.26
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.78
+  [v15  595.70s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.78
+🦘 v15 ABS frozen (cross-liveness)
+  [v15  597.75s] ABS frozen (cross-liveness)
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.05
+  [v15  597.71s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.05
+🦘 v15 CANDIDATE t0=6864.82 yank=1.33g quietAt=6865.89 B(abs)=n/a B(rel)=0.85
+  [v15  598.71s] CANDIDATE t0=6864.82 yank=1.33g quietAt=6865.89 B(abs)=n/a B(rel)=0.85
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  602.64s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  603.64s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 CANDIDATE t0=6869.50 yank=1.33g quietAt=6870.83 B(abs)=n/a B(rel)=-2.14
+  [v15  603.64s] CANDIDATE t0=6869.50 yank=1.33g quietAt=6870.83 B(abs)=n/a B(rel)=-2.14
+🦘 v15 IMPACT pending=1.93g air=4.03
+  [v15  606.34s] IMPACT pending=1.93g air=4.03
+🦘 v15 LANDING impact+noRiseAbort impact=1.98g air=4.04
+  [v15  606.36s] LANDING impact+noRiseAbort impact=1.98g air=4.04
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.33
+  [v15  607.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.33
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.41
+  [v15  607.36s] REJECT reason=gateEntrySpeed vin=4.41
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.58
+  [v15  607.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.58
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.68
+  [v15  607.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.68
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.28
+  [v15  607.36s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.28
+🦘 v15 CANDIDATE t0=6873.54 yank=1.98g quietAt=6874.54 B(abs)=n/a B(rel)=n/a
+  [v15  607.36s] CANDIDATE t0=6873.54 yank=1.98g quietAt=6874.54 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  636.36s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6901.90 yank=1.47g quietAt=6903.54 B(abs)=n/a B(rel)=-3.17
+  [v15  636.36s] CANDIDATE t0=6901.90 yank=1.47g quietAt=6903.54 B(abs)=n/a B(rel)=-3.17
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  639.72s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.47
+  [v15  640.72s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.47
+🦘 v15 CANDIDATE t0=6906.00 yank=1.57g quietAt=6907.90 B(abs)=n/a B(rel)=-3.00
+  [v15  640.72s] CANDIDATE t0=6906.00 yank=1.57g quietAt=6907.90 B(abs)=n/a B(rel)=-3.00
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  643.81s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.87
+  [v15  644.82s] REJECT reason=gateEntrySpeed vin=4.87
+🦘 v15 CANDIDATE t0=6908.73 yank=1.36g quietAt=6912.00 B(abs)=n/a B(rel)=-2.99
+  [v15  644.82s] CANDIDATE t0=6908.73 yank=1.36g quietAt=6912.00 B(abs)=n/a B(rel)=-2.99
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.73
+  [v15  647.28s] LANDING noRiseAbort-softClose impact=0.00g air=5.73
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  648.28s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=6913.51 yank=1.42g quietAt=6915.47 B(abs)=n/a B(rel)=n/a
+  [v15  648.28s] CANDIDATE t0=6913.51 yank=1.42g quietAt=6915.47 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.04g air=19.14
+  [v15  665.46s] IMPACT pending=2.04g air=19.14
+🦘 v15 LANDING impact impact=5.83g air=20.12
+  [v15  666.45s] LANDING impact impact=5.83g air=20.12
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.42
+  [v15  667.95s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.75 yank=1.37
+  [v15  667.95s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.75 yank=1.37
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.73 yank=1.22
+  [v15  667.95s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.73 yank=1.22
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.54
+  [v15  667.95s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.54
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.25
+  [v15  667.95s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.25
+🦘 v15 CANDIDATE(reanchor) t0=6933.63 yank=5.83g
+  [v15  667.95s] CANDIDATE(reanchor) t0=6933.63 yank=5.83g
+🦘 v15 IMPACT pending=2.36g air=1.93
+  [v15  668.37s] IMPACT pending=2.36g air=1.93
+🦘 v15 LANDING impact impact=2.41g air=2.72
+  [v15  669.17s] LANDING impact impact=2.41g air=2.72
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  670.68s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.43
+  [v15  670.68s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.43
+🦘 v15 REJECT reason=floatBelowMin float=0.15
+  [v15  670.68s] REJECT reason=floatBelowMin float=0.15
+🦘 v15 CANDIDATE t0=6936.36 yank=2.41g quietAt=6937.86 B(abs)=n/a B(rel)=n/a
+  [v15  670.68s] CANDIDATE t0=6936.36 yank=2.41g quietAt=6937.86 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.90g air=1.62
+  [v15  670.79s] IMPACT pending=1.90g air=1.62
+🦘 v15 IMPACT discarded=1.90g — early mid-flight jolt (quiet resumed)
+  [v15  672.30s] IMPACT discarded=1.90g — early mid-flight jolt (quiet resumed)
+🦘 v15 BARO rel datumStep delta=-5.16 — window reset
+  [v15  679.80s] BARO rel datumStep delta=-5.16 — window reset
+🦘 v15 LANDING gpsSpeedRecovery impact=0.00g air=8.48
+  [v15  677.66s] LANDING gpsSpeedRecovery impact=0.00g air=8.48
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=15.14 air=8.48
+  [v15  678.66s] REJECT reason=ballisticAboveHardCap hBal=15.14 air=8.48
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.65
+  [v15  678.66s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.65
+🦘 v15 CANDIDATE t0=6943.50 yank=1.57g quietAt=6946.85 B(abs)=n/a B(rel)=n/a
+  [v15  679.66s] CANDIDATE t0=6943.50 yank=1.57g quietAt=6946.85 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  706.32s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=6969.92 yank=1.55g quietAt=6973.50 B(abs)=n/a B(rel)=-12.11
+  [v15  706.32s] CANDIDATE t0=6969.92 yank=1.55g quietAt=6973.50 B(abs)=n/a B(rel)=-12.11
+🦘 v15 CANDIDATE t0=6996.44 yank=1.40g quietAt=6999.92 B(abs)=n/a B(rel)=-12.44
+  [v15  732.74s] CANDIDATE t0=6996.44 yank=1.40g quietAt=6999.92 B(abs)=n/a B(rel)=-12.44
+🦘 v15 IMPACT pending=2.21g air=6.65
+  [v15  735.91s] IMPACT pending=2.21g air=6.65
+🦘 v15 LANDING impact impact=5.52g air=6.75
+  [v15  736.01s] LANDING impact impact=5.52g air=6.75
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.40
+  [v15  737.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.40
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.23
+  [v15  737.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.22
+  [v15  737.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.22
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.31
+  [v15  737.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.41
+  [v15  737.51s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.65 yank=1.41
+🦘 v15 CANDIDATE(reanchor) t0=7003.19 yank=5.52g
+  [v15  737.51s] CANDIDATE(reanchor) t0=7003.19 yank=5.52g
+🦘 v15 CANDIDATE t0=7003.19 yank=5.52g quietAt=7004.70 B(abs)=n/a B(rel)=-11.18
+  [v15  737.51s] CANDIDATE t0=7003.19 yank=5.52g quietAt=7004.70 B(abs)=n/a B(rel)=-11.18
+🦘 v15 IMPACT pending=2.00g air=2.28
+  [v15  738.29s] IMPACT pending=2.00g air=2.28
+🦘 v15 LANDING impact impact=2.00g air=2.28
+  [v15  738.29s] LANDING impact impact=2.00g air=2.28
+🦘 v15 JUMP h=1.53m src=ballistic air=2.28s conf=0.50
+  [v15  739.80s] JUMP h=1.53m src=ballistic air=2.28s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  739.80s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=7012.49 yank=1.40g quietAt=7014.00 B(abs)=n/a B(rel)=-8.41
+  [v15  746.81s] CANDIDATE t0=7012.49 yank=1.40g quietAt=7014.00 B(abs)=n/a B(rel)=-8.41
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  775.31s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7039.76 yank=1.51g quietAt=7042.49 B(abs)=n/a B(rel)=-7.57
+  [v15  775.31s] CANDIDATE t0=7039.76 yank=1.51g quietAt=7042.49 B(abs)=n/a B(rel)=-7.57
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  777.58s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.51
+  [v15  778.58s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.51
+🦘 v15 CANDIDATE t0=7042.03 yank=1.59g quietAt=7045.77 B(abs)=n/a B(rel)=-7.69
+  [v15  778.58s] CANDIDATE t0=7042.03 yank=1.59g quietAt=7045.77 B(abs)=n/a B(rel)=-7.69
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  779.85s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.59
+  [v15  780.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.59
+🦘 v15 CANDIDATE t0=7046.72 yank=1.57g quietAt=7048.03 B(abs)=n/a B(rel)=-8.23
+  [v15  780.85s] CANDIDATE t0=7046.72 yank=1.57g quietAt=7048.03 B(abs)=n/a B(rel)=-8.23
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  784.54s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.89 yank=1.57
+  [v15  785.54s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.89 yank=1.57
+🦘 v15 CANDIDATE t0=7048.74 yank=1.53g quietAt=7052.73 B(abs)=n/a B(rel)=n/a
+  [v15  785.54s] CANDIDATE t0=7048.74 yank=1.53g quietAt=7052.73 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.91g air=16.99
+  [v15  798.55s] IMPACT pending=1.91g air=16.99
+🦘 v15 LANDING impact impact=5.72g air=17.57
+  [v15  799.13s] LANDING impact impact=5.72g air=17.57
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.78 yank=1.53
+  [v15  800.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.78 yank=1.53
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.59 yank=1.35
+  [v15  800.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.59 yank=1.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.58 yank=1.43
+  [v15  800.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.58 yank=1.43
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.48
+  [v15  800.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.48
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.54
+  [v15  800.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.57 yank=1.54
+🦘 v15 CANDIDATE(reanchor) t0=7066.31 yank=5.72g
+  [v15  800.63s] CANDIDATE(reanchor) t0=7066.31 yank=5.72g
+🦘 v15 CANDIDATE t0=7066.31 yank=5.72g quietAt=7067.82 B(abs)=n/a B(rel)=-5.76
+  [v15  800.63s] CANDIDATE t0=7066.31 yank=5.72g quietAt=7067.82 B(abs)=n/a B(rel)=-5.76
+🦘 v15 IMPACT pending=2.27g air=2.34
+  [v15  801.47s] IMPACT pending=2.27g air=2.34
+🦘 v15 LANDING impact impact=4.22g air=3.17
+  [v15  802.30s] LANDING impact impact=4.22g air=3.17
+🦘 v15 JUMP h=2.55m src=ballistic air=3.17s conf=0.50
+  [v15  803.81s] JUMP h=2.55m src=ballistic air=3.17s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  803.81s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=-5.10 — window reset
+  [v15  808.02s] BARO rel datumStep delta=-5.10 — window reset
+🦘 v15 CANDIDATE t0=7075.37 yank=1.35g quietAt=7077.00 B(abs)=n/a B(rel)=n/a
+  [v15  809.82s] CANDIDATE t0=7075.37 yank=1.35g quietAt=7077.00 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=5.60 — window reset
+  [v15  828.54s] BARO rel datumStep delta=5.60 — window reset
+🦘 v15 IMPACT pending=1.96g air=20.09
+  [v15  828.28s] IMPACT pending=1.96g air=20.09
+🦘 v15 LANDING impact impact=1.96g air=20.10
+  [v15  828.29s] LANDING impact impact=1.96g air=20.10
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.35
+  [v15  829.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.25
+  [v15  829.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.61
+  [v15  829.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.61
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.45
+  [v15  829.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.45
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.07 yank=1.77
+  [v15  829.79s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.07 yank=1.77
+🦘 v15 CANDIDATE t0=7095.47 yank=1.96g quietAt=7096.98 B(abs)=n/a B(rel)=n/a
+  [v15  829.79s] CANDIDATE t0=7095.47 yank=1.96g quietAt=7096.98 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  858.29s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7124.24 yank=1.41g quietAt=7125.48 B(abs)=n/a B(rel)=-13.54
+  [v15  858.29s] CANDIDATE t0=7124.24 yank=1.41g quietAt=7125.48 B(abs)=n/a B(rel)=-13.54
+🦘 v15 IMPACT pending=2.03g air=6.06
+  [v15  863.11s] IMPACT pending=2.03g air=6.06
+🦘 v15 LANDING impact impact=3.33g air=6.21
+  [v15  863.26s] LANDING impact impact=3.33g air=6.21
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.76 yank=1.41
+  [v15  864.77s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.76 yank=1.41
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15  864.77s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  864.77s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=7130.45 yank=3.33g quietAt=7131.96 B(abs)=n/a B(rel)=-12.29
+  [v15  864.77s] CANDIDATE t0=7130.45 yank=3.33g quietAt=7131.96 B(abs)=n/a B(rel)=-12.29
+🦘 v15 IMPACT pending=1.91g air=2.89
+  [v15  866.15s] IMPACT pending=1.91g air=2.89
+🦘 v15 LANDING impact impact=1.91g air=2.89
+  [v15  866.16s] LANDING impact impact=1.91g air=2.89
+🦘 v15 JUMP h=2.12m src=ballistic air=2.89s conf=0.50
+  [v15  867.67s] JUMP h=2.12m src=ballistic air=2.89s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15  867.67s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=7138.43 yank=1.33g quietAt=7141.12 B(abs)=n/a B(rel)=n/a
+  [v15  873.93s] CANDIDATE t0=7138.43 yank=1.33g quietAt=7141.12 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.99g air=3.21
+  [v15  874.46s] IMPACT pending=1.99g air=3.21
+🦘 v15 LANDING impact impact=2.17g air=3.24
+  [v15  874.48s] LANDING impact impact=2.17g air=3.24
+🦘 v15 REJECT reason=gateEntrySpeed vin=3.73
+  [v15  875.99s] REJECT reason=gateEntrySpeed vin=3.73
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  875.99s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15  875.99s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 REJECT reason=gateEntrySpeed vin=3.25
+  [v15  875.99s] REJECT reason=gateEntrySpeed vin=3.25
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  875.99s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15  875.99s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 CANDIDATE t0=7141.67 yank=2.17g quietAt=7143.18 B(abs)=n/a B(rel)=-9.09
+  [v15  875.99s] CANDIDATE t0=7141.67 yank=2.17g quietAt=7143.18 B(abs)=n/a B(rel)=-9.09
+🦘 v15 IMPACT pending=1.98g air=13.29
+  [v15  887.77s] IMPACT pending=1.98g air=13.29
+🦘 v15 LANDING impact impact=2.68g air=13.32
+  [v15  887.80s] LANDING impact impact=2.68g air=13.32
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.73
+  [v15  889.31s] REJECT reason=gateEntrySpeed vin=4.73
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.47
+  [v15  889.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.47
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.39
+  [v15  889.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.39
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.55
+  [v15  889.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.55
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.43
+  [v15  889.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.43
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.69
+  [v15  889.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.69
+🦘 v15 CANDIDATE t0=7154.99 yank=2.68g quietAt=7156.49 B(abs)=n/a B(rel)=-7.22
+  [v15  889.31s] CANDIDATE t0=7154.99 yank=2.68g quietAt=7156.49 B(abs)=n/a B(rel)=-7.22
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  892.80s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15  893.80s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=7159.78 yank=1.59g quietAt=7160.99 B(abs)=n/a B(rel)=n/a
+  [v15  893.80s] CANDIDATE t0=7159.78 yank=1.59g quietAt=7160.99 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  922.60s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7187.11 yank=1.28g quietAt=7189.78 B(abs)=n/a B(rel)=-8.20
+  [v15  922.60s] CANDIDATE t0=7187.11 yank=1.28g quietAt=7189.78 B(abs)=n/a B(rel)=-8.20
+🦘 v15 IMPACT pending=1.94g air=12.18
+  [v15  932.10s] IMPACT pending=1.94g air=12.18
+🦘 v15 LANDING impact impact=2.60g air=12.22
+  [v15  932.14s] LANDING impact impact=2.60g air=12.22
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=1.28
+  [v15  933.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=1.28
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.24
+  [v15  933.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.24
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.23
+  [v15  933.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.35
+  [v15  933.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.42
+  [v15  933.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.39
+  [v15  933.65s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.39
+🦘 v15 CANDIDATE t0=7199.32 yank=2.60g quietAt=7200.83 B(abs)=n/a B(rel)=-5.73
+  [v15  933.65s] CANDIDATE t0=7199.32 yank=2.60g quietAt=7200.83 B(abs)=n/a B(rel)=-5.73
+🦘 v15 IMPACT pending=1.90g air=2.20
+  [v15  934.34s] IMPACT pending=1.90g air=2.20
+🦘 v15 LANDING impact impact=3.59g air=2.34
+  [v15  934.48s] LANDING impact impact=3.59g air=2.34
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.60
+  [v15  935.98s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.60
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.42
+  [v15  935.98s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.69 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.39
+  [v15  935.98s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.39
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.54
+  [v15  935.98s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.54
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.42
+  [v15  935.98s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.03
+  [v15  935.98s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.03
+🦘 v15 CANDIDATE t0=7201.66 yank=3.59g quietAt=7203.17 B(abs)=n/a B(rel)=-5.73
+  [v15  935.98s] CANDIDATE t0=7201.66 yank=3.59g quietAt=7203.17 B(abs)=n/a B(rel)=-5.73
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  939.48s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15  940.48s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.03
+  [v15  940.48s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.03
+🦘 v15 CANDIDATE t0=7204.44 yank=1.78g quietAt=7207.67 B(abs)=n/a B(rel)=n/a
+  [v15  940.48s] CANDIDATE t0=7204.44 yank=1.78g quietAt=7207.67 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.02g air=5.98
+  [v15  943.24s] IMPACT pending=2.02g air=5.98
+🦘 v15 LANDING impact impact=2.97g air=6.07
+  [v15  943.33s] LANDING impact impact=2.97g air=6.07
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15  944.83s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.27
+  [v15  944.83s] REJECT reason=floatBelowMin float=0.27
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15  944.83s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.79
+  [v15  944.83s] REJECT reason=gateEntrySpeed vin=4.79
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.28 yank=1.31
+  [v15  944.83s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.28 yank=1.31
+🦘 v15 CANDIDATE t0=7210.51 yank=2.97g quietAt=7212.02 B(abs)=n/a B(rel)=n/a
+  [v15  944.83s] CANDIDATE t0=7210.51 yank=2.97g quietAt=7212.02 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=-5.17 — window reset
+  [v15  949.05s] BARO rel datumStep delta=-5.17 — window reset
+🦘 v15 IMPACT pending=1.98g air=6.81
+  [v15  950.13s] IMPACT pending=1.98g air=6.81
+🦘 v15 LANDING impact impact=2.78g air=7.79
+  [v15  951.12s] LANDING impact impact=2.78g air=7.79
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=2.97
+  [v15  952.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=2.97
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.28
+  [v15  952.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.28
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.24
+  [v15  952.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.24
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.21
+  [v15  952.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.21
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.61
+  [v15  952.63s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.61
+🦘 v15 CANDIDATE t0=7218.31 yank=2.78g quietAt=7219.81 B(abs)=n/a B(rel)=n/a
+  [v15  952.63s] CANDIDATE t0=7218.31 yank=2.78g quietAt=7219.81 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.01g air=14.63
+  [v15  965.75s] IMPACT pending=2.01g air=14.63
+🦘 v15 LANDING impact impact=2.01g air=14.63
+  [v15  965.75s] LANDING impact impact=2.01g air=14.63
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.87 yank=2.78
+  [v15  967.26s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.87 yank=2.78
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.29
+  [v15  967.26s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.29
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.81 yank=1.21
+  [v15  967.26s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.81 yank=1.21
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.32
+  [v15  967.26s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.32
+🦘 v15 CANDIDATE t0=7232.94 yank=2.01g quietAt=7234.45 B(abs)=n/a B(rel)=-16.11
+  [v15  967.26s] CANDIDATE t0=7232.94 yank=2.01g quietAt=7234.45 B(abs)=n/a B(rel)=-16.11
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15  995.75s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7259.93 yank=1.30g quietAt=7262.94 B(abs)=n/a B(rel)=-11.39
+  [v15  995.75s] CANDIDATE t0=7259.93 yank=1.30g quietAt=7262.94 B(abs)=n/a B(rel)=-11.39
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15  997.75s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.30
+  [v15  998.75s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.30
+🦘 v15 CANDIDATE t0=7262.32 yank=1.55g quietAt=7265.94 B(abs)=n/a B(rel)=-11.43
+  [v15  998.75s] CANDIDATE t0=7262.32 yank=1.55g quietAt=7265.94 B(abs)=n/a B(rel)=-11.43
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1000.14s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.55
+  [v15 1001.14s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.55
+🦘 v15 CANDIDATE t0=7266.13 yank=1.46g quietAt=7268.32 B(abs)=n/a B(rel)=n/a
+  [v15 1001.14s] CANDIDATE t0=7266.13 yank=1.46g quietAt=7268.32 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.50g air=19.31
+  [v15 1018.26s] IMPACT pending=2.50g air=19.31
+🦘 v15 LANDING impact impact=3.92g air=19.33
+  [v15 1018.28s] LANDING impact impact=3.92g air=19.33
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=floatBelowMin float=0.28
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.28
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=floatBelowMin float=0.28
+  [v15 1019.78s] REJECT reason=floatBelowMin float=0.28
+🦘 v15 CANDIDATE t0=7285.46 yank=3.92g quietAt=7286.97 B(abs)=n/a B(rel)=-10.18
+  [v15 1019.78s] CANDIDATE t0=7285.46 yank=3.92g quietAt=7286.97 B(abs)=n/a B(rel)=-10.18
+🦘 v15 IMPACT pending=1.94g air=1.87
+  [v15 1020.15s] IMPACT pending=1.94g air=1.87
+🦘 v15 LANDING impact impact=3.24g air=1.93
+  [v15 1020.21s] LANDING impact impact=3.24g air=1.93
+🦘 v15 JUMP h=2.05m src=ballistic air=1.93s conf=0.50
+  [v15 1021.71s] JUMP h=2.05m src=ballistic air=1.93s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1021.71s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=7296.18 yank=1.36g quietAt=7297.11 B(abs)=n/a B(rel)=-8.68
+  [v15 1029.93s] CANDIDATE t0=7296.18 yank=1.36g quietAt=7297.11 B(abs)=n/a B(rel)=-8.68
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1059.00s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7322.64 yank=1.60g quietAt=7326.19 B(abs)=n/a B(rel)=-4.73
+  [v15 1059.00s] CANDIDATE t0=7322.64 yank=1.60g quietAt=7326.19 B(abs)=n/a B(rel)=-4.73
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1060.46s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.60
+  [v15 1061.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.84 yank=1.60
+🦘 v15 CANDIDATE t0=7325.73 yank=1.46g quietAt=7328.65 B(abs)=n/a B(rel)=-4.50
+  [v15 1061.46s] CANDIDATE t0=7325.73 yank=1.46g quietAt=7328.65 B(abs)=n/a B(rel)=-4.50
+🦘 v15 IMPACT pending=1.94g air=12.28
+  [v15 1070.82s] IMPACT pending=1.94g air=12.28
+🦘 v15 LANDING impact impact=2.84g air=13.43
+  [v15 1071.98s] LANDING impact impact=2.84g air=13.43
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.18 yank=1.46
+  [v15 1073.48s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.18 yank=1.46
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.42
+  [v15 1073.48s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.80 yank=1.65
+  [v15 1073.48s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.80 yank=1.65
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.80 yank=1.41
+  [v15 1073.48s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.80 yank=1.41
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.73 yank=1.85
+  [v15 1073.48s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.73 yank=1.85
+🦘 v15 CANDIDATE t0=7339.16 yank=2.84g quietAt=7340.67 B(abs)=n/a B(rel)=-3.34
+  [v15 1073.48s] CANDIDATE t0=7339.16 yank=2.84g quietAt=7340.67 B(abs)=n/a B(rel)=-3.34
+🦘 v15 IMPACT pending=2.02g air=2.42
+  [v15 1074.40s] IMPACT pending=2.02g air=2.42
+🦘 v15 LANDING impact impact=2.60g air=2.64
+  [v15 1074.62s] LANDING impact impact=2.60g air=2.64
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=2.84
+  [v15 1076.13s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=2.84
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.28
+  [v15 1076.13s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.70 yank=1.28
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=1.85
+  [v15 1076.13s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=1.85
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.66 yank=2.10
+  [v15 1076.13s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.66 yank=2.10
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=1.73
+  [v15 1076.13s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=1.73
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=1.32
+  [v15 1076.13s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.67 yank=1.32
+🦘 v15 CANDIDATE t0=7341.81 yank=2.60g quietAt=7343.31 B(abs)=n/a B(rel)=n/a
+  [v15 1076.13s] CANDIDATE t0=7341.81 yank=2.60g quietAt=7343.31 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=-5.61 — window reset
+  [v15 1079.83s] BARO rel datumStep delta=-5.61 — window reset
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1104.63s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7369.70 yank=1.61g quietAt=7371.81 B(abs)=n/a B(rel)=-9.73
+  [v15 1104.63s] CANDIDATE t0=7369.70 yank=1.61g quietAt=7371.81 B(abs)=n/a B(rel)=-9.73
+🦘 v15 IMPACT pending=2.31g air=27.85
+  [v15 1130.36s] IMPACT pending=2.31g air=27.85
+🦘 v15 LANDING impact impact=3.79g air=27.88
+  [v15 1130.39s] LANDING impact impact=3.79g air=27.88
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.81 yank=1.61
+  [v15 1131.90s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.81 yank=1.61
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.74 yank=1.61
+  [v15 1131.90s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.74 yank=1.61
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.32
+  [v15 1131.90s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.39
+  [v15 1131.90s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.39
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.75 yank=1.31
+  [v15 1131.90s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.75 yank=1.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.72 yank=1.55
+  [v15 1131.90s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.72 yank=1.55
+🦘 v15 CANDIDATE t0=7397.58 yank=3.79g quietAt=7399.39 B(abs)=n/a B(rel)=-9.19
+  [v15 1132.20s] CANDIDATE t0=7397.58 yank=3.79g quietAt=7399.39 B(abs)=n/a B(rel)=-9.19
+🦘 v15 IMPACT pending=2.02g air=4.56
+  [v15 1134.95s] IMPACT pending=2.02g air=4.56
+🦘 v15 LANDING impact impact=2.02g air=4.56
+  [v15 1134.95s] LANDING impact impact=2.02g air=4.56
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=3.79
+  [v15 1136.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=3.79
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.58
+  [v15 1136.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.58
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.60
+  [v15 1136.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=1.60
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.53
+  [v15 1136.46s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.68 yank=1.53
+🦘 v15 CANDIDATE t0=7402.14 yank=2.02g quietAt=7403.64 B(abs)=n/a B(rel)=n/a
+  [v15 1136.46s] CANDIDATE t0=7402.14 yank=2.02g quietAt=7403.64 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1164.96s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7431.14 yank=1.52g quietAt=7432.14 B(abs)=n/a B(rel)=-4.14
+  [v15 1164.96s] CANDIDATE t0=7431.14 yank=1.52g quietAt=7432.14 B(abs)=n/a B(rel)=-4.14
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1168.96s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.78 yank=1.52
+  [v15 1169.96s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.78 yank=1.52
+🦘 v15 CANDIDATE t0=7434.03 yank=1.40g quietAt=7437.15 B(abs)=n/a B(rel)=-3.65
+  [v15 1169.96s] CANDIDATE t0=7434.03 yank=1.40g quietAt=7437.15 B(abs)=n/a B(rel)=-3.65
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1171.85s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.89 yank=1.40
+  [v15 1172.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.89 yank=1.40
+🦘 v15 CANDIDATE t0=7437.50 yank=1.37g quietAt=7440.04 B(abs)=n/a B(rel)=-3.48
+  [v15 1172.85s] CANDIDATE t0=7437.50 yank=1.37g quietAt=7440.04 B(abs)=n/a B(rel)=-3.48
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.66
+  [v15 1175.98s] LANDING noRiseAbort-softClose impact=0.00g air=5.66
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.37
+  [v15 1176.98s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.37
+🦘 v15 CANDIDATE t0=7443.03 yank=1.60g quietAt=7444.17 B(abs)=n/a B(rel)=n/a
+  [v15 1176.98s] CANDIDATE t0=7443.03 yank=1.60g quietAt=7444.17 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1205.85s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7471.57 yank=1.44g quietAt=7473.04 B(abs)=n/a B(rel)=-5.88
+  [v15 1205.85s] CANDIDATE t0=7471.57 yank=1.44g quietAt=7473.04 B(abs)=n/a B(rel)=-5.88
+🦘 v15 LANDING gpsSpeedRecovery impact=0.00g air=18.18
+  [v15 1222.56s] LANDING gpsSpeedRecovery impact=0.00g air=18.18
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=54.97 air=18.18
+  [v15 1223.57s] REJECT reason=ballisticAboveHardCap hBal=54.97 air=18.18
+🦘 v15 CANDIDATE t0=7489.23 yank=1.44g quietAt=7490.75 B(abs)=n/a B(rel)=-6.63
+  [v15 1223.57s] CANDIDATE t0=7489.23 yank=1.44g quietAt=7490.75 B(abs)=n/a B(rel)=-6.63
+🦘 v15 IMPACT pending=1.94g air=3.13
+  [v15 1225.17s] IMPACT pending=1.94g air=3.13
+🦘 v15 LANDING impact impact=2.40g air=3.14
+  [v15 1225.19s] LANDING impact impact=2.40g air=3.14
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.19
+  [v15 1226.69s] REJECT reason=gateEntrySpeed vin=4.19
+🦘 v15 REJECT reason=gateEntrySpeed vin=0.55
+  [v15 1226.69s] REJECT reason=gateEntrySpeed vin=0.55
+🦘 v15 REJECT reason=gateEntrySpeed vin=2.66
+  [v15 1226.69s] REJECT reason=gateEntrySpeed vin=2.66
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.19
+  [v15 1226.69s] REJECT reason=gateEntrySpeed vin=4.19
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.57
+  [v15 1226.69s] REJECT reason=gateEntrySpeed vin=4.57
+🦘 v15 CANDIDATE t0=7494.03 yank=2.73g quietAt=7495.04 B(abs)=n/a B(rel)=n/a
+  [v15 1227.85s] CANDIDATE t0=7494.03 yank=2.73g quietAt=7495.04 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1256.85s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7520.56 yank=1.82g quietAt=7524.04 B(abs)=n/a B(rel)=-15.48
+  [v15 1256.85s] CANDIDATE t0=7520.56 yank=1.82g quietAt=7524.04 B(abs)=n/a B(rel)=-15.48
+🦘 v15 CANDIDATE t0=7549.20 yank=1.50g quietAt=7550.57 B(abs)=n/a B(rel)=-10.86
+  [v15 1283.38s] CANDIDATE t0=7549.20 yank=1.50g quietAt=7550.57 B(abs)=n/a B(rel)=-10.86
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1287.02s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.50
+  [v15 1288.02s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.50
+🦘 v15 CANDIDATE t0=7553.02 yank=1.34g quietAt=7555.21 B(abs)=n/a B(rel)=-11.32
+  [v15 1288.02s] CANDIDATE t0=7553.02 yank=1.34g quietAt=7555.21 B(abs)=n/a B(rel)=-11.32
+🦘 v15 IMPACT pending=1.91g air=9.32
+  [v15 1295.15s] IMPACT pending=1.91g air=9.32
+🦘 v15 LANDING impact impact=2.11g air=9.36
+  [v15 1295.19s] LANDING impact impact=2.11g air=9.36
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.34
+  [v15 1296.70s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.34
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1296.70s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 RESCUE folded jump t0=7557.38 land=7562.47 air=5.09
+  [v15 1296.70s] RESCUE folded jump t0=7557.38 land=7562.47 air=5.09
+🦘 v15 JUMP h=1.55m src=ballistic air=5.09s conf=0.50
+  [v15 1296.70s] JUMP h=1.55m src=ballistic air=5.09s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1296.70s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=-7.43 — window reset
+  [v15 1300.39s] BARO rel datumStep delta=-7.43 — window reset
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.94
+  [v15 1301.91s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.94
+🦘 v15 BARO rel datumStep delta=12.93 — window reset
+  [v15 1305.49s] BARO rel datumStep delta=12.93 — window reset
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1305.49s] ABS frozen (cross-liveness)
+🦘 v15 CANDIDATE t0=7569.25 yank=2.50g quietAt=7571.10 B(abs)=n/a B(rel)=n/a
+  [v15 1303.91s] CANDIDATE t0=7569.25 yank=2.50g quietAt=7571.10 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1332.07s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7598.25 yank=1.57g quietAt=7599.25 B(abs)=n/a B(rel)=-1.88
+  [v15 1332.07s] CANDIDATE t0=7598.25 yank=1.57g quietAt=7599.25 B(abs)=n/a B(rel)=-1.88
+🦘 v15 IMPACT pending=1.90g air=14.30
+  [v15 1345.37s] IMPACT pending=1.90g air=14.30
+🦘 v15 LANDING impact impact=1.90g air=14.31
+  [v15 1345.38s] LANDING impact impact=1.90g air=14.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.57
+  [v15 1346.88s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.57
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.27
+  [v15 1346.88s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.27
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.30
+  [v15 1346.88s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.30
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.51
+  [v15 1346.88s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.51
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.61
+  [v15 1346.88s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.02 yank=1.61
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.66
+  [v15 1346.88s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.66
+🦘 v15 CANDIDATE t0=7612.56 yank=1.90g quietAt=7614.07 B(abs)=n/a B(rel)=-0.39
+  [v15 1346.88s] CANDIDATE t0=7612.56 yank=1.90g quietAt=7614.07 B(abs)=n/a B(rel)=-0.39
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1350.37s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.90
+  [v15 1351.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.90
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.66
+  [v15 1351.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.66
+🦘 v15 CANDIDATE t0=7614.87 yank=1.68g quietAt=7618.56 B(abs)=n/a B(rel)=n/a
+  [v15 1351.38s] CANDIDATE t0=7614.87 yank=1.68g quietAt=7618.56 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.03g air=6.89
+  [v15 1354.58s] IMPACT pending=2.03g air=6.89
+🦘 v15 LANDING impact impact=2.04g air=6.90
+  [v15 1354.58s] LANDING impact impact=2.04g air=6.90
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.68
+  [v15 1356.09s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=1.68
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.64
+  [v15 1356.09s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.64
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.54
+  [v15 1356.09s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.54
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1356.09s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.22
+  [v15 1356.09s] REJECT reason=floatBelowMin float=0.22
+🦘 v15 CANDIDATE t0=7621.77 yank=2.04g quietAt=7623.27 B(abs)=n/a B(rel)=-1.16
+  [v15 1356.09s] CANDIDATE t0=7621.77 yank=2.04g quietAt=7623.27 B(abs)=n/a B(rel)=-1.16
+🦘 v15 IMPACT pending=1.95g air=1.99
+  [v15 1356.57s] IMPACT pending=1.95g air=1.99
+🦘 v15 LANDING impact impact=2.12g air=2.23
+  [v15 1356.81s] LANDING impact impact=2.12g air=2.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=2.04
+  [v15 1358.32s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.45 yank=2.04
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=floatBelowMin float=0.22
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.22
+🦘 v15 REJECT reason=floatBelowMin float=0.18
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.18
+🦘 v15 REJECT reason=floatBelowMin float=0.14
+  [v15 1358.32s] REJECT reason=floatBelowMin float=0.14
+🦘 v15 CANDIDATE t0=7624.00 yank=2.12g quietAt=7625.51 B(abs)=n/a B(rel)=n/a
+  [v15 1358.32s] CANDIDATE t0=7624.00 yank=2.12g quietAt=7625.51 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=-5.58 — window reset
+  [v15 1364.47s] BARO rel datumStep delta=-5.58 — window reset
+🦘 v15 IMPACT pending=1.94g air=27.07
+  [v15 1383.88s] IMPACT pending=1.94g air=27.07
+🦘 v15 LANDING impact impact=2.47g air=28.21
+  [v15 1385.02s] LANDING impact impact=2.47g air=28.21
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.28
+  [v15 1386.53s] REJECT reason=gateEntrySpeed vin=4.28
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.26
+  [v15 1386.53s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.26
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.25
+  [v15 1386.53s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.65
+  [v15 1386.53s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.65
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.32
+  [v15 1386.53s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=1.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.04 yank=1.37
+  [v15 1386.53s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.04 yank=1.37
+🦘 v15 CANDIDATE t0=7652.21 yank=2.47g quietAt=7653.71 B(abs)=n/a B(rel)=-14.71
+  [v15 1386.53s] CANDIDATE t0=7652.21 yank=2.47g quietAt=7653.71 B(abs)=n/a B(rel)=-14.71
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1415.03s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7678.83 yank=1.51g quietAt=7682.21 B(abs)=n/a B(rel)=-10.41
+  [v15 1415.03s] CANDIDATE t0=7678.83 yank=1.51g quietAt=7682.21 B(abs)=n/a B(rel)=-10.41
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1416.64s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1417.65s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 CANDIDATE t0=7681.32 yank=1.33g quietAt=7684.83 B(abs)=n/a B(rel)=-11.59
+  [v15 1417.65s] CANDIDATE t0=7681.32 yank=1.33g quietAt=7684.83 B(abs)=n/a B(rel)=-11.59
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1419.14s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.33
+  [v15 1420.14s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.33
+🦘 v15 CANDIDATE t0=7687.05 yank=2.81g quietAt=7688.05 B(abs)=n/a B(rel)=n/a
+  [v15 1420.87s] CANDIDATE t0=7687.05 yank=2.81g quietAt=7688.05 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.04g air=1.10
+  [v15 1420.97s] IMPACT pending=2.04g air=1.10
+🦘 v15 BARO rel datumStep delta=-36.53 — window reset
+  [v15 1423.46s] BARO rel datumStep delta=-36.53 — window reset
+🦘 v15 LANDING impact impact=5.56g air=2.04
+  [v15 1421.91s] LANDING impact impact=5.56g air=2.04
+🦘 v15 JUMP h=2.76m src=ballistic air=2.04s conf=0.50
+  [v15 1423.41s] JUMP h=2.76m src=ballistic air=2.04s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1425.16s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=32.06 — window reset
+  [v15 1428.57s] BARO rel datumStep delta=32.06 — window reset
+🦘 v15 BARO rel datumStep delta=54.80 — window reset
+  [v15 1431.13s] BARO rel datumStep delta=54.80 — window reset
+🦘 v15 CANDIDATE t0=7697.49 yank=6.27g quietAt=7698.66 B(abs)=n/a B(rel)=n/a
+  [v15 1431.47s] CANDIDATE t0=7697.49 yank=6.27g quietAt=7698.66 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=6.07 — window reset
+  [v15 1436.26s] BARO rel datumStep delta=6.07 — window reset
+🦘 v15 IMPACT pending=1.98g air=20.83
+  [v15 1451.14s] IMPACT pending=1.98g air=20.83
+🦘 v15 LANDING impact impact=3.10g air=20.90
+  [v15 1451.20s] LANDING impact impact=3.10g air=20.90
+🦘 v15 REJECT reason=gateEntrySpeed vin=2.43
+  [v15 1452.71s] REJECT reason=gateEntrySpeed vin=2.43
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1452.71s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.42
+  [v15 1452.71s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.36
+  [v15 1452.71s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.36
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.35
+  [v15 1452.71s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.29
+  [v15 1452.71s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.29
+🦘 v15 CANDIDATE t0=7718.39 yank=3.10g quietAt=7719.89 B(abs)=n/a B(rel)=7.67
+  [v15 1452.71s] CANDIDATE t0=7718.39 yank=3.10g quietAt=7719.89 B(abs)=n/a B(rel)=7.67
+🦘 v15 BARO rel datumStep delta=-10.99 — window reset
+  [v15 1454.21s] BARO rel datumStep delta=-10.99 — window reset
+🦘 v15 IMPACT pending=2.09g air=2.02
+  [v15 1453.22s] IMPACT pending=2.09g air=2.02
+🦘 v15 LANDING impact impact=3.00g air=2.52
+  [v15 1453.72s] LANDING impact impact=3.00g air=2.52
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.43 yank=3.10
+  [v15 1455.23s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.43 yank=3.10
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1455.23s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.35
+  [v15 1455.23s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.29
+  [v15 1455.23s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.29
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.56
+  [v15 1455.23s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.56
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.43 yank=1.98
+  [v15 1455.23s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.43 yank=1.98
+🦘 v15 CANDIDATE t0=7720.91 yank=3.00g quietAt=7722.42 B(abs)=n/a B(rel)=n/a
+  [v15 1455.23s] CANDIDATE t0=7720.91 yank=3.00g quietAt=7722.42 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=92.67 — window reset
+  [v15 1461.90s] BARO rel datumStep delta=92.67 — window reset
+🦘 v15 BARO rel datumStep delta=-5.07 — window reset
+  [v15 1464.47s] BARO rel datumStep delta=-5.07 — window reset
+🦘 v15 IMPACT pending=2.12g air=11.97
+  [v15 1465.70s] IMPACT pending=2.12g air=11.97
+🦘 v15 LANDING impact impact=3.18g air=12.01
+  [v15 1465.73s] LANDING impact impact=3.18g air=12.01
+🦘 v15 REJECT reason=gateEntrySpeed vin=3.53
+  [v15 1467.24s] REJECT reason=gateEntrySpeed vin=3.53
+🦘 v15 CANDIDATE t0=7732.91 yank=3.18g quietAt=7734.54 B(abs)=n/a B(rel)=n/a
+  [v15 1467.35s] CANDIDATE t0=7732.91 yank=3.18g quietAt=7734.54 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=7.67 — window reset
+  [v15 1469.60s] BARO rel datumStep delta=7.67 — window reset
+🦘 v15 BARO rel datumStep delta=9.78 — window reset
+  [v15 1472.16s] BARO rel datumStep delta=9.78 — window reset
+🦘 v15 BARO rel datumStep delta=-25.83 — window reset
+  [v15 1490.11s] BARO rel datumStep delta=-25.83 — window reset
+🦘 v15 BARO rel datumStep delta=-118.18 — window reset
+  [v15 1492.68s] BARO rel datumStep delta=-118.18 — window reset
+🦘 v15 BARO rel datumStep delta=-45.07 — window reset
+  [v15 1495.24s] BARO rel datumStep delta=-45.07 — window reset
+🦘 v15 IMPACT pending=2.06g air=29.76
+  [v15 1495.49s] IMPACT pending=2.06g air=29.76
+🦘 v15 LANDING impact+maxFlightExceeded impact=2.06g air=29.76
+  [v15 1495.49s] LANDING impact+maxFlightExceeded impact=2.06g air=29.76
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=200.73 air=29.76
+  [v15 1496.49s] REJECT reason=ballisticAboveHardCap hBal=200.73 air=29.76
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.12
+  [v15 1496.49s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.12
+🦘 v15 BARO rel datumStep delta=178.58 — window reset
+  [v15 1500.40s] BARO rel datumStep delta=178.58 — window reset
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.10
+  [v15 1499.49s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.10
+🦘 v15 BARO rel datumStep delta=5.84 — window reset
+  [v15 1502.93s] BARO rel datumStep delta=5.84 — window reset
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.74
+  [v15 1502.50s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.74
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+  [v15 1506.51s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.68
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.76
+  [v15 1507.51s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.76
+🦘 v15 CANDIDATE t0=7777.40 yank=1.37g quietAt=7778.70 B(abs)=n/a B(rel)=-4.77
+  [v15 1511.51s] CANDIDATE t0=7777.40 yank=1.37g quietAt=7778.70 B(abs)=n/a B(rel)=-4.77
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1515.21s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateEntrySpeed vin=0.84
+  [v15 1516.22s] REJECT reason=gateEntrySpeed vin=0.84
+🦘 v15 CANDIDATE t0=7782.05 yank=1.39g quietAt=7783.40 B(abs)=n/a B(rel)=-7.59
+  [v15 1516.22s] CANDIDATE t0=7782.05 yank=1.39g quietAt=7783.40 B(abs)=n/a B(rel)=-7.59
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1519.87s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.12
+  [v15 1520.87s] REJECT reason=gateEntrySpeed vin=4.12
+🦘 v15 CANDIDATE t0=7784.82 yank=1.50g quietAt=7788.06 B(abs)=n/a B(rel)=n/a
+  [v15 1520.87s] CANDIDATE t0=7784.82 yank=1.50g quietAt=7788.06 B(abs)=n/a B(rel)=n/a
+🦘 v15 BARO rel datumStep delta=-5.46 — window reset
+  [v15 1523.46s] BARO rel datumStep delta=-5.46 — window reset
+🦘 v15 IMPACT pending=2.17g air=26.74
+  [v15 1544.38s] IMPACT pending=2.17g air=26.74
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1546.52s] ABS frozen (cross-liveness)
+🦘 v15 LANDING impact impact=3.16g air=26.78
+  [v15 1544.42s] LANDING impact impact=3.16g air=26.78
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.48 yank=1.50
+  [v15 1545.92s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.48 yank=1.50
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.64
+  [v15 1545.92s] REJECT reason=gateEntrySpeed vin=4.64
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.28
+  [v15 1545.92s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.46 yank=1.28
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1545.92s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15 1545.92s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 CANDIDATE t0=7811.60 yank=3.16g quietAt=7813.11 B(abs)=n/a B(rel)=-8.56
+  [v15 1545.92s] CANDIDATE t0=7811.60 yank=3.16g quietAt=7813.11 B(abs)=n/a B(rel)=-8.56
+🦘 v15 IMPACT pending=1.97g air=2.61
+  [v15 1547.03s] IMPACT pending=1.97g air=2.61
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1549.09s] ABS frozen (cross-liveness)
+🦘 v15 LANDING impact impact=2.24g air=2.89
+  [v15 1547.31s] LANDING impact impact=2.24g air=2.89
+🦘 v15 JUMP h=1.84m src=ballistic air=2.89s conf=0.50
+  [v15 1548.81s] JUMP h=1.84m src=ballistic air=2.89s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1548.81s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=5.75 — window reset
+  [v15 1554.22s] BARO rel datumStep delta=5.75 — window reset
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1554.22s] ABS frozen (cross-liveness)
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1556.78s] ABS frozen (cross-liveness)
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.33
+  [v15 1555.82s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.33
+🦘 v15 CANDIDATE t0=7822.90 yank=1.35g quietAt=7824.01 B(abs)=2.31 B(rel)=n/a
+  [v15 1556.83s] CANDIDATE t0=7822.90 yank=1.35g quietAt=7824.01 B(abs)=2.31 B(rel)=n/a
+🦘 v15 ABS frozen (cross-liveness)
+  [v15 1559.37s] ABS frozen (cross-liveness)
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1585.72s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7851.29 yank=1.62g quietAt=7852.91 B(abs)=n/a B(rel)=-4.24
+  [v15 1585.72s] CANDIDATE t0=7851.29 yank=1.62g quietAt=7852.91 B(abs)=n/a B(rel)=-4.24
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1589.10s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.62
+  [v15 1590.11s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.95 yank=1.62
+🦘 v15 CANDIDATE t0=7855.86 yank=1.77g quietAt=7857.29 B(abs)=n/a B(rel)=-5.21
+  [v15 1590.11s] CANDIDATE t0=7855.86 yank=1.77g quietAt=7857.29 B(abs)=n/a B(rel)=-5.21
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1593.68s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1594.68s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 CANDIDATE t0=7860.05 yank=1.59g quietAt=7861.87 B(abs)=n/a B(rel)=-5.12
+  [v15 1594.68s] CANDIDATE t0=7860.05 yank=1.59g quietAt=7861.87 B(abs)=n/a B(rel)=-5.12
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1597.86s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.07 yank=1.59
+  [v15 1598.86s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.07 yank=1.59
+🦘 v15 CANDIDATE t0=7862.79 yank=1.48g quietAt=7866.05 B(abs)=n/a B(rel)=n/a
+  [v15 1598.86s] CANDIDATE t0=7862.79 yank=1.48g quietAt=7866.05 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1625.61s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7889.20 yank=1.42g quietAt=7892.80 B(abs)=n/a B(rel)=-5.64
+  [v15 1625.61s] CANDIDATE t0=7889.20 yank=1.42g quietAt=7892.80 B(abs)=n/a B(rel)=-5.64
+🦘 v15 LANDING gpsSpeedRecovery impact=0.00g air=17.73
+  [v15 1639.75s] LANDING gpsSpeedRecovery impact=0.00g air=17.73
+🦘 v15 REJECT reason=ballisticAboveHardCap hBal=55.63 air=17.73
+  [v15 1640.75s] REJECT reason=ballisticAboveHardCap hBal=55.63 air=17.73
+🦘 v15 CANDIDATE t0=7905.60 yank=1.56g quietAt=7907.94 B(abs)=n/a B(rel)=-7.67
+  [v15 1640.75s] CANDIDATE t0=7905.60 yank=1.56g quietAt=7907.94 B(abs)=n/a B(rel)=-7.67
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1643.42s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateEntrySpeed vin=3.54
+  [v15 1644.42s] REJECT reason=gateEntrySpeed vin=3.54
+🦘 v15 CANDIDATE t0=7910.15 yank=1.79g quietAt=7911.61 B(abs)=n/a B(rel)=n/a
+  [v15 1644.42s] CANDIDATE t0=7910.15 yank=1.79g quietAt=7911.61 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1672.97s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=7936.87 yank=1.42g quietAt=7940.16 B(abs)=n/a B(rel)=-9.84
+  [v15 1672.97s] CANDIDATE t0=7936.87 yank=1.42g quietAt=7940.16 B(abs)=n/a B(rel)=-9.84
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1674.69s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1675.69s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 CANDIDATE t0=7940.23 yank=1.38g quietAt=7942.88 B(abs)=n/a B(rel)=-10.49
+  [v15 1675.69s] CANDIDATE t0=7940.23 yank=1.38g quietAt=7942.88 B(abs)=n/a B(rel)=-10.49
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.26
+  [v15 1678.31s] LANDING noRiseAbort-softClose impact=0.00g air=5.26
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.38
+  [v15 1679.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.38
+🦘 v15 CANDIDATE t0=7945.32 yank=1.22g quietAt=7946.50 B(abs)=n/a B(rel)=n/a
+  [v15 1679.31s] CANDIDATE t0=7945.32 yank=1.22g quietAt=7946.50 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.13g air=26.63
+  [v15 1704.77s] IMPACT pending=2.13g air=26.63
+🦘 v15 LANDING impact impact=3.01g air=26.66
+  [v15 1704.80s] LANDING impact impact=3.01g air=26.66
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.22
+  [v15 1706.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.71 yank=1.22
+🦘 v15 REJECT reason=floatBelowMin float=0.26
+  [v15 1706.31s] REJECT reason=floatBelowMin float=0.26
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1706.31s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.29
+  [v15 1706.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.77 yank=1.29
+🦘 v15 CANDIDATE t0=7973.65 yank=3.43g quietAt=7974.76 B(abs)=n/a B(rel)=n/a
+  [v15 1707.57s] CANDIDATE t0=7973.65 yank=3.43g quietAt=7974.76 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.09g air=29.30
+  [v15 1735.76s] IMPACT pending=2.09g air=29.30
+🦘 v15 LANDING impact+maxFlightExceeded impact=2.28g air=29.39
+  [v15 1735.85s] LANDING impact+maxFlightExceeded impact=2.28g air=29.39
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=3.43
+  [v15 1736.86s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.62 yank=3.43
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.55 yank=1.40
+  [v15 1736.86s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.55 yank=1.40
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.56 yank=1.27
+  [v15 1736.86s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.56 yank=1.27
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.37
+  [v15 1736.86s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.37
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.25
+  [v15 1736.86s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.53 yank=1.25
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1736.86s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 CANDIDATE t0=8003.04 yank=2.28g quietAt=8004.23 B(abs)=n/a B(rel)=-8.08
+  [v15 1737.05s] CANDIDATE t0=8003.04 yank=2.28g quietAt=8004.23 B(abs)=n/a B(rel)=-8.08
+🦘 v15 IMPACT pending=2.14g air=1.71
+  [v15 1737.56s] IMPACT pending=2.14g air=1.71
+🦘 v15 LANDING impact impact=2.30g air=2.01
+  [v15 1737.87s] LANDING impact impact=2.30g air=2.01
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=2.28
+  [v15 1739.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=2.28
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.25
+  [v15 1739.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.25
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.42
+  [v15 1739.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.49 yank=1.42
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.23
+  [v15 1739.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.51 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.54
+  [v15 1739.38s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.50 yank=1.54
+🦘 v15 CANDIDATE t0=8005.05 yank=2.30g quietAt=8006.56 B(abs)=n/a B(rel)=n/a
+  [v15 1739.38s] CANDIDATE t0=8005.05 yank=2.30g quietAt=8006.56 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.92g air=6.70
+  [v15 1744.56s] IMPACT pending=1.92g air=6.70
+🦘 v15 LANDING impact impact=2.33g air=6.73
+  [v15 1744.60s] LANDING impact impact=2.33g air=6.73
+🦘 v15 REJECT reason=gateEntrySpeed vin=3.64
+  [v15 1746.11s] REJECT reason=gateEntrySpeed vin=3.64
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.28
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.28
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=floatBelowMin float=0.13
+  [v15 1746.11s] REJECT reason=floatBelowMin float=0.13
+🦘 v15 CANDIDATE t0=8011.78 yank=2.33g quietAt=8013.53 B(abs)=n/a B(rel)=-12.16
+  [v15 1746.34s] CANDIDATE t0=8011.78 yank=2.33g quietAt=8013.53 B(abs)=n/a B(rel)=-12.16
+🦘 v15 IMPACT pending=1.97g air=3.13
+  [v15 1747.72s] IMPACT pending=1.97g air=3.13
+🦘 v15 LANDING impact impact=2.58g air=3.19
+  [v15 1747.78s] LANDING impact impact=2.58g air=3.19
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=2.33
+  [v15 1749.29s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=2.33
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.41
+  [v15 1749.29s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.97 yank=1.41
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=2.19
+  [v15 1749.29s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=2.19
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.27
+  [v15 1749.29s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.27
+🦘 v15 CANDIDATE t0=8014.97 yank=2.58g quietAt=8016.49 B(abs)=n/a B(rel)=n/a
+  [v15 1749.31s] CANDIDATE t0=8014.97 yank=2.58g quietAt=8016.49 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.00g air=5.06
+  [v15 1752.84s] IMPACT pending=2.00g air=5.06
+🦘 v15 LANDING impact impact=2.40g air=5.10
+  [v15 1752.88s] LANDING impact impact=2.40g air=5.10
+🦘 v15 JUMP h=1.75m src=ballistic air=5.10s conf=0.50
+  [v15 1754.39s] JUMP h=1.75m src=ballistic air=5.10s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1754.39s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=8025.48 yank=1.68g quietAt=8026.58 B(abs)=n/a B(rel)=n/a
+  [v15 1759.40s] CANDIDATE t0=8025.48 yank=1.68g quietAt=8026.58 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1788.30s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=8054.00 yank=1.22g quietAt=8055.49 B(abs)=n/a B(rel)=-15.06
+  [v15 1788.30s] CANDIDATE t0=8054.00 yank=1.22g quietAt=8055.49 B(abs)=n/a B(rel)=-15.06
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1791.82s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.22
+  [v15 1792.82s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.03 yank=1.22
+🦘 v15 CANDIDATE t0=8056.60 yank=1.37g quietAt=8060.01 B(abs)=n/a B(rel)=-15.46
+  [v15 1792.82s] CANDIDATE t0=8056.60 yank=1.37g quietAt=8060.01 B(abs)=n/a B(rel)=-15.46
+🦘 v15 IMPACT pending=2.02g air=11.18
+  [v15 1800.60s] IMPACT pending=2.02g air=11.18
+🦘 v15 LANDING impact impact=3.38g air=11.22
+  [v15 1800.64s] LANDING impact impact=3.38g air=11.22
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.37
+  [v15 1802.15s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.37
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.42 yank=1.20
+  [v15 1802.15s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.42 yank=1.20
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.22
+  [v15 1802.15s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.22
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.27
+  [v15 1802.15s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.44 yank=1.27
+🦘 v15 CANDIDATE t0=8067.83 yank=3.38g quietAt=8069.34 B(abs)=n/a B(rel)=-15.21
+  [v15 1802.15s] CANDIDATE t0=8067.83 yank=3.38g quietAt=8069.34 B(abs)=n/a B(rel)=-15.21
+🦘 v15 IMPACT pending=2.03g air=1.72
+  [v15 1802.36s] IMPACT pending=2.03g air=1.72
+🦘 v15 LANDING impact impact=2.68g air=2.14
+  [v15 1802.78s] LANDING impact impact=2.68g air=2.14
+🦘 v15 JUMP h=2.17m src=ballistic air=2.14s conf=0.50
+  [v15 1804.29s] JUMP h=2.17m src=ballistic air=2.14s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1804.29s] REJECT(open) reason=retriggerGuard
+🦘 v15 BARO rel datumStep delta=5.30 — window reset
+  [v15 1808.07s] BARO rel datumStep delta=5.30 — window reset
+🦘 v15 BARO rel datumStep delta=5.75 — window reset
+  [v15 1810.64s] BARO rel datumStep delta=5.75 — window reset
+🦘 v15 CANDIDATE t0=8075.18 yank=1.32g quietAt=8077.48 B(abs)=n/a B(rel)=n/a
+  [v15 1810.30s] CANDIDATE t0=8075.18 yank=1.32g quietAt=8077.48 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.94g air=12.35
+  [v15 1820.34s] IMPACT pending=1.94g air=12.35
+🦘 v15 LANDING impact impact=1.94g air=12.36
+  [v15 1820.35s] LANDING impact impact=1.94g air=12.36
+🦘 v15 REJECT reason=floatBelowMin float=0.35
+  [v15 1821.85s] REJECT reason=floatBelowMin float=0.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.93 yank=1.31
+  [v15 1821.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.93 yank=1.31
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.23
+  [v15 1821.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.94 yank=1.23
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.43
+  [v15 1821.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.43
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.36
+  [v15 1821.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.36
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.30
+  [v15 1821.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.30
+🦘 v15 CANDIDATE t0=8087.53 yank=1.94g quietAt=8089.04 B(abs)=n/a B(rel)=-2.46
+  [v15 1821.85s] CANDIDATE t0=8087.53 yank=1.94g quietAt=8089.04 B(abs)=n/a B(rel)=-2.46
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1825.34s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.94
+  [v15 1826.35s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.94
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.36
+  [v15 1826.35s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.85 yank=1.36
+🦘 v15 CANDIDATE t0=8092.49 yank=1.27g quietAt=8093.53 B(abs)=n/a B(rel)=n/a
+  [v15 1826.35s] CANDIDATE t0=8092.49 yank=1.27g quietAt=8093.53 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.96g air=7.59
+  [v15 1832.89s] IMPACT pending=1.96g air=7.59
+🦘 v15 LANDING impact impact=3.89g air=8.40
+  [v15 1833.71s] LANDING impact impact=3.89g air=8.40
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.04 yank=1.27
+  [v15 1835.22s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.04 yank=1.27
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.47
+  [v15 1835.22s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=1.47
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.44
+  [v15 1835.22s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.44
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.86
+  [v15 1835.22s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.86
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.32
+  [v15 1835.22s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.32
+🦘 v15 CANDIDATE t0=8100.89 yank=3.89g quietAt=8102.40 B(abs)=n/a B(rel)=-4.50
+  [v15 1835.22s] CANDIDATE t0=8100.89 yank=3.89g quietAt=8102.40 B(abs)=n/a B(rel)=-4.50
+🦘 v15 IMPACT pending=2.06g air=1.92
+  [v15 1835.63s] IMPACT pending=2.06g air=1.92
+🦘 v15 LANDING impact impact=2.32g air=2.90
+  [v15 1836.60s] LANDING impact impact=2.32g air=2.90
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=3.89
+  [v15 1838.11s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.00 yank=3.89
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.86
+  [v15 1838.11s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.86
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.32
+  [v15 1838.11s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.88 yank=1.32
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.08 yank=1.69
+  [v15 1838.11s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.08 yank=1.69
+🦘 v15 CANDIDATE t0=8103.79 yank=2.32g quietAt=8105.30 B(abs)=n/a B(rel)=n/a
+  [v15 1838.11s] CANDIDATE t0=8103.79 yank=2.32g quietAt=8105.30 B(abs)=n/a B(rel)=n/a
+🦘 v15 LANDING gpsSpeedRecovery impact=0.00g air=25.01
+  [v15 1861.61s] LANDING gpsSpeedRecovery impact=0.00g air=25.01
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1862.62s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 CANDIDATE t0=8127.02 yank=1.36g quietAt=8129.81 B(abs)=n/a B(rel)=-7.26
+  [v15 1862.62s] CANDIDATE t0=8127.02 yank=1.36g quietAt=8129.81 B(abs)=n/a B(rel)=-7.26
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=6.42
+  [v15 1866.25s] LANDING noRiseAbort-softClose impact=0.00g air=6.42
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.66
+  [v15 1867.25s] REJECT reason=gateEntrySpeed vin=4.66
+🦘 v15 CANDIDATE t0=8132.72 yank=1.28g quietAt=8134.43 B(abs)=n/a B(rel)=n/a
+  [v15 1867.25s] CANDIDATE t0=8132.72 yank=1.28g quietAt=8134.43 B(abs)=n/a B(rel)=n/a
+🦘 v15 REJECT reason=maxFlightExceeded air=30.00
+  [v15 1895.54s] REJECT reason=maxFlightExceeded air=30.00
+🦘 v15 CANDIDATE t0=8160.72 yank=1.31g quietAt=8162.73 B(abs)=n/a B(rel)=-9.19
+  [v15 1895.54s] CANDIDATE t0=8160.72 yank=1.31g quietAt=8162.73 B(abs)=n/a B(rel)=-9.19
+🦘 v15 IMPACT pending=2.02g air=6.72
+  [v15 1900.25s] IMPACT pending=2.02g air=6.72
+🦘 v15 LANDING impact impact=2.02g air=6.72
+  [v15 1900.25s] LANDING impact impact=2.02g air=6.72
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1901.76s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT reason=floatBelowMin float=0.20
+  [v15 1901.76s] REJECT reason=floatBelowMin float=0.20
+🦘 v15 CANDIDATE t0=8167.44 yank=2.02g quietAt=8168.95 B(abs)=n/a B(rel)=-7.86
+  [v15 1901.76s] CANDIDATE t0=8167.44 yank=2.02g quietAt=8168.95 B(abs)=n/a B(rel)=-7.86
+🦘 v15 IMPACT pending=1.97g air=1.91
+  [v15 1902.17s] IMPACT pending=1.97g air=1.91
+🦘 v15 LANDING impact impact=3.36g air=1.97
+  [v15 1902.22s] LANDING impact impact=3.36g air=1.97
+🦘 v15 JUMP h=2.05m src=ballistic air=1.97s conf=0.50
+  [v15 1903.73s] JUMP h=2.05m src=ballistic air=1.97s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1903.73s] REJECT(open) reason=retriggerGuard
+🦘 v15 CANDIDATE t0=8174.84 yank=1.34g quietAt=8175.92 B(abs)=n/a B(rel)=n/a
+  [v15 1908.74s] CANDIDATE t0=8174.84 yank=1.34g quietAt=8175.92 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.05g air=24.57
+  [v15 1932.23s] IMPACT pending=2.05g air=24.57
+🦘 v15 LANDING impact impact=2.05g air=25.28
+  [v15 1932.94s] LANDING impact impact=2.05g air=25.28
+🦘 v15 REJECT reason=gateEntrySpeed vin=4.90
+  [v15 1934.44s] REJECT reason=gateEntrySpeed vin=4.90
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.93 yank=1.47
+  [v15 1934.44s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.93 yank=1.47
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.36
+  [v15 1934.44s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.36
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.21
+  [v15 1934.44s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.21
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.35
+  [v15 1934.44s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.99 yank=1.35
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.47
+  [v15 1934.44s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.09 yank=1.47
+🦘 v15 CANDIDATE t0=8199.42 yank=2.05g quietAt=8201.63 B(abs)=n/a B(rel)=-5.35
+  [v15 1934.44s] CANDIDATE t0=8199.42 yank=2.05g quietAt=8201.63 B(abs)=n/a B(rel)=-5.35
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1937.23s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=2.05
+  [v15 1938.24s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.01 yank=2.05
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.10 yank=1.30
+  [v15 1938.24s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=1.10 yank=1.30
+🦘 v15 CANDIDATE t0=8202.41 yank=1.39g quietAt=8205.42 B(abs)=n/a B(rel)=n/a
+  [v15 1938.24s] CANDIDATE t0=8202.41 yank=1.39g quietAt=8205.42 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.93g air=17.10
+  [v15 1952.33s] IMPACT pending=1.93g air=17.10
+🦘 v15 LANDING impact impact=1.93g air=17.12
+  [v15 1952.34s] LANDING impact impact=1.93g air=17.12
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.39
+  [v15 1953.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.91 yank=1.39
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.61
+  [v15 1953.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.61
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.34
+  [v15 1953.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.90 yank=1.34
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.26
+  [v15 1953.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.96 yank=1.26
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.44
+  [v15 1953.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.44
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.42
+  [v15 1953.85s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.98 yank=1.42
+🦘 v15 CANDIDATE t0=8219.53 yank=1.93g quietAt=8221.04 B(abs)=n/a B(rel)=-1.53
+  [v15 1953.85s] CANDIDATE t0=8219.53 yank=1.93g quietAt=8221.04 B(abs)=n/a B(rel)=-1.53
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15 1957.35s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.93
+  [v15 1958.35s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.92 yank=1.93
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1958.35s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 CANDIDATE t0=8223.10 yank=1.45g quietAt=8225.53 B(abs)=n/a B(rel)=n/a
+  [v15 1958.35s] CANDIDATE t0=8223.10 yank=1.45g quietAt=8225.53 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.91g air=5.86
+  [v15 1961.78s] IMPACT pending=1.91g air=5.86
+🦘 v15 LANDING impact impact=2.15g air=5.88
+  [v15 1961.80s] LANDING impact impact=2.15g air=5.88
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.76 yank=1.45
+  [v15 1963.31s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.76 yank=1.45
+🦘 v15 REJECT reason=floatBelowMin float=0.34
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.34
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.32
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.32
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1963.31s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 CANDIDATE t0=8228.98 yank=2.15g quietAt=8230.49 B(abs)=n/a B(rel)=n/a
+  [v15 1963.31s] CANDIDATE t0=8228.98 yank=2.15g quietAt=8230.49 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.96g air=6.93
+  [v15 1968.73s] IMPACT pending=1.96g air=6.93
+🦘 v15 LANDING impact impact=2.43g air=6.96
+  [v15 1968.76s] LANDING impact impact=2.43g air=6.96
+🦘 v15 REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.15
+  [v15 1970.26s] REJECT reason=gateNoJumpEvidence dCrs=0.00 drop=0.60 yank=2.15
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.29
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.29
+🦘 v15 REJECT reason=floatBelowMin float=0.30
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.30
+🦘 v15 REJECT reason=floatBelowMin float=0.33
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.33
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15 1970.26s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 CANDIDATE t0=8235.94 yank=2.43g quietAt=8237.45 B(abs)=n/a B(rel)=n/a
+  [v15 1970.26s] CANDIDATE t0=8235.94 yank=2.43g quietAt=8237.45 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.30g air=5.24
+  [v15 1974.00s] IMPACT pending=2.30g air=5.24
+🦘 v15 LANDING impact impact=2.94g air=5.27
+  [v15 1974.03s] LANDING impact impact=2.94g air=5.27
+🦘 v15 JUMP h=1.85m src=ballistic air=5.27s conf=0.50
+  [v15 1975.54s] JUMP h=1.85m src=ballistic air=5.27s conf=0.50
+🦘 v15 REJECT(open) reason=retriggerGuard
+  [v15 1975.54s] REJECT(open) reason=retriggerGuard
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.67
+  [v15 1981.55s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.67
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.82
+  [v15 1983.55s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.82
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.58
+  [v15 1986.56s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.58
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+  [v15 1987.56s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+  [v15 1990.56s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.47
+🦘 v15 CANDIDATE t0=8259.47 yank=1.93g quietAt=8261.75 B(abs)=n/a B(rel)=-9.29
+  [v15 1994.57s] CANDIDATE t0=8259.47 yank=1.93g quietAt=8261.75 B(abs)=n/a B(rel)=-9.29
+🦘 v15 IMPACT pending=1.91g air=2.55
+  [v15 1994.83s] IMPACT pending=1.91g air=2.55
+🦘 v15 LANDING impact impact=1.93g air=2.56
+  [v15 1994.84s] LANDING impact impact=1.93g air=2.56
+🦘 v15 REJECT reason=ballisticWithoutBaroLanding hBal=2.11 air=2.56
+  [v15 1996.35s] REJECT reason=ballisticWithoutBaroLanding hBal=2.11 air=2.56
+🦘 v15 REJECT reason=gateEntrySpeed vin=1.54
+  [v15 1996.35s] REJECT reason=gateEntrySpeed vin=1.54
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.16
+  [v15 1996.35s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.16
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.61
+  [v15 1999.36s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.61
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.97
+  [v15 2000.36s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.97
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.01
+  [v15 2003.36s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.01
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.17
+  [v15 2005.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.17
+🦘 v15 CANDIDATE t0=8272.32 yank=1.94g quietAt=8273.92 B(abs)=n/a B(rel)=-9.04
+  [v15 2006.73s] CANDIDATE t0=8272.32 yank=1.94g quietAt=8273.92 B(abs)=n/a B(rel)=-9.04
+🦘 v15 IMPACT pending=1.90g air=3.84
+  [v15 2008.97s] IMPACT pending=1.90g air=3.84
+🦘 v15 LANDING impact+noRiseAbort impact=2.67g air=4.23
+  [v15 2009.37s] LANDING impact+noRiseAbort impact=2.67g air=4.23
+🦘 v15 REJECT reason=gateEntrySpeed vin=1.22
+  [v15 2010.37s] REJECT reason=gateEntrySpeed vin=1.22
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.89
+  [v15 2010.37s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.89
+🦘 v15 BARO abs drop reason=degradedAccuracy acc=14.79
+  [v15 2013.16s] BARO abs drop reason=degradedAccuracy acc=14.79
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.89
+  [v15 2013.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.89
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.47
+  [v15 2014.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.47
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.44
+  [v15 2017.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.44
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.24
+  [v15 2018.38s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.24
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.35
+  [v15 2019.39s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.35
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.32
+  [v15 2023.39s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.32
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.19
+  [v15 2024.39s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+  [v15 2027.18s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+  [v15 2029.19s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15 2033.74s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15 2075.88s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15 2076.88s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.22
+  [v15 2080.88s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.22
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding════════════════════════════════════════════════
+File:    log_20260727_144243_F3386A6C.kslog
+Format:  onDevice  rate=199.5 Hz  samples=420368  dur=2108.0s
+Mode:    standard  mockSpeed=8.0 m/s
+Jumps:   15 (accepted=15)
+  [✓] #0  t=16.32s  air=5.00s phys=5.00s  h=2.64m(ballistic)  dist=40.0m  apex=2.50s  conf=35  rot=2
+  [✓] #1  t=183.52s  air=2.96s phys=2.96s  h=1.68m(ballistic)  dist=23.8m  apex=1.48s  conf=50  rot=1
+  [✓] #2  t=295.90s  air=2.41s phys=2.41s  h=1.65m(ballistic)  dist=15.8m  apex=1.20s  conf=50  rot=1
+  [✓] #3  t=395.22s  air=2.91s phys=2.91s  h=1.60m(ballistic)  dist=22.8m  apex=1.45s  conf=50  rot=1
+  [✓] #4  t=736.01s  air=2.28s phys=2.28s  h=1.53m(ballistic)  dist=11.8m  apex=1.14s  conf=50  rot=1
+  [✓] #5  t=799.13s  air=3.17s phys=3.17s  h=2.55m(ballistic)  dist=26.9m  apex=1.59s  conf=50  rot=2
+  [✓] #6  t=863.26s  air=2.89s phys=2.89s  h=2.12m(ballistic)  dist=20.1m  apex=1.45s  conf=50  rot=1
+  [✓] #7  t=1018.28s  air=1.93s phys=1.93s  h=2.05m(ballistic)  dist=8.9m  apex=0.96s  conf=50  rot=1
+  [✓] #8  t=1290.19s  air=5.09s phys=5.09s  h=1.55m(ballistic)  dist=39.1m  apex=2.54s  conf=50  rot=1
+  [✓] #9  t=1419.87s  air=2.04s phys=2.04s  h=2.76m(ballistic)  dist=14.9m  apex=1.02s  conf=50  rot=3
+  [✓] #10  t=1544.42s  air=2.89s phys=2.89s  h=1.84m(ballistic)  dist=14.4m  apex=1.44s  conf=50  rot=1
+  [✓] #11  t=1747.78s  air=5.10s phys=5.10s  h=1.75m(ballistic)  dist=38.5m  apex=2.55s  conf=50  rot=1
+  [✓] #12  t=1800.64s  air=2.14s phys=2.14s  h=2.17m(ballistic)  dist=13.6m  apex=1.07s  conf=50  rot=2
+  [✓] #13  t=1900.25s  air=1.97s phys=1.97s  h=2.05m(ballistic)  dist=9.8m  apex=0.98s  conf=50  rot=1
+  [✓] #14  t=1968.76s  air=5.27s phys=5.27s  h=1.85m(ballistic)  dist=28.4m  apex=2.64s  conf=50  rot=1
+════════════════════════════════════════════════
+→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/analysis_v15/log_20260727_144243_F3386A6C.actual.json
+ spd=0.96
+  [v15 2083.89s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.96
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15 2084.90s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+  [v15 2089.04s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.22
+  [v15 2097.23s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.22
+🦘 v15 SUMMARY absReceived=3304 absAccepted=1321 absNonMonotonicDropped=8 absWindowSize=60 relReceived=820
+  [v15 2107.33s] SUMMARY absReceived=3304 absAccepted=1321 absNonMonotonicDropped=8 absWindowSize=60 relReceived=820
+🦘 JumpDetector(v15) endSession flush lateJumps=0

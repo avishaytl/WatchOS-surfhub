@@ -13,6 +13,12 @@ enum EngineE2ESelfTest {
             try testLoaderReadsKSLG2Streams()
             print("✓ replay loader reads KSLG v2 stream records", to: &stdout)
 
+            try testSessionLoggerWritesStructuredV13Audit()
+            print("✓ SessionLogger writes and reloads structured V13 audit", to: &stdout)
+
+            try testSessionLoggerPreviewReadsStatusRecord()
+            print("✓ SessionLogger preview reads complete KSLG v2 status records", to: &stdout)
+
             try testV11WatchAdapterFullJump()
             print("✓ v11 watch-adapter E2E synthetic jump", to: &stdout)
 
@@ -22,6 +28,9 @@ enum EngineE2ESelfTest {
             try testV13WatchAdapterPostLandingJump()
             print("✓ v13 watch-adapter E2E synthetic jump (post-landing classification)", to: &stdout)
 
+            try testV13UserHeightSettingOnlyChangesCountThreshold()
+            print("✓ v13 user height setting is isolated from internal detection thresholds", to: &stdout)
+
             try testV13BarometerOnlyJumpWithoutGPSOrIMUSpike()
             print("✓ v13 accepts a barometer-only jump without GPS or IMU spike", to: &stdout)
 
@@ -30,6 +39,36 @@ enum EngineE2ESelfTest {
 
             try testV13RejectsAltitudeDipRecovery()
             print("✓ v13 rejects pressure-dip recovery with no physical jump", to: &stdout)
+
+            try testV13AcceptsUncappedThirtyTwoMetreArc()
+            print("✓ v13 accepts an uncapped progressive 32 m arc", to: &stdout)
+
+            try testV13RejectsTwentySixMetreRectangularNoise()
+            print("✓ v13 rejects a 26 m pulse without a physical arc", to: &stdout)
+
+            try testV13RejectsTwentySixMetreArcThatIsTooFast()
+            print("✓ v13 rejects a progressive 26 m arc with impossible timing", to: &stdout)
+
+            try testV13ResetsOnAccuracyReanchorBelowLegacyAltitudeThreshold()
+            print("✓ v13 isolates a 9.94 m re-anchor signalled by accuracy", to: &stdout)
+
+            try testV13ResetsOnCumulativeDatumShift()
+            print("✓ v13 isolates a cumulative sub-threshold datum shift", to: &stdout)
+
+            try testV14CleanJumpPrefersRelativeHeight()
+            print("✓ v14 clean jump: relative height preferred over a healthy absolute cross-check", to: &stdout)
+
+            try testV14FrozenAbsoluteFallsBackToRelative()
+            print("✓ v14 frozen absolute channel falls back to relative height", to: &stdout)
+
+            try testV14WaterDipOpensNoJumpAndKeepsBaselineSane()
+            print("✓ v14 water dip opens no jump and cannot poison the baseline", to: &stdout)
+
+            try testV14DetectsWithoutAnyGPS()
+            print("✓ v14 detects fully without GPS; GPS metrics stay empty", to: &stdout)
+
+            try testV14RiseBelowUserSettingIsNotCounted()
+            print("✓ v14 rise below the user's counted-height setting is rejected", to: &stdout)
             return true
         } catch {
             fputs("engine E2E self-test failed: \(error)\n", stderr)
@@ -79,8 +118,23 @@ enum EngineE2ESelfTest {
         appendGPS(&data, tUs: 0, speedMS: 8.4)
         appendBaro(&data, tUs: 0, relAltM: 1.25, pressureHPa: 1013.25)
         appendAbsAlt(&data, tUs: 0, altitudeM: 12.345, accuracyM: 1.5, precisionM: 0.2)
+        var audit = V13AuditRecord(
+            monotonicTime: Double(t0BootUs) / 1_000_000.0,
+            stage: "takeoff",
+            action: "evaluateCandidate",
+            decision: "waiting",
+            reason: "sensorWarmup",
+            values: ["absoluteAltitudeM": 12.345],
+            conditions: [
+                .init(id: "sensorWarmup", actual: 1, comparator: ">=", expected: 8, passed: false, unit: "s")
+            ]
+        )
+        audit.sequence = 1
+        audit.sessionID = "kslg2-fixture"
+        appendAudit(&data, tUs: 0, record: audit)
         appendMotion(&data, tUs: 0, ax: 0.1, ay: 0.2, az: 0.3)
         appendMotion(&data, tUs: 5_000, ax: 0.2, ay: 0.1, az: 0.4)
+        appendAbsAlt(&data, tUs: 10_000_000, altitudeM: 12.5, accuracyM: 1.5, precisionM: 0.2)
         try data.write(to: url)
 
         let log = try Loader.load(url, forceFormat: nil)
@@ -101,6 +155,98 @@ enum EngineE2ESelfTest {
         try require(first.absoluteAltitudeTimestamp == first.motionTimestamp,
                     "KSLG v2 should preserve abs altitude timestamp")
         try require(log.speeds[0] == 8.4, "KSLG v2 should ZOH GPS speed onto motion rows")
+        try require(log.v13AuditRecords.count == 1, "KSLG v2 should decode V13 audit tag 12")
+        try require(log.v13AuditRecords[0].action == "evaluateCandidate",
+                    "KSLG v2 should preserve the V13 audit action")
+        try require(log.v13AuditRecords[0].conditions.first?.passed == false,
+                    "KSLG v2 should preserve failed V13 conditions")
+        try require(abs(log.timelineDurationSec - 10) < 0.000_001,
+                    "KSLG v2 duration should include altitude after motion stops; got \(log.timelineDurationSec)")
+    }
+
+    private static func testSessionLoggerWritesStructuredV13Audit() throws {
+        let logger = SessionLogger.shared
+        let sessionID = "audit-\(UUID().uuidString)"
+        let t = ProcessInfo.processInfo.systemUptime
+        logger.start(
+            sessionId: sessionID,
+            mode: .standard,
+            sensorOnly: true,
+            engine: .v13Pure,
+            v13Config: V13Config()
+        )
+        guard let url = logger.mostRecentLogURL() else {
+            throw Failure(description: "SessionLogger should expose the V13 audit fixture URL")
+        }
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let audit = V13CalculationLogService.shared
+        audit.beginSession(sessionID: sessionID, t: t)
+        audit.configure(V13Config(), t: t + 0.001)
+        audit.attachSink { logger.logV13Audit($0) }
+        audit.record(V13AuditRecord(
+            monotonicTime: t,
+            stage: "result",
+            action: "emitJump",
+            decision: "accepted",
+            candidateID: 7,
+            values: ["heightM": 2.4, "airtimeSec": 2.1]
+        ))
+        audit.endSession(t: t + 1, durationSec: 1, reportedJumpCount: 1)
+        logger.logMotionSample(IMUSample(
+            timestamp: Date(),
+            accelerationX: 0.1,
+            accelerationY: 0.2,
+            accelerationZ: 0.3,
+            rotationX: 0,
+            rotationY: 0,
+            rotationZ: 0,
+            gravity: Vector3(x: 0, y: 0, z: -1),
+            pressure: nil,
+            motionTimestamp: t
+        ))
+        logger.stop()
+        audit.detachSink()
+
+        let loaded = try Loader.load(url)
+        try require(loaded.v13AuditRecords.first?.kind == "schema",
+                    "SessionLogger fixture should preserve the self-describing V13 schema")
+        try require(loaded.v13AuditRecords.first?.definitions.isEmpty == false,
+                    "SessionLogger fixture should preserve V13 parameter explanations")
+        try require(loaded.v13AuditRecords.contains(where: { $0.candidateID == 7 }),
+                    "SessionLogger should preserve V13 candidate ids")
+        try require(loaded.v13AuditRecords.first(where: { $0.candidateID == 7 })?.values["heightM"] == 2.4,
+                    "SessionLogger should preserve V13 calculated values")
+        try require(loaded.v13AuditRecords.last?.kind == "summary",
+                    "SessionLogger fixture should preserve the V13 end-of-session summary")
+    }
+
+    private static func testSessionLoggerPreviewReadsStatusRecord() throws {
+        let logger = SessionLogger.shared
+        logger.start(
+            sessionId: "status-\(UUID().uuidString)",
+            mode: .standard,
+            sensorOnly: true,
+            engine: .v14Hybrid
+        )
+        guard let url = logger.mostRecentLogURL() else {
+            throw Failure(description: "SessionLogger should expose the status preview fixture URL")
+        }
+        logger.stop()
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        var status = Data()
+        appendStatus(&status, tUs: 1_000_000, batteryPct: 88, baroSource: 2, baroHz: 1.0)
+        let handle = try FileHandle(forWritingTo: url)
+        try handle.seekToEnd()
+        try handle.write(contentsOf: status)
+        try handle.close()
+
+        let preview = logger.buildShareText(for: url, fileSize: "test", maxChars: 100_000)
+        try require(preview.contains("STATUS,1.000000"),
+                    "SessionLogger preview should decode a status record without crashing")
+        try require(preview.contains("baroHz=1.00"),
+                    "SessionLogger preview should preserve the complete status payload")
     }
 
     private static func appendMotion(_ data: inout Data,
@@ -151,6 +297,28 @@ enum EngineE2ESelfTest {
         appendUInt16(&data, UInt16.max)
         appendUInt16(&data, UInt16.max)
         appendInt32(&data, Int32.min)
+    }
+
+    private static func appendAudit(_ data: inout Data, tUs: UInt64, record: V13AuditRecord) {
+        let payload = try! JSONEncoder().encode(record)
+        data.append(12)
+        appendUInt64(&data, tUs)
+        appendUInt32(&data, UInt32(payload.count))
+        data.append(payload)
+    }
+
+    private static func appendStatus(_ data: inout Data,
+                                     tUs: UInt64,
+                                     batteryPct: Int16,
+                                     baroSource: UInt8,
+                                     baroHz: Double) {
+        data.append(11)
+        appendUInt64(&data, tUs)
+        data.append(0) // thermal
+        data.append(0) // low power
+        appendInt16(&data, batteryPct)
+        data.append(baroSource)
+        appendUInt16(&data, UInt16((baroHz * 100).rounded()))
     }
 
     private static func scaledInt16(_ value: Double, _ scale: Double) -> Int16 {
@@ -505,6 +673,45 @@ enum EngineE2ESelfTest {
         try require(jump.jumpDistance == 0, "v13 barometer-only jump should not invent GPS distance, got \(jump.jumpDistance)")
     }
 
+    private static func testV13UserHeightSettingOnlyChangesCountThreshold() throws {
+        let defaults = UserDefaults.standard
+        let keys = [
+            V13Settings.minCountedHeightM,
+            V13Settings.candidateRiseM,
+            V13Settings.takeoffWindowSec,
+            V13Settings.landingDescentM,
+        ]
+        let saved = keys.map { ($0, defaults.object(forKey: $0)) }
+        defer {
+            for (key, value) in saved {
+                if let value {
+                    defaults.set(value, forKey: key)
+                } else {
+                    defaults.removeObject(forKey: key)
+                }
+            }
+        }
+
+        defaults.set(2.0, forKey: V13Settings.minCountedHeightM)
+        defaults.removeObject(forKey: V13Settings.candidateRiseM)
+        defaults.removeObject(forKey: V13Settings.takeoffWindowSec)
+        defaults.removeObject(forKey: V13Settings.landingDescentM)
+
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.reset(mode: .standard)
+        let config = detector.effectiveConfiguration
+
+        try require(config.minCountedHeightM == 2.0,
+                    "v13 should load the user's 2 m counted-height preference")
+        try require(config.candidateRiseM == 1.0,
+                    "user counted height must not alter the 1 m candidate rise")
+        try require(config.takeoffWindowSec == 1.0,
+                    "user counted height must not alter the 1 s takeoff window")
+        try require(config.landingDescentM == 0.5,
+                    "user counted height must not alter the 0.5 m landing descent")
+    }
+
     /// A real absolute-altitude jump can return to the takeoff baseline and then
     /// suffer a wet-port/splash dip. V13 must close the jump on baseline return
     /// instead of waiting for a late stable window that would exceed max airtime.
@@ -638,6 +845,177 @@ enum EngineE2ESelfTest {
         try require(late.isEmpty, "v13 dip recovery should not leave a flush result")
     }
 
+    /// Height is not a rejection or clamping signal. This deliberately sparse
+    /// 1 Hz fixture starts with a 16 m sample-to-sample rise (above the removed
+    /// 12 m datum gate) and reaches 32 m (above the removed 30 m result cap).
+    /// Its progressive ascent/descent and clean baseline return make it valid.
+    private static func testV13AcceptsUncappedThirtyTwoMetreArc() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.reset(mode: .standard)
+
+        var jumps: [Jump] = []
+        detector.onJumpDetected = { jumps.append($0) }
+
+        func feed(t: TimeInterval, altitudeM: Double) {
+            detector.processAbsoluteAltitude(
+                sensorT: t,
+                receivedT: t,
+                altitudeM: altitudeM,
+                accuracyM: 5.0,
+                precisionM: 0.5
+            )
+        }
+
+        for second in 0...12 {
+            feed(t: Double(second), altitudeM: 100.0)
+        }
+        feed(t: 13.0, altitudeM: 116.0)
+        feed(t: 14.0, altitudeM: 127.71)
+        feed(t: 15.0, altitudeM: 132.0)
+        feed(t: 16.0, altitudeM: 127.71)
+        feed(t: 17.0, altitudeM: 116.0)
+        feed(t: 18.0, altitudeM: 100.0)
+
+        try require(detector.altitudeStreamResetCount == 0,
+                    "v13 must not treat a 16 m rise as a datum reset")
+        try require(jumps.count == 1,
+                    "v13 should accept one progressive 32 m arc, got \(jumps.count)")
+        try require(abs(jumps[0].height - 32.0) <= 0.05,
+                    "v13 must report the measured height without a cap, got \(jumps[0].height)")
+    }
+
+    /// A large value is not automatically a jump either. A one-frame climb to
+    /// a 26 m plateau and one-frame return has no intermediate ascent/descent
+    /// samples and is therefore a sensor pulse, despite its four-second span.
+    private static func testV13RejectsTwentySixMetreRectangularNoise() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.reset(mode: .standard)
+
+        var jumps: [Jump] = []
+        detector.onJumpDetected = { jumps.append($0) }
+
+        func feed(t: TimeInterval, altitudeM: Double) {
+            detector.processAbsoluteAltitude(
+                sensorT: t,
+                receivedT: t,
+                altitudeM: altitudeM,
+                accuracyM: 5.0,
+                precisionM: 0.5
+            )
+        }
+
+        for second in 0...12 {
+            feed(t: Double(second), altitudeM: 100.0)
+        }
+        feed(t: 13.0, altitudeM: 126.0)
+        feed(t: 14.0, altitudeM: 126.0)
+        feed(t: 15.0, altitudeM: 126.0)
+        feed(t: 16.0, altitudeM: 100.0)
+
+        try require(detector.altitudeStreamResetCount == 0,
+                    "v13 should classify the 26 m pulse by arc quality, not a height reset")
+        try require(jumps.isEmpty,
+                    "v13 must reject a 26 m value without a progressive arc, got \(jumps.count) jump(s)")
+    }
+
+    /// Intermediate samples alone are not enough: this pulse has three clean
+    /// ascent and descent steps, but completes 26 m in 2.0 seconds. It must fail
+    /// the height/airtime coherence check rather than being accepted for shape.
+    private static func testV13RejectsTwentySixMetreArcThatIsTooFast() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.reset(mode: .standard)
+
+        var jumps: [Jump] = []
+        detector.onJumpDetected = { jumps.append($0) }
+
+        func feed(t: TimeInterval, altitudeM: Double) {
+            detector.processAbsoluteAltitude(
+                sensorT: t,
+                receivedT: t,
+                altitudeM: altitudeM,
+                accuracyM: 5.0,
+                precisionM: 0.5
+            )
+        }
+
+        for second in 0...11 {
+            feed(t: Double(second), altitudeM: 100.0)
+        }
+        feed(t: 12.0, altitudeM: 108.0)
+        feed(t: 12.2, altitudeM: 118.0)
+        feed(t: 12.4, altitudeM: 126.0)
+        feed(t: 12.6, altitudeM: 118.0)
+        feed(t: 12.8, altitudeM: 108.0)
+        feed(t: 13.0, altitudeM: 100.0)
+
+        try require(detector.altitudeStreamResetCount == 0,
+                    "v13 should evaluate the fast 26 m arc without a magnitude reset")
+        try require(jumps.isEmpty,
+                    "v13 must reject a physically incoherent 26 m arc, got \(jumps.count) jump(s)")
+    }
+
+    /// Regression for the 21:25:55 callback: altitude moved 61.36 -> 51.43 m
+    /// (9.94 m, below the historical 12 m guard) while accuracy moved
+    /// 4.82 -> 7.57 m. The accuracy discontinuity must split the datum epochs.
+    private static func testV13ResetsOnAccuracyReanchorBelowLegacyAltitudeThreshold() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.reset(mode: .standard)
+
+        func feed(t: TimeInterval, altitudeM: Double, accuracyM: Double) {
+            detector.processAbsoluteAltitude(
+                sensorT: t,
+                receivedT: t,
+                altitudeM: altitudeM,
+                accuracyM: accuracyM,
+                precisionM: 0.5
+            )
+        }
+
+        feed(t: 0.000, altitudeM: 61.471, accuracyM: 4.820)
+        feed(t: 1.003, altitudeM: 61.363, accuracyM: 4.821)
+        feed(t: 2.006, altitudeM: 51.427, accuracyM: 7.569)
+
+        try require(detector.altitudeStreamResetCount == 1,
+                    "v13 should reset once for the 9.94 m accuracy re-anchor, got \(detector.altitudeStreamResetCount)")
+        try require(detector.lastAltitudeStreamResetReason?.hasPrefix("absoluteAccuracyStep") == true,
+                    "v13 should attribute the reset to accuracy, got \(detector.lastAltitudeStreamResetReason ?? "nil")")
+    }
+
+    /// Some Core Motion recalibrations arrive as a staircase rather than one
+    /// >12 m step. Three downward 3 m corrections must be treated as one 9 m
+    /// datum move while the detector is still riding.
+    private static func testV13ResetsOnCumulativeDatumShift() throws {
+        let detector = JumpDetectorV13()
+        detector.synchronousAnalysis = true
+        detector.reset(mode: .standard)
+
+        func feed(t: TimeInterval, altitudeM: Double) {
+            detector.processAbsoluteAltitude(
+                sensorT: t,
+                receivedT: t,
+                altitudeM: altitudeM,
+                accuracyM: 5.0,
+                precisionM: 0.5
+            )
+        }
+
+        feed(t: 0.000, altitudeM: 100.0)
+        feed(t: 0.333, altitudeM: 100.0)
+        feed(t: 0.666, altitudeM: 100.0)
+        feed(t: 0.999, altitudeM: 97.0)
+        feed(t: 1.332, altitudeM: 94.0)
+        feed(t: 1.665, altitudeM: 91.0)
+
+        try require(detector.altitudeStreamResetCount == 1,
+                    "v13 should reset once for a cumulative 9 m datum shift, got \(detector.altitudeStreamResetCount)")
+        try require(detector.lastAltitudeStreamResetReason?.hasPrefix("absoluteDatumCumulative") == true,
+                    "v13 should attribute the reset to cumulative datum movement, got \(detector.lastAltitudeStreamResetReason ?? "nil")")
+    }
+
     private static func sampleForSignedLoad(at date: Date,
                                             accelMag: Double,
                                             signedLoad: Double,
@@ -656,5 +1034,224 @@ enum EngineE2ESelfTest {
             gravity: Vector3(x: 0, y: 0, z: -1),
             pressure: pressure
         )
+    }
+
+    // MARK: - V14 hybrid engine scenarios
+
+    /// Synthetic sensor world for the V14 detector: 50 Hz IMU with a
+    /// gravity-projected load profile, relative altitude at a real barometer
+    /// cadence, a 1 Hz direct absolute stream, optional GPS and submersion.
+    private struct V14Scenario {
+        var duration: TimeInterval = 30
+        var gpsSpeed: Double?
+        var loadAt: (TimeInterval) -> Double = { _ in 1.0 }
+        var relAltAt: (TimeInterval) -> Double = { _ in 0.0 }
+        var relCadenceSec: TimeInterval = 0.5
+        var absAltAt: ((TimeInterval) -> Double)?
+    }
+
+    private static func runV14Scenario(_ s: V14Scenario) -> (jumps: [Jump], states: [JumpDetector.JumpState], detector: JumpDetectorV14) {
+        let v14Keys = [
+            "v13MinRiseM", "v14BaselineWindowSec", "v14PopG", "v14RequirePop",
+            "v14UnweightG", "v14UnweightSec", "v14LandingImpactG",
+            "v14FlightLoadCeilingG", "v14FlightEndHoldSec", "v14LandingStableSec",
+            "v14LandingStableBandM", "v14MinAirtimeSec", "v14MaxFlightSec",
+            "v14AllowBallisticHeight"
+        ]
+        v14Keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+
+        let detector = JumpDetectorV14()
+        detector.synchronousAnalysis = true
+        detector.sessionId = "e2e-v14"
+
+        var jumps: [Jump] = []
+        var states: [JumpDetector.JumpState] = []
+        detector.onJumpDetected = { jumps.append($0) }
+        detector.onStateChanged = { states.append($0) }
+        detector.reset(mode: .standard)
+
+        let bootWallClock = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
+        func date(_ t: TimeInterval) -> Date {
+            Date(timeIntervalSince1970: bootWallClock + t)
+        }
+
+        let dt = 0.02
+        var nextRelT: TimeInterval = 0
+        var nextAbsT: TimeInterval = 0
+        var nextGpsT: TimeInterval = 0
+        var t: TimeInterval = 0
+        while t <= s.duration {
+            if let speed = s.gpsSpeed, t + 1e-9 >= nextGpsT {
+                detector.updateGPS(
+                    speed: speed, altitude: 0,
+                    latitude: 32.0, longitude: 34.0 + t * 0.00003,
+                    course: 90, horizontalAccuracy: 4, timestamp: date(t)
+                )
+                nextGpsT += 1.0
+            }
+
+            var relAlt: Double?
+            var relT: TimeInterval?
+            if t + 1e-9 >= nextRelT {
+                relAlt = s.relAltAt(t)
+                relT = t
+                nextRelT += s.relCadenceSec
+            }
+
+            // Vertical load L maps to userAcceleration z via L = −az + 1
+            // under gravity (0, 0, −1).
+            let az = 1.0 - s.loadAt(t)
+            let sample = IMUSample(
+                timestamp: date(t),
+                accelerationX: 0, accelerationY: 0, accelerationZ: az,
+                rotationX: 0.6, rotationY: 0, rotationZ: 0,
+                gravity: Vector3(x: 0, y: 0, z: -1),
+                pressure: nil,
+                motionTimestamp: t,
+                relativeAltitude: relAlt,
+                barometerTimestamp: relT
+            )
+            detector.processSample(sample)
+
+            // The direct absolute stream ticks at 1 Hz; the detector must drop
+            // every sample outside the on-demand jump window.
+            if let absAltAt = s.absAltAt, t + 1e-9 >= nextAbsT {
+                detector.processAbsoluteAltitude(
+                    sensorT: t, receivedT: t,
+                    altitudeM: absAltAt(t), accuracyM: 2.0, precisionM: 0.5
+                )
+                nextAbsT += 1.0
+            }
+            t += dt
+        }
+
+        jumps.append(contentsOf: detector.endSession())
+        return (jumps, states, detector)
+    }
+
+    /// Pop → sustained unweight → impact, the V14 takeoff/landing signature.
+    private static func v14JumpLoad(t: TimeInterval, takeoff: TimeInterval, landing: TimeInterval) -> Double {
+        if t >= takeoff - 0.12, t < takeoff { return 2.4 }
+        if t >= takeoff, t < landing { return 0.05 }
+        if t >= landing, t < landing + 0.1 { return 3.2 }
+        return 1.0
+    }
+
+    private static func v14Arc(t: TimeInterval, takeoff: TimeInterval, landing: TimeInterval, apexM: Double) -> Double {
+        guard t > takeoff, t < landing else { return 0 }
+        let p = (t - takeoff) / (landing - takeoff)
+        return apexM * 4 * p * (1 - p)
+    }
+
+    private static func testV14CleanJumpPrefersRelativeHeight() throws {
+        // Both channels are healthy and agree on the same 2.0 m arc. Per the
+        // relative-height upgrade, relative altitude is the primary height
+        // source even when absolute is available and healthy — absolute is
+        // now an opportunistic fallback / diagnostic value only, never
+        // preferred. See V14_RELATIVE_HEIGHT_UPGRADE_PLAN.md §10.
+        var s = V14Scenario()
+        s.gpsSpeed = 8.0
+        s.loadAt = { v14JumpLoad(t: $0, takeoff: 12.0, landing: 13.5) }
+        s.relAltAt = { v14Arc(t: $0, takeoff: 12.0, landing: 13.5, apexM: 2.0) }
+        s.absAltAt = { t in
+            if t > 12.0, t < 13.5 {
+                return 100.0 + v14Arc(t: t, takeoff: 12.0, landing: 13.5, apexM: 2.0)
+            }
+            return 100.0 + (Int(t) % 2 == 0 ? 0.02 : -0.02)
+        }
+
+        let run = runV14Scenario(s)
+        try require(run.states.contains(.airborne), "v14 should flag the flight as airborne")
+        try require(run.jumps.count == 1, "v14 clean jump should emit exactly one jump, got \(run.jumps.count)")
+        let jump = run.jumps[0]
+        try require(jump.heightSource == "relativeAltitude",
+                    "v14 height should prefer the relative channel even with a healthy absolute cross-check, got \(jump.heightSource ?? "nil")")
+        try require(abs(jump.height - 2.0) <= 0.5, "v14 relative height should match the arc, got \(jump.height)")
+        try require(abs(jump.airtime - 1.4) <= 0.3, "v14 airtime should match the unweight span, got \(jump.airtime)")
+        try require(jump.confidence >= 65, "v14 confidence should be reasonably high on a confirmed landing, got \(jump.confidence)")
+        try require((jump.detectionConfidence ?? 0) >= 60,
+                    "v14 detection confidence (IMU signature only) should be solid, got \(jump.detectionConfidence ?? -1)")
+        try require((jump.heightConfidence ?? 0) > 0,
+                    "v14 height confidence should be positive for a well-measured relative height")
+        try require(!run.detector.isAbsoluteWindowOpen,
+                    "v14 must stop the absolute stream after the landing baseline is confirmed")
+    }
+
+    private static func testV14FrozenAbsoluteFallsBackToRelative() throws {
+        var s = V14Scenario()
+        s.gpsSpeed = 8.0
+        s.loadAt = { v14JumpLoad(t: $0, takeoff: 12.0, landing: 13.5) }
+        s.relAltAt = { v14Arc(t: $0, takeoff: 12.0, landing: 13.5, apexM: 2.0) }
+        s.absAltAt = { _ in 100.0 }   // OS-frozen: bit-identical forever
+
+        let run = runV14Scenario(s)
+        try require(run.jumps.count == 1, "v14 frozen-absolute jump should still emit, got \(run.jumps.count)")
+        let jump = run.jumps[0]
+        try require(jump.heightSource == "relativeAltitude",
+                    "v14 should fall back to the relative channel, got \(jump.heightSource ?? "nil")")
+        try require(abs(jump.height - 2.0) <= 0.5, "v14 relative height should match the arc, got \(jump.height)")
+    }
+
+    private static func testV14WaterDipOpensNoJumpAndKeepsBaselineSane() throws {
+        var s = V14Scenario()
+        s.duration = 32
+        s.gpsSpeed = 8.0
+        // Splash at t=10.8: brief unweight while the wrist is underwater opens
+        // a candidate (V14 no longer gates takeoff on submersion — a real
+        // jump can start from a wet wrist), but its ballistic height
+        // contradicts the flat relative arc and it is rejected on physics.
+        // Real jump at t=18 with a frozen absolute channel: its relative
+        // height must be measured against a baseline the −30 m dip could not
+        // poison.
+        s.loadAt = { t in
+            if t >= 10.8, t < 11.3 { return 0.1 }
+            return v14JumpLoad(t: t, takeoff: 18.0, landing: 19.5)
+        }
+        s.relAltAt = { t in
+            if t >= 10.4, t < 10.9 { return -30.0 }   // one barometer tick under water
+            return v14Arc(t: t, takeoff: 18.0, landing: 19.5, apexM: 2.0)
+        }
+        s.absAltAt = { _ in 100.0 }
+
+        let run = runV14Scenario(s)
+        try require(run.jumps.count == 1,
+                    "v14 should reject the submerged splash on physics and keep the real jump, got \(run.jumps.count)")
+        let jump = run.jumps[0]
+        try require(abs(jump.height - 2.0) <= 0.5,
+                    "v14 baseline must survive the −30 m dip (median + spike filter), got height \(jump.height)")
+    }
+
+    private static func testV14DetectsWithoutAnyGPS() throws {
+        var s = V14Scenario()
+        s.gpsSpeed = nil                              // no GPS fix, ever
+        s.loadAt = { v14JumpLoad(t: $0, takeoff: 12.0, landing: 13.5) }
+        s.relAltAt = { v14Arc(t: $0, takeoff: 12.0, landing: 13.5, apexM: 2.0) }
+        s.absAltAt = { t in
+            if t > 12.0, t < 13.5 {
+                return 100.0 + v14Arc(t: t, takeoff: 12.0, landing: 13.5, apexM: 2.0)
+            }
+            return 100.0 + (Int(t) % 2 == 0 ? 0.02 : -0.02)
+        }
+
+        let run = runV14Scenario(s)
+        try require(run.jumps.count == 1, "v14 must detect without GPS, got \(run.jumps.count)")
+        let jump = run.jumps[0]
+        try require(jump.jumpDistance == 0, "v14 distance must stay empty without GPS, got \(jump.jumpDistance)")
+        try require(jump.takeoffSpeed == nil, "v14 takeoff speed must stay nil without GPS")
+        try require(jump.height >= 1.0, "v14 height should still be measured without GPS, got \(jump.height)")
+    }
+
+    private static func testV14RiseBelowUserSettingIsNotCounted() throws {
+        var s = V14Scenario()
+        s.gpsSpeed = 8.0
+        // 0.7 s hop with a 0.4 m arc and a dead absolute channel: every height
+        // source lands under the 1.0 m counted-height setting.
+        s.loadAt = { v14JumpLoad(t: $0, takeoff: 12.0, landing: 12.7) }
+        s.relAltAt = { v14Arc(t: $0, takeoff: 12.0, landing: 12.7, apexM: 0.4) }
+        s.absAltAt = { _ in 100.0 }
+
+        let run = runV14Scenario(s)
+        try require(run.jumps.isEmpty,
+                    "v14 must not count a rise below the user's setting, got \(run.jumps.count)")
     }
 }

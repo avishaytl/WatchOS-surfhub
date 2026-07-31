@@ -11,9 +11,33 @@ struct LoadedLog {
     var speeds: [Double?]
     var events: [LoadedLogEvent]
     var absoluteAltitudes: [LoadedAbsoluteAltitude]
+    var v13AuditRecords: [V13AuditRecord]
     var format: SensorFormat
     var detectedRate: Double  // Hz
     var sourceURL: URL
+
+    /// Full decoded timeline. Motion can stop while altitude/audit records keep
+    /// arriving, so report duration must not be derived from IMU alone.
+    var timelineDurationSec: Double {
+        var firstT: TimeInterval?
+        var lastT: TimeInterval?
+
+        func include(_ t: TimeInterval) {
+            guard t.isFinite else { return }
+            firstT = min(firstT ?? t, t)
+            lastT = max(lastT ?? t, t)
+        }
+
+        samples.forEach {
+            include($0.motionTimestamp ?? $0.timestamp.timeIntervalSince1970)
+        }
+        absoluteAltitudes.forEach { include($0.sensorT) }
+        events.forEach { include($0.timestamp.timeIntervalSince1970) }
+        v13AuditRecords.forEach { include($0.monotonicTime) }
+
+        guard let firstT, let lastT else { return 0 }
+        return max(0, lastT - firstT)
+    }
 }
 
 struct LoadedLogEvent {
@@ -32,7 +56,7 @@ enum Loader {
     /// Load a CSV or JSON log into IMUSample[]. Format is auto-detected
     /// from the gravity-magnitude statistics unless `forceFormat` is set.
     static func load(_ url: URL, forceFormat: SensorFormat? = nil) throws -> LoadedLog {
-        let (raw, hint, absoluteAltitudes) = try loadRaw(url)
+        let (raw, hint, absoluteAltitudes, v13AuditRecords) = try loadRaw(url)
         guard !raw.isEmpty else {
             throw LoaderError.empty
         }
@@ -45,17 +69,17 @@ enum Loader {
             return LoadedLogEvent(timestamp: Date(timeIntervalSince1970: row.t), message: event)
         }
         let rate = estimateRate(samples)
-        return LoadedLog(samples: samples, speeds: speeds, events: events, absoluteAltitudes: absoluteAltitudes, format: format, detectedRate: rate, sourceURL: url)
+        return LoadedLog(samples: samples, speeds: speeds, events: events, absoluteAltitudes: absoluteAltitudes, v13AuditRecords: v13AuditRecords, format: format, detectedRate: rate, sourceURL: url)
     }
 
-    private static func loadRaw(_ url: URL) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude]) {
+    private static func loadRaw(_ url: URL) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude], [V13AuditRecord]) {
         let ext = url.pathExtension.lowercased()
         let data = try Data(contentsOf: url)
         if ext == "json" {
             return try parseJSONLog(data)
         } else if ext == "csv" {
             let (rows, hint) = try parseCSV(data)
-            return (rows, hint, [])
+            return (rows, hint, [], [])
         } else if ext == "kslog" {
             return try parseKSLog(data)
         }
@@ -68,14 +92,14 @@ enum Loader {
         let content: String?
     }
 
-    private static func parseJSONLog(_ data: Data) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude]) {
+    private static func parseJSONLog(_ data: Data) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude], [V13AuditRecord]) {
         if let envelope = try? JSONDecoder().decode(SessionLogEnvelope.self, from: data),
            let content = envelope.content {
             let contentType = envelope.contentType?.lowercased() ?? ""
             let encoding = envelope.contentEncoding?.lowercased() ?? ""
             if contentType.contains("csv"), let csvData = content.data(using: .utf8) {
                 let (rows, hint) = try parseCSV(csvData)
-                return (rows, hint, [])
+                return (rows, hint, [], [])
             }
             if encoding == "base64" || contentType.contains("kiters-session-log") || contentType.contains("kslog") {
                 guard let blob = Data(base64Encoded: content, options: [.ignoreUnknownCharacters]) else {
@@ -86,10 +110,10 @@ enum Loader {
         }
 
         let decoder = JSONDecoder()
-        return (try decoder.decode([RawRow].self, from: data), nil, [])
+        return (try decoder.decode([RawRow].self, from: data), nil, [], [])
     }
 
-    private static func parseKSLog(_ data: Data) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude]) {
+    private static func parseKSLog(_ data: Data) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude], [V13AuditRecord]) {
         let b = [UInt8](data)
         guard b.count >= 7,
               b[0] == 0x4b, b[1] == 0x53, b[2] == 0x4c, b[3] == 0x47 else {
@@ -157,7 +181,7 @@ enum Loader {
                 break
             }
         }
-        return (rows, .onDevice, [])
+        return (rows, .onDevice, [], [])
     }
 
     private struct KSLG2Header: Decodable {
@@ -177,7 +201,7 @@ enum Loader {
         let precision: Double?
     }
 
-    private static func parseKSLG2(_ b: [UInt8]) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude]) {
+    private static func parseKSLG2(_ b: [UInt8]) throws -> ([RawRow], SensorFormat?, [LoadedAbsoluteAltitude], [V13AuditRecord]) {
         let headerLength = Int(readUInt16(b, 5))
         let headerStart = 7
         let payloadStart = headerStart + headerLength
@@ -205,6 +229,7 @@ enum Loader {
         var latestWaterDepth: Double?
         var pendingEvents: [String] = []
         var absoluteAltitudes: [LoadedAbsoluteAltitude] = []
+        var v13AuditRecords: [V13AuditRecord] = []
 
         while i < b.count {
             let tag = b[i]
@@ -314,12 +339,25 @@ enum Loader {
                 guard i + 16 <= b.count else { i = b.count; break }
                 i += 16
 
+            case 12: // V13_AUDIT: tUs + UInt32 JSON length + V13AuditRecord
+                guard i + 13 <= b.count else { i = b.count; break }
+                let payloadLength = Int(readUInt32(b, i + 9))
+                guard payloadLength >= 0, i + 13 + payloadLength <= b.count else {
+                    i = b.count
+                    break
+                }
+                let payload = Data(b[(i + 13)..<(i + 13 + payloadLength)])
+                if let record = try? JSONDecoder().decode(V13AuditRecord.self, from: payload) {
+                    v13AuditRecords.append(record)
+                }
+                i += 13 + payloadLength
+
             default:
                 i = b.count
             }
         }
 
-        return (rows, .onDevice, absoluteAltitudes)
+        return (rows, .onDevice, absoluteAltitudes, v13AuditRecords)
     }
 
     private static func readUInt16(_ b: [UInt8], _ i: Int) -> UInt16 {

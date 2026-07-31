@@ -1,0 +1,133 @@
+{
+  "source": "Surfr screenshot: WhatsApp Image 2026-07-27 at 16.49.21.jpeg",
+  "log": "log_20260727_144243_F3386A6C.kslog",
+  "sensorOnly": true,
+  "coverage": {
+    "surfrTotalJumpCount": 14,
+    "exactRowsVisible": 10,
+    "missingExactRows": [11, 12, 13, 14],
+    "note": "The screenshot shows 14 bars, but exact time/airtime/distance rows are visible only for jumps 1-10."
+  },
+  "alignment": {
+    "equation": "logElapsedSec = surfrSessionElapsedSec + offsetSec",
+    "offsetSec": -122.467,
+    "uncertaintySec": 0.8,
+    "method": "Median offset of the consecutive on-watch V15 finals paired to Surfr 4-6.",
+    "anchors": [
+      {
+        "surfrId": 4,
+        "surfrElapsedSec": 471,
+        "v15TakeoffSec": 348.356,
+        "offsetSec": -122.644
+      },
+      {
+        "surfrId": 5,
+        "surfrElapsedSec": 517,
+        "v15TakeoffSec": 395.286,
+        "offsetSec": -121.714
+      },
+      {
+        "surfrId": 6,
+        "surfrElapsedSec": 569,
+        "v15TakeoffSec": 446.533,
+        "offsetSec": -122.467
+      }
+    ],
+    "independentValidation": [
+      {
+        "surfrId": 9,
+        "expectedLogTakeoffSec": 743.533,
+        "v15CandidateTakeoffSec": 743.937,
+        "residualSec": 0.404
+      },
+      {
+        "surfrId": 10,
+        "expectedLogTakeoffSec": 1202.533,
+        "v15CandidateTakeoffSec": 1202.797,
+        "residualSec": 0.264
+      }
+    ]
+  },
+  "jumps": [
+    {
+      "id": 1,
+      "elapsedSec": 221.533,
+      "surfrSessionElapsedSec": 344,
+      "height": 2.54,
+      "airtime": 3.22,
+      "distance": 26
+    },
+    {
+      "id": 2,
+      "elapsedSec": 266.533,
+      "surfrSessionElapsedSec": 389,
+      "height": 3.08,
+      "airtime": 4.26,
+      "distance": 29
+    },
+    {
+      "id": 3,
+      "elapsedSec": 286.533,
+      "surfrSessionElapsedSec": 409,
+      "height": 2.14,
+      "airtime": 2.72,
+      "distance": 14
+    },
+    {
+      "id": 4,
+      "elapsedSec": 348.533,
+      "surfrSessionElapsedSec": 471,
+      "height": 2.73,
+      "airtime": 3.78,
+      "distance": 22
+    },
+    {
+      "id": 5,
+      "elapsedSec": 394.533,
+      "surfrSessionElapsedSec": 517,
+      "height": 3.93,
+      "airtime": 4.65,
+      "distance": 27
+    },
+    {
+      "id": 6,
+      "elapsedSec": 446.533,
+      "surfrSessionElapsedSec": 569,
+      "height": 1.84,
+      "airtime": 2.37,
+      "distance": 20
+    },
+    {
+      "id": 7,
+      "elapsedSec": 468.533,
+      "surfrSessionElapsedSec": 591,
+      "height": 1.05,
+      "airtime": 2.03,
+      "distance": 18
+    },
+    {
+      "id": 8,
+      "elapsedSec": 527.533,
+      "surfrSessionElapsedSec": 650,
+      "height": 1.42,
+      "airtime": 4.09,
+      "distance": 36
+    },
+    {
+      "id": 9,
+      "elapsedSec": 743.533,
+      "surfrSessionElapsedSec": 866,
+      "height": 1.31,
+      "airtime": 2.25,
+      "distance": 17
+    },
+    {
+      "id": 10,
+      "elapsedSec": 1202.533,
+      "surfrSessionElapsedSec": 1325,
+      "height": 2.0,
+      "airtime": 3.43,
+      "distance": 15
+    }
+  ]
+}

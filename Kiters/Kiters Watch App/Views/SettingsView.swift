@@ -15,7 +15,8 @@ struct SettingsView: View {
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("detectionMode") private var detectionModeRaw: String = DetectionMode.standard.rawValue
     @AppStorage("detectionEngine") private var detectionEngineRaw: String = DetectionEngine.v11Buffered.rawValue
-    @AppStorage(V13Settings.minRiseM) private var v13MinRiseM = 1.0
+    @AppStorage(V13Settings.minCountedHeightM) private var v13MinCountedHeightM = 1.0
+    @AppStorage(V13Settings.absoluteAltitudeSampleIntervalSec) private var v13AbsoluteAltitudeSampleIntervalSec = 0.5
     @AppStorage("hapticFeedback") private var hapticFeedback: Bool = true
     @AppStorage("metricsTopPadding") private var metricsTopPadding: Double = -1  // -1 = auto
 
@@ -29,6 +30,17 @@ struct SettingsView: View {
         case "pink":   return .pink
         default:       return .orange
         }
+    }
+
+    private func v13CountedHeightLabel(_ metres: Double) -> String {
+        if units == "imperial" {
+            return String(format: "%.1f ft", metres * 3.28084)
+        }
+        return String(format: "%.1f m", metres)
+    }
+
+    private func absoluteAltitudeIntervalLabel(_ seconds: Double) -> String {
+        String(format: seconds == 1 ? "%.0f s" : "%.2g s", seconds)
     }
     
     var body: some View {
@@ -388,7 +400,9 @@ struct SettingsView: View {
                     ZStack {
                         Color.clear
                         Picker(L("settings.engine.section"), selection: $detectionEngineRaw) {
-                            ForEach(DetectionEngine.allCases, id: \.self) { engine in
+                            // The sensor recorder is not a detection engine —
+                            // it is launched from its own Home button.
+                            ForEach(DetectionEngine.allCases.filter { $0 != .sensorRecorder }, id: \.self) { engine in
                                 HStack {
                                     Image(systemName: engine.icon)
                                         .frame(width: 16)
@@ -406,23 +420,95 @@ struct SettingsView: View {
                             .stroke(themeColor.opacity(0.3), lineWidth: 1)
                     )
 
-                    // V13 field threshold (spec: configurable 1.0 / 1.5 / 2.0 m rise)
-                    if detectionEngineRaw == DetectionEngine.v13Pure.rawValue {
+                    // Shared 1/1.5/2 m height picker. For V13 it filters the
+                    // final count only; for V14 and V15 the same value is part
+                    // of the detection formula itself (same UserDefaults key).
+                    if detectionEngineRaw == DetectionEngine.v13Pure.rawValue
+                        || detectionEngineRaw == DetectionEngine.v14Hybrid.rawValue
+                        || detectionEngineRaw == DetectionEngine.v15Clean.rawValue {
+                        VStack(alignment: .leading, spacing: 4) {
+                            ZStack {
+                                Color.clear
+                                Picker(selection: $v13MinCountedHeightM) {
+                                    ForEach(V13Settings.countedHeightOptions, id: \.self) { metres in
+                                        Text(verbatim: v13CountedHeightLabel(metres)).tag(metres)
+                                    }
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "arrow.up.to.line")
+                                            .frame(width: 16)
+                                        Text(L("settings.v13_min_counted_height"))
+                                            .font(.caption)
+                                    }
+                                }
+                                .pickerStyle(.navigationLink)
+                                .buttonStyle(.plain)
+                            }
+                            .overlay(
+                                Rectangle()
+                                    .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                            )
+
+                            Text(L("settings.v13_min_counted_height_hint"))
+                                .font(.system(size: 8))
+                                .foregroundColor(.gray)
+                                .fixedSize(horizontal: false, vertical: true)
+
+                            if detectionEngineRaw == DetectionEngine.v13Pure.rawValue {
+                                ZStack {
+                                    Color.clear
+                                    Picker(selection: $v13AbsoluteAltitudeSampleIntervalSec) {
+                                        ForEach(V13Settings.absoluteAltitudeSampleIntervalOptions, id: \.self) { seconds in
+                                            Text(verbatim: absoluteAltitudeIntervalLabel(seconds)).tag(seconds)
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "waveform.path.ecg")
+                                                .frame(width: 16)
+                                            Text(L("settings.v13_absolute_interval"))
+                                                .font(.caption)
+                                        }
+                                    }
+                                    .pickerStyle(.navigationLink)
+                                    .buttonStyle(.plain)
+                                }
+                                .overlay(
+                                    Rectangle()
+                                        .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                                )
+
+                                Text(L("settings.v13_absolute_interval_hint"))
+                                    .font(.system(size: 8))
+                                    .foregroundColor(.gray)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+
+                    if detectionEngineRaw == DetectionEngine.v12AppleSensorFusion.rawValue {
                         ZStack {
                             Color.clear
-                            Picker(selection: $v13MinRiseM) {
-                                Text(verbatim: "1.0 m").tag(1.0)
-                                Text(verbatim: "1.5 m").tag(1.5)
-                                Text(verbatim: "2.0 m").tag(2.0)
-                            } label: {
+                            NavigationLink(destination: V12DebugSettingsView()) {
                                 HStack {
-                                    Image(systemName: "arrow.up.to.line")
-                                        .frame(width: 16)
-                                    Text(L("settings.v13_min_rise"))
-                                        .font(.caption)
+                                    Image(systemName: "slider.horizontal.3")
+                                        .foregroundColor(.cyan)
+                                        .frame(width: 20)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(L("settings.v12_debug"))
+                                            .font(.caption)
+                                        Text(L("settings.v12_debug_hint"))
+                                            .font(.system(size: 8))
+                                            .foregroundColor(.gray)
+                                            .lineLimit(2)
+                                    }
+                                    Spacer()
+                                    Image(systemName: languageCode == "he" ? "chevron.left" : "chevron.right")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
                                 }
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 12)
                             }
-                            .pickerStyle(.navigationLink)
                             .buttonStyle(.plain)
                         }
                         .overlay(
@@ -430,36 +516,6 @@ struct SettingsView: View {
                                 .stroke(themeColor.opacity(0.3), lineWidth: 1)
                         )
                     }
-
-                    ZStack {
-                        Color.clear
-                        NavigationLink(destination: V12DebugSettingsView()) {
-                            HStack {
-                                Image(systemName: "slider.horizontal.3")
-                                    .foregroundColor(.cyan)
-                                    .frame(width: 20)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(L("settings.v12_debug"))
-                                        .font(.caption)
-                                    Text(L("settings.v12_debug_hint"))
-                                        .font(.system(size: 8))
-                                        .foregroundColor(.gray)
-                                        .lineLimit(2)
-                                }
-                                Spacer()
-                                Image(systemName: languageCode == "he" ? "chevron.left" : "chevron.right")
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                            }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 12)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .overlay(
-                        Rectangle()
-                            .stroke(themeColor.opacity(0.3), lineWidth: 1)
-                    )
                 }
 
                 Divider()
@@ -499,6 +555,19 @@ struct SettingsView: View {
             // Custom mode was removed from Settings — migrate any stored value to Standard.
             if detectionModeRaw == DetectionMode.custom.rawValue {
                 detectionModeRaw = DetectionMode.standard.rawValue
+            }
+            // Older/debug builds could persist arbitrary doubles although this
+            // product control has three supported choices. Snap to the nearest
+            // option so the picker and the engine always show the same value.
+            let normalizedHeight = V13Settings.normalizedCountedHeight(v13MinCountedHeightM)
+            if normalizedHeight != v13MinCountedHeightM {
+                v13MinCountedHeightM = normalizedHeight
+            }
+            let normalizedInterval = V13Settings.normalizedAbsoluteAltitudeSampleInterval(
+                v13AbsoluteAltitudeSampleIntervalSec
+            )
+            if normalizedInterval != v13AbsoluteAltitudeSampleIntervalSec {
+                v13AbsoluteAltitudeSampleIntervalSec = normalizedInterval
             }
         }
     }

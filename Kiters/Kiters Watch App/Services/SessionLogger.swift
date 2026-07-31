@@ -38,6 +38,9 @@ final class SessionLogger {
     private var statusTimer: DispatchSourceTimer?
     private var relativeBaroHzEwma: Double = 0
     private var lastRelativeBaroT: TimeInterval?
+    private let queueHealthLock = NSLock()
+    private var pendingIOOperations = 0
+    private var maximumPendingIOOperations = 0
 
     /// Buffer writes for performance — flush every N lines
     private var buffer = Data()
@@ -58,6 +61,7 @@ final class SessionLogger {
         case event = 9
         case sync = 10
         case status = 11
+        case v13Audit = 12
     }
 
     private struct BinaryLogHeader: Codable {
@@ -89,6 +93,13 @@ final class SessionLogger {
         let minAirtime: Double
         let maxAirtime: Double
         let cooldown: Double
+        // Optional so logs written before the V13 threshold split continue to
+        // decode in the on-watch viewer.
+        let v13MinCountedHeightM: Double?
+        let v13CandidateRiseM: Double?
+        let v13TakeoffWindowSec: Double?
+        let v13LandingDescentM: Double?
+        let v13AbsoluteAltitudeSampleIntervalSec: Double?
     }
 
     private struct BinaryLogDevice: Codable {
@@ -120,7 +131,11 @@ final class SessionLogger {
 
     /// Start a new log file for this session.
     /// Call once when the session starts.
-    func start(sessionId: String, mode: DetectionMode, sensorOnly: Bool, engine: DetectionEngine? = nil) {
+    func start(sessionId: String,
+               mode: DetectionMode,
+               sensorOnly: Bool,
+               engine: DetectionEngine? = nil,
+               v13Config: V13Config? = nil) {
         stop() // close any previous log
 
         ioQueue.sync {
@@ -152,6 +167,7 @@ final class SessionLogger {
             sampleIndex = 0
             relativeBaroHzEwma = 0
             lastRelativeBaroT = nil
+            resetQueueHealth()
             buffer.removeAll(keepingCapacity: true)
             isActive = true
 
@@ -161,6 +177,7 @@ final class SessionLogger {
                 mode: mode,
                 sensorOnly: sensorOnly,
                 engine: engine,
+                v13Config: v13Config,
                 t0BootUs: t0BootUs,
                 wallClockAtT0Ms: wallClockAtT0Ms
             ))
@@ -196,30 +213,37 @@ final class SessionLogger {
     /// KSLG v2 MOTION record: one per CMDeviceMotion sample, using the sensor's
     /// monotonic timestamp and preserving quaternion attitude for LOG5 replay.
     func logMotionSample(_ sample: IMUSample) {
-        let t = sample.motionTimestamp ?? monotonicTime(from: sample.timestamp)
-        let q = sample.attitudeQuaternion ?? MotionQuaternion(w: 1, x: 0, y: 0, z: 0)
-        let ax = sample.accelerationX
-        let ay = sample.accelerationY
-        let az = sample.accelerationZ
-        let rx = sample.rotationX
-        let ry = sample.rotationY
-        let rz = sample.rotationZ
+        logMotionSamples([sample])
+    }
 
-        ioQueue.async { [self] in
+    /// Enqueue one Core Motion batch instead of one dispatch block per 200 Hz
+    /// sample. Records remain byte-for-byte identical and in sensor order.
+    func logMotionSamples(_ samples: [IMUSample]) {
+        guard !samples.isEmpty else { return }
+        enqueueIO { [self] in
             guard isActive else { return }
-            sampleIndex += 1
-            buffer.append(Self.makeMotionRecord(
-                tUs: relativeMicros(forMonotonicTime: t),
-                ax: ax, ay: ay, az: az,
-                rx: rx, ry: ry, rz: rz,
-                q: q
-            ))
-            if sampleIndex % flushInterval == 0 { flush() }
+            let firstIndex = sampleIndex
+            for sample in samples {
+                let t = sample.motionTimestamp ?? monotonicTime(from: sample.timestamp)
+                let q = sample.attitudeQuaternion ?? MotionQuaternion(w: 1, x: 0, y: 0, z: 0)
+                sampleIndex += 1
+                buffer.append(Self.makeMotionRecord(
+                    tUs: relativeMicros(forMonotonicTime: t),
+                    ax: sample.accelerationX,
+                    ay: sample.accelerationY,
+                    az: sample.accelerationZ,
+                    rx: sample.rotationX,
+                    ry: sample.rotationY,
+                    rz: sample.rotationZ,
+                    q: q
+                ))
+            }
+            if firstIndex / flushInterval != sampleIndex / flushInterval { flush() }
         }
     }
 
     func logBarometer(t: TimeInterval, relativeAltitudeM: Double, pressureHPa: Double) {
-        ioQueue.async { [self] in
+        enqueueIO { [self] in
             guard isActive else { return }
             if let last = lastRelativeBaroT {
                 let dt = t - last
@@ -240,7 +264,7 @@ final class SessionLogger {
     }
 
     func logAbsoluteAltitude(t: TimeInterval, altitudeM: Double, accuracyM: Double?, precisionM: Double?) {
-        ioQueue.async { [self] in
+        enqueueIO { [self] in
             guard isActive else { return }
             sampleIndex += 1
             buffer.append(Self.makeAbsoluteAltitudeRecord(
@@ -263,7 +287,7 @@ final class SessionLogger {
         let vAcc = point.verticalAccuracy
         let altitude = point.altitude
 
-        ioQueue.async { [self] in
+        enqueueIO { [self] in
             guard isActive else { return }
             sampleIndex += 1
             buffer.append(Self.makeGPSRecord(
@@ -281,7 +305,7 @@ final class SessionLogger {
     }
 
     func logSubmersion(t: TimeInterval, kind: UInt8, value: Double) {
-        ioQueue.async { [self] in
+        enqueueIO { [self] in
             guard isActive else { return }
             sampleIndex += 1
             buffer.append(Self.makeSubmersionRecord(
@@ -296,7 +320,7 @@ final class SessionLogger {
     func logSync(label: String) {
         let t = ProcessInfo.processInfo.systemUptime
         let wallClockUnixMs = Int64((Date().timeIntervalSince1970 * 1000).rounded())
-        ioQueue.async { [self] in
+        enqueueIO { [self] in
             guard isActive else { return }
             sampleIndex += 1
             buffer.append(Self.makeSyncRecord(
@@ -318,13 +342,33 @@ final class SessionLogger {
         appendEvent(t: t, speed: speed, state: state, event: event, flushImmediately: true)
     }
 
+    /// Structured, self-describing V13 calculation record. JSON encoding and
+    /// disk work stay on the logger queue, never on Core Motion/engine queues.
+    func logV13Audit(_ record: V13AuditRecord) {
+        enqueueIO { [self] in
+            guard isActive,
+                  let payload = try? JSONEncoder().encode(record) else { return }
+            sampleIndex += 1
+            buffer.append(Self.makeV13AuditRecord(
+                tUs: relativeMicros(forMonotonicTime: record.monotonicTime),
+                payload: payload
+            ))
+            if record.kind == "schema"
+                || record.kind == "summary"
+                || record.stage == "result"
+                || sampleIndex % flushInterval == 0 {
+                flush()
+            }
+        }
+    }
+
     private func appendEvent(t: TimeInterval,
                              speed: Double,
                              state: String,
                              event: String,
                              flushImmediately: Bool) {
         guard isActive else { return }
-        ioQueue.async { [self] in
+        enqueueIO { [self] in
             guard isActive else { return }
             sampleIndex += 1
             buffer.append(Self.makeKSLG2EventRecord(
@@ -336,6 +380,36 @@ final class SessionLogger {
                 flush()
             }
         }
+    }
+
+    private func enqueueIO(_ work: @escaping () -> Void) {
+        queueHealthLock.lock()
+        pendingIOOperations += 1
+        maximumPendingIOOperations = max(maximumPendingIOOperations, pendingIOOperations)
+        queueHealthLock.unlock()
+
+        ioQueue.async { [self] in
+            work()
+            queueHealthLock.lock()
+            pendingIOOperations = max(0, pendingIOOperations - 1)
+            queueHealthLock.unlock()
+        }
+    }
+
+    private func resetQueueHealth() {
+        queueHealthLock.lock()
+        pendingIOOperations = 0
+        maximumPendingIOOperations = 0
+        queueHealthLock.unlock()
+    }
+
+    /// Current and peak dispatch backlog since the previous health snapshot.
+    func queueHealthSnapshot() -> (pending: Int, maximumPending: Int) {
+        queueHealthLock.lock()
+        let result = (pendingIOOperations, maximumPendingIOOperations)
+        maximumPendingIOOperations = pendingIOOperations
+        queueHealthLock.unlock()
+        return result
     }
 
     private func startStatusTimer() {
@@ -535,6 +609,7 @@ final class SessionLogger {
                                        mode: DetectionMode,
                                        sensorOnly: Bool,
                                        engine: DetectionEngine?,
+                                       v13Config: V13Config?,
                                        t0BootUs: UInt64,
                                        wallClockAtT0Ms: Int64) -> Data {
         let header = BinaryLogHeader(
@@ -554,7 +629,12 @@ final class SessionLogger {
                 landingG: mode.landingG,
                 minAirtime: mode.minAirtime,
                 maxAirtime: mode.maxAirtime,
-                cooldown: mode.cooldown
+                cooldown: mode.cooldown,
+                v13MinCountedHeightM: v13Config?.minCountedHeightM,
+                v13CandidateRiseM: v13Config?.candidateRiseM,
+                v13TakeoffWindowSec: v13Config?.takeoffWindowSec,
+                v13LandingDescentM: v13Config?.landingDescentM,
+                v13AbsoluteAltitudeSampleIntervalSec: v13Config?.absoluteAltitudeSampleIntervalSec
             ),
             columns: csvColumns.components(separatedBy: ","),
             t0BootUs: t0BootUs,
@@ -562,12 +642,14 @@ final class SessionLogger {
             device: currentDeviceInfo(),
             engines: BinaryLogEngines(
                 active: engine?.rawValue ?? "unknown",
-                candidates: ["v11-buffered", "v12-apple-sensor-fusion", "v13-pure"]
+                candidates: ["v11-buffered", "v12-apple-sensor-fusion", "v13-pure", "v14-hybrid", "sensor-recorder"]
             ),
             streams: BinaryLogStreams(
                 motionHz: 200,
                 rawAccHz: 0,
-                baroExpectedHz: engine == .v13Pure ? 3 : 1,
+                baroExpectedHz: engine == .v13Pure
+                    ? Int((1.0 / max(0.25, v13Config?.absoluteAltitudeSampleIntervalSec ?? 0.5)).rounded())
+                    : 1,
                 gpsHz: 1,
                 submersion: true
             ),
@@ -771,6 +853,16 @@ final class SessionLogger {
         return data
     }
 
+    private static func makeV13AuditRecord(tUs: UInt64, payload: Data) -> Data {
+        let clipped = payload.prefix(Int(UInt32.max))
+        var data = Data(capacity: 13 + clipped.count)
+        data.append(KSLG2RecordType.v13Audit.rawValue)
+        data.appendUInt64(tUs)
+        data.appendUInt32(UInt32(clamping: clipped.count))
+        data.append(clipped)
+        return data
+    }
+
     private static func milliseconds(_ t: TimeInterval) -> UInt32 {
         UInt32(clamping: max(0, Int((t * 1000).rounded())))
     }
@@ -895,7 +987,20 @@ final class SessionLogger {
         text += "landingG(g): \(String(format: "%.2f", header.parameters.landingG))\n"
         text += "minAirtime(s): \(String(format: "%.2f", header.parameters.minAirtime))\n"
         text += "maxAirtime(s): \(String(format: "%.2f", header.parameters.maxAirtime))\n"
-        text += "cooldown(s): \(String(format: "%.2f", header.parameters.cooldown))\n\n"
+        text += "cooldown(s): \(String(format: "%.2f", header.parameters.cooldown))\n"
+        if let minCountedHeightM = header.parameters.v13MinCountedHeightM {
+            text += "v13MinCountedHeight(m): \(String(format: "%.2f", minCountedHeightM))\n"
+        }
+        if let candidateRiseM = header.parameters.v13CandidateRiseM {
+            text += "v13CandidateRise(m): \(String(format: "%.2f", candidateRiseM))\n"
+        }
+        if let takeoffWindowSec = header.parameters.v13TakeoffWindowSec {
+            text += "v13TakeoffWindow(s): \(String(format: "%.2f", takeoffWindowSec))\n"
+        }
+        if let landingDescentM = header.parameters.v13LandingDescentM {
+            text += "v13LandingDescent(m): \(String(format: "%.2f", landingDescentM))\n"
+        }
+        text += "\n"
 
         if envelope.version == 2 {
             return buildKSLG2ShareText(
@@ -973,6 +1078,8 @@ final class SessionLogger {
                 line = readKSLG2SyncPreviewLine(fh)
             case KSLG2RecordType.status.rawValue:
                 line = readKSLG2StatusPreviewLine(fh)
+            case KSLG2RecordType.v13Audit.rawValue:
+                line = readKSLG2V13AuditPreviewLine(fh)
             default:
                 line = nil
             }
@@ -1043,6 +1150,30 @@ final class SessionLogger {
         return "EVENT,\(formatMicroseconds(tUs)),state=\(stateName(state)); evt=\(sanitizeCSV(event))"
     }
 
+    private static func readKSLG2V13AuditPreviewLine(_ fh: FileHandle) -> String? {
+        let body = fh.readData(ofLength: 12)
+        guard body.count == 12 else { return nil }
+        let bytes = [UInt8](body)
+        var offset = 0
+        let tUs = readUInt64(bytes, &offset)
+        let payloadLengthValue = readUInt32(bytes, &offset)
+        // The length comes from a file that can be truncated while a session
+        // is being written (or otherwise be corrupt). Never trust it as an
+        // allocation size on a memory-constrained watch.
+        guard payloadLengthValue <= 256 * 1_024 else { return nil }
+        let payloadLength = Int(payloadLengthValue)
+        let payload = fh.readData(ofLength: payloadLength)
+        guard payload.count == payloadLength,
+              let record = try? JSONDecoder().decode(V13AuditRecord.self, from: payload) else { return nil }
+
+        var summary = "seq=\(record.sequence); \(record.stage).\(record.action); decision=\(record.decision)"
+        if let candidateID = record.candidateID { summary += "; candidate=\(candidateID)" }
+        if let reason = record.reason { summary += "; reason=\(reason)" }
+        if let height = record.values["heightM"] { summary += "; height=\(String(format: "%.2f", height))m" }
+        if let airtime = record.values["airtimeSec"] { summary += "; airtime=\(String(format: "%.2f", airtime))s" }
+        return "V13_AUDIT,\(formatMicroseconds(tUs)),\(summary)"
+    }
+
     private static func readKSLG2SyncPreviewLine(_ fh: FileHandle) -> String? {
         let body = fh.readData(ofLength: 18)
         guard body.count == 18 else { return nil }
@@ -1056,8 +1187,10 @@ final class SessionLogger {
     }
 
     private static func readKSLG2StatusPreviewLine(_ fh: FileHandle) -> String? {
-        let body = fh.readData(ofLength: 14)
-        guard body.count == 14 else { return nil }
+        // STATUS is 15 bytes after the tag:
+        // tUs(8) + thermal(1) + lowPower(1) + battery(2) + source(1) + hz(2).
+        let body = fh.readData(ofLength: 15)
+        guard body.count == 15 else { return nil }
         let bytes = [UInt8](body)
         var offset = 0
         let tUs = readUInt64(bytes, &offset)

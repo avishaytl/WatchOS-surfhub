@@ -1,0 +1,7 @@
+t,message
+-1783874457.345,"28331.917:SYNC marker: three watch haptic taps; 28331.918:Absolute altitude acquisition: onDemand (stream off until a jump window opens)"
+-1783874454.449,"28334.923:v14 REJECT(candidate) reason=gpsSpeedBelowRiding spd=0.00"
+-1783874453.198,"28336.952:Motion pipeline degraded: absoluteCallbackGap"
+-1783874388.155,"28401.952:Motion pipeline degraded: absoluteCallbackGap"
+-1783874323.111,"28466.941:Motion pipeline degraded: absoluteCallbackGap"
+-1783874320.610,"28469.733:JumpDetector(v14) endSession flush lateJumps=0"

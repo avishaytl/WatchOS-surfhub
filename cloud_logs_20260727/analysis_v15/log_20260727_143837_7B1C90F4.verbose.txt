@@ -1,0 +1,162 @@
+🦘 JumpDetector(v15) reset - ready=true minRise=1.0m base=6.0s-median@yank yank=1.2g quietStd=0.45g impact=1.9g float>=0.35 floatFactor=2.6 splashGuard=3.0s absolute=continuousSingleConsumer gps=metricsOnly offline replay: watch sensor readiness skipped
+🦘 v15 CANDIDATE t0=104798.04 yank=1.22g quietAt=104798.95 B(abs)=n/a B(rel)=n/a
+  [v15    4.97s] CANDIDATE t0=104798.04 yank=1.22g quietAt=104798.95 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=1.93g air=5.84
+  [v15    9.91s] IMPACT pending=1.93g air=5.84
+🦘 v15 LANDING impact impact=2.22g air=5.92
+  [v15    9.98s] LANDING impact impact=2.22g air=5.92
+🦘 v15 REJECT reason=floatBelowMin float=0.31
+  [v15   11.49s] REJECT reason=floatBelowMin float=0.31
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.18
+  [v15   11.49s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.18
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+  [v15   14.50s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+🦘 v15 ABS frozen (cross-liveness)
+  [v15   15.56s] ABS frozen (cross-liveness)
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+  [v15   17.50s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.27
+  [v15   19.90s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.27
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.33
+  [v15   23.91s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.33
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+  [v15   37.57s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.25
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+  [v15   44.58s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.34
+  [v15   47.59s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.34
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+  [v15   52.70s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+  [v15   55.70s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.49
+  [v15   56.71s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.49
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+  [v15   60.72s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+  [v15   61.72s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.10
+  [v15   64.72s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.10
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.22
+  [v15   66.73s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.22
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+  [v15   68.73s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.13
+  [v15   70.49s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.13
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.33
+  [v15   74.50s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.33
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.31
+  [v15   76.50s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.31
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.40
+  [v15   77.51s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.40
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.24
+  [v15   78.51s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.24
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.77
+  [v15   79.51s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.77
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.95
+  [v15   82.52s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.95
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.34
+  [v15   84.52s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.34
+🦘 v15 CANDIDATE t0=104878.29 yank=1.45g quietAt=104881.51 B(abs)=n/a B(rel)=-13.66
+  [v15   87.53s] CANDIDATE t0=104878.29 yank=1.45g quietAt=104881.51 B(abs)=n/a B(rel)=-13.66
+🦘 v15 LANDING noRiseAbort-softClose impact=0.00g air=5.00
+  [v15   89.31s] LANDING noRiseAbort-softClose impact=0.00g air=5.00
+🦘 v15 REJECT reason=gateEntrySpeed vin=1.34
+  [v15   90.31s] REJECT reason=gateEntrySpeed vin=1.34
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.27
+  [v15   90.31s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.27
+🦘 v15 CANDIDATE t0=104885.46 yank=1.55g quietAt=104886.56 B(abs)=n/a B(rel)=n/a
+  [v15   92.57s] CANDIDATE t0=104885.46 yank=1.55g quietAt=104886.56 B(abs)=n/a B(rel)=n/a
+🦘 v15 IMPACT pending=2.05g air=1.14
+  [v15   92.61s] IMPACT pending=2.05g air=1.14
+🦘 v15 IMPACT discarded=2.14g — early mid-flight jolt (quiet resumed)
+  [v15   94.13s] IMPACT discarded=2.14g — early mid-flight jolt (quiet resumed)
+🦘 v15 IMPACT pending=1.90g air=20.59
+  [v15  112.07s] IMPACT pending=1.90g air=20.59
+🦘 v15 LANDING impact impact=3.34g air=21.90
+  [v15  113.37s] LANDING impact impact=3.34g air=21.90
+🦘 v15 REJECT reason=gateEntrySpeed vin=1.23
+  [v15  114.88s] REJECT reason=gateEntrySpeed vin=1.23
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+  [v15  114.88s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.21
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15  117.89s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+  [v15  120.90s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.04
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  121.90s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+  [v15  123.90s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.12
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+  [v15  126.91s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.37
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.35
+  [v15  129.92s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.35
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+  [v15  130.92s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.19
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.28
+  [v15  133.92s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.28
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+  [v15  135.93s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.16
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+  [v15  152.81s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.08
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.46
+  [v15  156.81s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.46
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.00
+  [v15  166.41s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.00
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+  [v15  167.41s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+  [v15  174.95s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+  [v15  178.96s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.09
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+  [v15  187.22s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.06
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.24
+  [v15  190.23s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.24
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.38
+  [v15  194.24s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.38
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.08
+  [v15  195.64s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.08
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.87
+  [v15  199.65s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.87
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.63
+  [v15  200.66s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.63
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.40
+  [v15  202.66s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.40
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=1.10
+  [v15  206.67s] REJECT(open) reason=gpsSpeedBelowRiding spd=1.10
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.94
+  [v15  207.67s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.94
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.41
+  [v15  210.════════════════════════════════════════════════
+File:    log_20260727_143837_7B1C90F4.kslog
+Format:  onDevice  rate=198.9 Hz  samples=53376  dur=268.3s
+Mode:    standard  mockSpeed=8.0 m/s
+Jumps:   0 (accepted=0)
+  (no jumps detected)
+════════════════════════════════════════════════
+→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/analysis_v15/log_20260727_143837_7B1C90F4.actual.json
+68s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.41
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+  [v15  211.68s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.28
+  [v15  212.68s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.28
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.17
+  [v15  214.69s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.17
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.58
+  [v15  217.69s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.58
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.01
+  [v15  236.24s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.01
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+  [v15  247.07s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.07
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+  [v15  248.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.23
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+  [v15  251.08s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.05
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+  [v15  263.79s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
+🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.15
+  [v15  266.80s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.15
+🦘 v15 SUMMARY absReceived=34 absAccepted=31 absNonMonotonicDropped=3 absWindowSize=8 relReceived=103
+  [v15  268.29s] SUMMARY absReceived=34 absAccepted=31 absNonMonotonicDropped=3 absWindowSize=8 relReceived=103
+🦘 JumpDetector(v15) endSession flush lateJumps=0

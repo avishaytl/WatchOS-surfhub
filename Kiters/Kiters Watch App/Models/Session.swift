@@ -96,6 +96,14 @@ struct Jump: Identifiable, Codable {
     var absoluteLandingAltitude: Double?
     var takeoffSpeed: Double?
     var landingSpeed: Double?
+    /// V14 relative-height layer diagnostics. Optional so older sessions and
+    /// older engines decode unchanged. `heightConfidence` can be low/zero
+    /// (heightSource == "unavailable") on a jump that is still real — see
+    /// `detectionConfidence`, which reflects the IMU signature alone.
+    var detectionConfidence: Double?
+    var heightConfidence: Double?
+    var baselineQuality: Double?
+    var heightFailureReason: String?
 
     init(sessionId: String, startTime: Date) {
         self.id = UUID().uuidString
@@ -115,6 +123,10 @@ struct Jump: Identifiable, Codable {
         self.absoluteLandingAltitude = nil
         self.takeoffSpeed = nil
         self.landingSpeed = nil
+        self.detectionConfidence = nil
+        self.heightConfidence = nil
+        self.baselineQuality = nil
+        self.heightFailureReason = nil
     }
 }
 
@@ -377,7 +389,10 @@ enum DetectionMode: String, Codable, CaseIterable {
 /// Stored in UserDefaults as "detectionEngine". Takes effect at next session start.
 enum DetectionEngine: String, Codable, CaseIterable {
     case v11Buffered = "v11-buffered"  // offline buffered engine (3–5 s delayed, fewer false positives) — current default
-    case v13Pure = "v13-pure"          // recall-first pure engine: IMU opens a candidate, classification runs after landing (≤5 s)
+    case v15Clean = "v15-clean"        // IMU-led detection (yank→quiet→impact) + continuous single-consumer absolute barometer measuring via apexFit
+    case v14Hybrid = "v14-hybrid"      // IMU+pressure detection; absolute altimeter sampled on demand per jump for the height cross-check
+    case sensorRecorder = "sensor-recorder" // no detection at all: every sensor streams continuously into the .kslog for ground-truth capture
+    case v13Pure = "v13-pure"          // altitude-first engine: rise opens a candidate, classification runs after landing (≤5 s)
     case v12AppleSensorFusion = "v12-apple-sensor-fusion" // opt-in Apple sensor-fusion engine; runtime-gated by required sensors
     case v10  // sensor-grounded kite-aware evolution (KitesurfJumpEngineV10)
     case v9   // cyclic-buffer scanner over the v8 engine (provisional→final, surfaces the accurate final)
@@ -387,6 +402,9 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .v11Buffered: return "V11 (Default)"
+        case .v15Clean: return "V15 Clean (Beta)"
+        case .v14Hybrid: return "V14 Hybrid (Beta)"
+        case .sensorRecorder: return "Sensor Recorder"
         case .v13Pure: return "V13 Pure (Beta)"
         case .v12AppleSensorFusion: return "V12 Sensor Fusion"
         case .v10: return "V10"
@@ -398,7 +416,10 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var description: String {
         switch self {
         case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
-        case .v13Pure: return "Recall-first: IMU only opens a candidate; the jump is classified after landing from buffered absolute altitude with drift-compensated baselines. Result within 5 s of touchdown; GPS never rejects."
+        case .sensorRecorder: return "Recording only: no jump detection, no formulas. Every sensor (IMU 200Hz, relative + absolute altimeter, GPS, submersion) streams continuously into the session log for offline analysis."
+        case .v15Clean: return "IMU-led second generation: a yank spike opens, flight-quiet sustains, a physical impact (or baro return-to-base) closes. The absolute barometer streams continuously for the whole session as the single consumer and measures height via a parabolic apex fit, with relative-pressure and ballistic fallbacks. No GPS or turbulence gates."
+        case .v14Hybrid: return "Hybrid: IMU unweight + pressure-baseline formula opens a jump; the absolute altimeter runs only from takeoff to a stable landing baseline and cross-checks the peak height. Works fully without GPS."
+        case .v13Pure: return "Altitude-first: absolute-altitude rise opens a candidate; the full arc is classified after landing against the pre-jump baseline. The user's minimum height filters only the final count; GPS and IMU never reject."
         case .v12AppleSensorFusion: return "Apple sensor-fusion engine using batched motion, altimeter, GPS and optional submersion data. Opt-in and gated by runtime readiness checks."
         case .v10: return "Sensor-grounded, kite-aware engine."
         case .v9: return "Cyclic-buffer scanner over the baro-centric v8 engine. Re-scans a rolling window and surfaces each jump once its accurate measurement settles."
@@ -409,6 +430,9 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var icon: String {
         switch self {
         case .v11Buffered: return "tray.full"
+        case .v15Clean: return "wind"
+        case .v14Hybrid: return "figure.surfing"
+        case .sensorRecorder: return "record.circle"
         case .v13Pure: return "square.stack.3d.up"
         case .v12AppleSensorFusion: return "waveform.path.ecg"
         case .v10: return "checkmark.seal"

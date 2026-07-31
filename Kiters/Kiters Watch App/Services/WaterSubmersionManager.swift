@@ -21,9 +21,7 @@ struct WaterSubmersionSnapshot {
     )
 }
 
-final class WaterSubmersionManager: NSObject, ObservableObject {
-    @Published private(set) var snapshot: WaterSubmersionSnapshot = .unknown
-
+final class WaterSubmersionManager: NSObject {
     var onSnapshot: ((WaterSubmersionSnapshot) -> Void)?
 
     private let lock = NSLock()
@@ -35,6 +33,8 @@ final class WaterSubmersionManager: NSObject, ObservableObject {
         defer { lock.unlock() }
         return snapshotStorage
     }
+
+    var snapshot: WaterSubmersionSnapshot { currentSnapshot }
 
     var isAvailable: Bool {
         CMWaterSubmersionManager.waterSubmersionAvailable
@@ -66,9 +66,6 @@ final class WaterSubmersionManager: NSObject, ObservableObject {
         lock.unlock()
 
         onSnapshot?(next)
-        DispatchQueue.main.async { [weak self] in
-            self?.snapshot = next
-        }
     }
 
     private func update(submerged: Bool?,

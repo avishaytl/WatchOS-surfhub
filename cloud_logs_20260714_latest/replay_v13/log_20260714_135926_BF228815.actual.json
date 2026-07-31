@@ -1,0 +1,12 @@
+{
+  "detectedRateHz" : 199.84281652717473,
+  "detectionMode" : "standard",
+  "durationSec" : 2870.165713071823,
+  "file" : "log_20260714_135926_BF228815.kslog",
+  "format" : "onDevice",
+  "jumps" : [
+
+  ],
+  "mockSpeedMps" : 8,
+  "sampleCount" : 573583
+}
