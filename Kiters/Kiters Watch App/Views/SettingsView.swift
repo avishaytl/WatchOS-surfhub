@@ -362,6 +362,36 @@ struct SettingsView: View {
                             .stroke(themeColor.opacity(0.3), lineWidth: 1)
                     )
 
+                    ZStack {
+                        Color.clear
+                        NavigationLink(destination: ReplayLabView()) {
+                            HStack {
+                                Image(systemName: "waveform.path.ecg.rectangle")
+                                    .foregroundColor(.orange)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(L("settings.replay_lab"))
+                                        .font(.caption)
+                                    Text(L("settings.replay_lab_hint"))
+                                        .font(.system(size: 8))
+                                        .foregroundColor(.gray)
+                                        .lineLimit(2)
+                                }
+                                Spacer()
+                                Image(systemName: languageCode == "he" ? "chevron.left" : "chevron.right")
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                            }
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 12)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .overlay(
+                        Rectangle()
+                            .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                    )
+
                     // Session Logs (CSV diagnostics)
                     ZStack {
                         Color.clear

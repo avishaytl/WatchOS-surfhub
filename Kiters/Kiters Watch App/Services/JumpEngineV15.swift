@@ -205,9 +205,14 @@ public struct V15Config {
     // Deliberately does NOT fire on the 28.7 real riding session (0.8% drowned,
     // abs span 165.7 m) — only on a genuinely dead sensor pair.
     public var healthWindowSec = 120.0
-    /// Relative altitude below this = water on the pressure port (~8 m per cm
-    /// of water on this hardware, so −5 m ≈ 6 mm of water).
-    public var drownedAltitudeM = -5.0
+    /// Water on the port reads as a large drop BELOW the channel's own recent
+    /// level (~8 m of apparent altitude per cm of water). Measured RELATIVE to
+    /// the health window's median, not against an absolute altitude: the
+    /// relative channel carries an arbitrary and drifting datum — on
+    /// log_20260729_145730 it sat at a median of −9.1 m and drifted ~40 m over
+    /// 37 min while the RAW pressure moved only 5.26 hPa (0.2%真 submersion).
+    /// An absolute −5 m test called 85% of that healthy session "drowned".
+    public var drownedBelowMedianM = 5.0
     /// Fraction of the health window's rel samples drowned before the backup
     /// channel counts as unusable (29.7 tests: 26–32%; 28.7 riding: 0.8%).
     public var maxDrownedFraction = 0.15
@@ -231,6 +236,34 @@ public struct V15Config {
     // All other ballistic guards (hard landing required, hard cap, trust
     // ceiling, sensor-health gate) still apply unchanged.
     public var coldStartGraceSec = 20.0
+
+    // ── GPS ride verification (2026-07-29, log_20260729_145730 vs Hoolan) ───
+    // REVERSES the "GPS is metrics-only" rule for DETECTION only (height is
+    // still computed with zero GPS input — that separation is preserved).
+    // Justification: cross-referencing 60 live jumps against Hoolan's 16 on a
+    // clean 37-min riding session (Low Power Mode off, raw pressure span only
+    // 5.26 hPa, 37% of the session above 5 m/s) aligned 11 of 13 visible
+    // Hoolan jumps to within ±2.3 s. Profiling those 11 REAL jumps against the
+    // 49 extras showed every IMU-side discriminator is dead:
+    //     takeoff yank    real 1.98 g vs extra 1.99 g
+    //     airtime         real 3.06 s vs extra 3.06 s
+    //     float fraction  real 0.51   vs extra 0.44
+    //     height          real 1.57–2.83 m vs extra 1.42–5.99 m (full overlap;
+    //                     the four HIGHEST heights of the session are extras)
+    // Raising yankOpenG to 2.2 g keeps only 4/11 real jumps; minAirtime 2.0 s
+    // loses 2 real to remove 7 extras; minRiseM 1.5 removes 1 extra out of 49.
+    // The ONLY separator with zero overlap is takeoff ground speed: real jumps
+    // 7.8–9.7 m/s, extras median 1.39 m/s. This is physical — a kite jump
+    // happens at ~30 km/h; the extras are slow/stationary ride segments the
+    // segmentation mis-cut, not random noise.
+    // Fail-open by design (this is why the old hard gate was removed): with no
+    // recent GPS fix the jump is left verified, so a dropout can never delete a
+    // real jump. Unverified jumps are NOT swallowed either (P1) — they are
+    // emitted with `gpsVerified = false` and a confidence penalty so the app can
+    // leave them out of counts and records.
+    public var gpsVerifyMinSpeedMS = 6.0
+    /// How far from takeoff a fix may be and still count as "recent".
+    public var gpsVerifyMaxAgeSec = 3.0
 
     // Emission & retrigger (spec §5).
     public var emitDelaySec = 1.0
@@ -296,6 +329,14 @@ public struct V15Jump {
     public let confidence: Double
     public let hardLanding: Bool
     public let emittedAtT: TimeInterval
+
+    /// False when a recent GPS fix existed at takeoff and showed the rider was
+    /// NOT moving at riding speed (see gpsVerifyMinSpeedMS). Such a jump is
+    /// still emitted, but should not be counted or used for session records.
+    /// True whenever no fix was available — GPS may never delete a jump.
+    public let gpsVerified: Bool
+    /// Ground speed used for that verdict, nil when no recent fix existed.
+    public let takeoffGroundSpeedMS: Double?
 }
 
 public protocol JumpEngineV15Delegate: AnyObject {
@@ -414,7 +455,7 @@ public final class JumpEngineV15 {
     /// channel hygiene filters run — a drowned or datum-stepping sample is
     /// exactly the evidence of ill health, so it must not be filtered out
     /// before it is counted.
-    private var relHealth: [(t: TimeInterval, drowned: Bool)] = []
+    private var relHealth: [TimedValue] = []
     private var absHealth: [TimedValue] = []
     /// Session time at which EITHER channel first held enough samples to lock a
     /// baseline. nil = the pressure sensors have never been usable yet.
@@ -550,7 +591,7 @@ public final class JumpEngineV15 {
         relReceivedCount += 1
         guard t.isFinite, altitudeM.isFinite, t > lastRelT else { return }
         lastRelT = t
-        relHealth.append((t: t, drowned: altitudeM <= cfg.drownedAltitudeM))
+        relHealth.append(TimedValue(t: t, v: altitudeM))
         while let f = relHealth.first, f.t < t - cfg.healthWindowSec { relHealth.removeFirst() }
         if ingestPressure(t: t, altitudeM: altitudeM, accuracyM: nil, channel: &relChannel, isAbs: false) {
             routePressureToFlight(t: t, altitudeM: altitudeM, isAbs: false)
@@ -1393,9 +1434,25 @@ public final class JumpEngineV15 {
             ballisticH = min(max(hRot, 0.6 * ballisticH), 1.8 * ballisticH)
         }
 
+        // GPS ride verification (see gpsVerifyMinSpeedMS). Computed BEFORE the
+        // height floors because the rescue path below uses it as corroboration.
+        // Detection-only: no height formula reads it. Fail-open — no recent fix
+        // means verified, so a dropout can never delete a jump.
+        // PEAK speed in the window, not the single nearest fix. Measured
+        // 2026-07-29 on log_20260729_181501: the nearest-fix reading landed
+        // mid-dip at 4.6/4.7/5.1 m/s on three jumps whose run-in actually
+        // peaked at 6.4–6.5 m/s, so real riding takeoffs were marked
+        // unverified. GPS speed at 1 Hz is noisy and dips through the takeoff
+        // itself; the run-in peak is the honest answer to "was the rider
+        // riding", and taking a max cannot invent speed that never occurred.
+        let nearbyFixes = gpsHistory.filter { abs($0.t - flight.t0) <= cfg.gpsVerifyMaxAgeSec }
+        let takeoffSpeed = nearbyFixes.map(\.spd).max()
+        let gpsVerified = takeoffSpeed.map { $0 >= cfg.gpsVerifyMinSpeedMS } ?? true
+
         let height: Double
         let source: V15HeightSource
         var confidence: Double
+        var pressureBlind = false
         if let h = apexFitH {
             height = h
             source = .apexFit
@@ -1410,17 +1467,44 @@ public final class JumpEngineV15 {
             // witness to this flight at all, and the ballistic floor collapses
             // to a near-constant ~2.6 m that reads identically for a real jump
             // and for a knock. Refuse rather than fabricate.
-            guard !bothPressureChannelsDead() else {
-                rejectDebug(emittedAt, "REJECT reason=pressureChannelsDead "
-                    + "hBal=\(fmt(ballisticH)) air=\(fmt(airtime))")
-                return nil
+            // Dead pressure pair marks the height as untrustworthy but must NOT
+            // delete the jump (P1). Measured 2026-07-29 on log_20260729_145730:
+            // as a hard reject this killed two jumps Hoolan confirms were real
+            // (H11 16:27, H16 24:39) in a session whose barometer was healthy —
+            // and its original job, suppressing the 29.7 shallow-water noise, is
+            // done strictly better by the GPS ride check (all 12 known-noise
+            // events there come back unverified, with zero real jumps lost).
+            if bothPressureChannelsDead() {
+                pressureBlind = true
+                onDebug(emittedAt, "PRESSURE-BLIND both channels unusable "
+                    + "— ballistic height is an estimate, not a measurement")
             }
+
             // Reconstructed flights need a measured pressure height; a
-            // ballistic-only reconstructed envelope is too phantom-prone.
+            // ballistic-only reconstructed envelope is too phantom-prone —
+            // UNLESS the GPS independently confirms a riding takeoff.
+            //
+            // This is the segmentation fix (2026-07-29). When a fake flight
+            // opens during smooth planing and swallows the real jump, the
+            // folded-jump rescue DOES reconstruct the correct pop→quiet→impact
+            // envelope — but its output was then discarded here for lacking a
+            // measured height, which is unobtainable whenever the baro is
+            // blind. Measured on log_20260729_145730: the four Hoolan jumps we
+            // missed (H1/H2/H4/H12) all showed a rescue producing a sane
+            // 5–6 s envelope that this guard threw away, after the parent
+            // flight had run 7.4–25.8 s. The guard's original worry was
+            // phantoms from an unmeasured reconstructed envelope; a takeoff at
+            // >= gpsVerifyMinSpeedMS is exactly the independent corroboration
+            // that worry lacked, and it is not available to a stationary
+            // phantom. Unverified rescues stay rejected.
             guard !flight.rescued else {
                 rejectDebug(emittedAt, "REJECT reason=rescueNeedsMeasuredHeight "
                     + "hBal=\(fmt(ballisticH)) air=\(fmt(airtime))")
                 return nil
+            }
+            if flight.rescued {
+                onDebug(emittedAt, "RESCUE ballistic allowed — GPS-verified riding takeoff "
+                    + "(\(fmt(takeoffSpeed ?? 0))m/s)")
             }
             // A splash-confirmed landing is the normal trust path; a
             // distinctly hard impact (well above the landing floor, not a
@@ -1483,6 +1567,21 @@ public final class JumpEngineV15 {
         // Soft landing: the baro closed the jump, not an impact (spec §4.1
         // row 3 — apexFit conf drops 0.9 → 0.75).
         if !flight.hardLanding { confidence -= 0.15 }
+        if pressureBlind { confidence *= 0.5 }
+
+        // The GPS verdict deliberately does NOT touch `confidence`. Confidence
+        // expresses how well this jump was MEASURED (height floor, landing
+        // quality, sensor health) and must stay identical with and without a
+        // GPS stream — the invariant asserted by
+        // `testV15JumpCalculationIsGPSInvariant`. Whether the takeoff happened
+        // at riding speed is an orthogonal question, carried by `gpsVerified`
+        // alone so the app can exclude such events from counts and records.
+        // (An earlier revision multiplied confidence here and broke that test:
+        // 0.9 apexFit × 0.4 = 0.36.)
+        if !gpsVerified {
+            onDebug(emittedAt, "GPS-UNVERIFIED takeoff speed="
+                + "\(fmt(takeoffSpeed ?? 0))m/s < \(fmt(cfg.gpsVerifyMinSpeedMS)) — not a riding takeoff")
+        }
         confidence = min(max(confidence, 0.05), 0.95)
 
         // The user's counted-height threshold is part of the formula.
@@ -1535,7 +1634,9 @@ public final class JumpEngineV15 {
             landingLng: coordinate(landingGPS)?.lng,
             confidence: confidence,
             hardLanding: flight.hardLanding,
-            emittedAtT: emittedAt
+            emittedAtT: emittedAt,
+            gpsVerified: gpsVerified,
+            takeoffGroundSpeedMS: takeoffSpeed.map(round2)
         )
     }
 
@@ -1560,7 +1661,12 @@ public final class JumpEngineV15 {
     /// start must not suppress a real jump).
     private func bothPressureChannelsDead() -> Bool {
         guard relHealth.count >= 8, absHealth.count >= 8 else { return false }
-        let drownedFrac = Double(relHealth.filter(\.drowned).count) / Double(relHealth.count)
+        // Drowning is a drop below the channel's OWN recent level — an absolute
+        // threshold mistakes ordinary datum drift for water (see
+        // drownedBelowMedianM).
+        let relMedian = median(relHealth.map(\.v))
+        let drowned = relHealth.filter { $0.v <= relMedian - cfg.drownedBelowMedianM }.count
+        let drownedFrac = Double(drowned) / Double(relHealth.count)
         guard drownedFrac > cfg.maxDrownedFraction else { return false }
         let vals = absHealth.map(\.v)
         guard let lo = vals.min(), let hi = vals.max() else { return false }

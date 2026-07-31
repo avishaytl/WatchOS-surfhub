@@ -253,6 +253,23 @@ final class JumpDetectorV15: JumpDetecting {
         }
     }
 
+    /// Declare that a direct absolute-altitude stream exists for this session
+    /// WITHOUT injecting a sample. Replay harnesses need this: a recorded log
+    /// carries the ZOH absolute value on every motion row from t=0, but the
+    /// first real ABSALT record arrives later (measured 2.35 s on
+    /// log_20260729_181501). Without this, a replay spends that opening window
+    /// feeding the channel through the row fallback — a path the live watch
+    /// never uses, because its direct stream starts at session start. The
+    /// resulting timestamps come from `alignedToMotionClock` instead of
+    /// `alignedAbsoluteTimestamp`, so when the direct stream takes over `t` can
+    /// step backwards and `addAbsoluteAltitude`'s monotonic guard drops samples
+    /// (measured: 8 offline vs 0 live, cascading to 61 vs 148 candidates).
+    func markDirectAbsoluteStreamAvailable() {
+        submitToEngine { [weak self] in
+            self?.hasDirectAbsoluteStream = true
+        }
+    }
+
     func processAbsoluteAltitude(sensorT: TimeInterval,
                                  receivedT: TimeInterval,
                                  altitudeM: Double,
@@ -422,6 +439,8 @@ final class JumpDetectorV15: JumpDetecting {
         jump.absoluteLandingAltitude = result.baseAbsM
         jump.takeoffSpeed = result.takeoffSpeedMS
         jump.landingSpeed = result.landingSpeedMS
+        jump.gpsVerified = result.gpsVerified
+        jump.takeoffGroundSpeed = result.takeoffGroundSpeedMS
         return jump
     }
 
@@ -455,6 +474,8 @@ extension JumpDetectorV15: JumpEngineV15Delegate {
                 + "hBal=\(result.heightBallisticM) arcPts=\(result.arcPointCount) "
                 + "yank=\(result.yankG)g impact=\(result.landingImpactG)g float=\(result.floatFraction) "
                 + "rot=\(result.rotationTurns) hard=\(result.hardLanding) conf=\(jump.confidence) "
+                + "gpsVerified=\(result.gpsVerified) "
+                + "toSpd=\(result.takeoffGroundSpeedMS.map { String(format: "%.1f", $0) } ?? "n/a") "
                 + "latency=\(String(format: "%.1f", result.emittedAtT - result.landingT))s",
             state: "JUMP",
             speed: result.takeoffSpeedMS ?? latestSpeed()

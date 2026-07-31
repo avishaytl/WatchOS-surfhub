@@ -258,6 +258,14 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
 
             detector.reset(mode: opts.mode)
 
+            // A log that contains ABSALT records was captured with a live direct
+            // absolute-altitude stream. Say so up-front, so the opening seconds
+            // are not fed through the ZOH row fallback that the watch never uses
+            // (see markDirectAbsoluteStreamAvailable).
+            if !log.absoluteAltitudes.isEmpty, let v15 = detector as? JumpDetectorV15 {
+                v15.markDirectAbsoluteStreamAvailable()
+            }
+
             // Prefer the on-device CSV speed column when present. Falling back to
             // MockGPS keeps older synthetic logs usable.
             let hasLogSpeeds = !opts.noGPS && log.speeds.contains { ($0 ?? 0) > 0 }

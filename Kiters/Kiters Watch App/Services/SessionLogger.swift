@@ -87,6 +87,11 @@ final class SessionLogger {
     }
 
     private struct BinaryLogParameters: Codable {
+        // LEGACY (v7 DetectionMode) — metadata only. V13/V14/V15 never read
+        // these: their adapters ignore the `mode` argument and build their own
+        // config from settings. Recorded for backward compatibility with the
+        // on-watch viewer and older tooling; do NOT explain a V15 log's
+        // behaviour with takeoffG/landingG/minAirtime — see the v15* fields.
         let minSpeed: Double
         let takeoffG: Double
         let landingG: Double
@@ -100,6 +105,20 @@ final class SessionLogger {
         let v13TakeoffWindowSec: Double?
         let v13LandingDescentM: Double?
         let v13AbsoluteAltitudeSampleIntervalSec: Double?
+        // The thresholds V15 actually runs on. Optional so older logs decode
+        // unchanged, and nil whenever the active engine is not V15.
+        let v15MinRiseM: Double?
+        let v15YankOpenG: Double?
+        let v15QuietStdG: Double?
+        let v15ImpactG: Double?
+        let v15FloatFactor: Double?
+        let v15MinFloatFraction: Double?
+        let v15SplashGuardSec: Double?
+        let v15MaxFlightSec: Double?
+        let v15MinAirtimeSec: Double?
+        let v15AirtimeTaperStartSec: Double?
+        let v15GpsVerifyMinSpeedMS: Double?
+        let v15ColdStartGraceSec: Double?
     }
 
     private struct BinaryLogDevice: Codable {
@@ -135,7 +154,8 @@ final class SessionLogger {
                mode: DetectionMode,
                sensorOnly: Bool,
                engine: DetectionEngine? = nil,
-               v13Config: V13Config? = nil) {
+               v13Config: V13Config? = nil,
+               v15Config: V15Config? = nil) {
         stop() // close any previous log
 
         ioQueue.sync {
@@ -178,6 +198,7 @@ final class SessionLogger {
                 sensorOnly: sensorOnly,
                 engine: engine,
                 v13Config: v13Config,
+                v15Config: v15Config,
                 t0BootUs: t0BootUs,
                 wallClockAtT0Ms: wallClockAtT0Ms
             ))
@@ -610,6 +631,7 @@ final class SessionLogger {
                                        sensorOnly: Bool,
                                        engine: DetectionEngine?,
                                        v13Config: V13Config?,
+                                       v15Config: V15Config?,
                                        t0BootUs: UInt64,
                                        wallClockAtT0Ms: Int64) -> Data {
         let header = BinaryLogHeader(
@@ -634,7 +656,19 @@ final class SessionLogger {
                 v13CandidateRiseM: v13Config?.candidateRiseM,
                 v13TakeoffWindowSec: v13Config?.takeoffWindowSec,
                 v13LandingDescentM: v13Config?.landingDescentM,
-                v13AbsoluteAltitudeSampleIntervalSec: v13Config?.absoluteAltitudeSampleIntervalSec
+                v13AbsoluteAltitudeSampleIntervalSec: v13Config?.absoluteAltitudeSampleIntervalSec,
+                v15MinRiseM: v15Config?.minRiseM,
+                v15YankOpenG: v15Config?.yankOpenG,
+                v15QuietStdG: v15Config?.quietStdG,
+                v15ImpactG: v15Config?.impactG,
+                v15FloatFactor: v15Config?.floatFactor,
+                v15MinFloatFraction: v15Config?.minFloatFraction,
+                v15SplashGuardSec: v15Config?.splashGuardSec,
+                v15MaxFlightSec: v15Config?.maxFlightSec,
+                v15MinAirtimeSec: v15Config?.minAirtimeSec,
+                v15AirtimeTaperStartSec: v15Config?.airtimeTaperStartSec,
+                v15GpsVerifyMinSpeedMS: v15Config?.gpsVerifyMinSpeedMS,
+                v15ColdStartGraceSec: v15Config?.coldStartGraceSec
             ),
             columns: csvColumns.components(separatedBy: ","),
             t0BootUs: t0BootUs,
@@ -982,6 +1016,10 @@ final class SessionLogger {
         }
         text += "sensorOnly: \(header.sensorOnly ?? true)\n"
         text += "sampleRate: \(header.sampleRateHz) Hz\n"
+        // Legacy v7 DetectionMode block — only meaningful for the v7/v8 engines.
+        // V13/V14/V15 ignore it entirely, so labelling avoids misreading a log.
+        let legacyOnly = (header.engineVersion.map { $0.hasPrefix("v1") } ?? false)
+        text += legacyOnly ? "-- legacy v7 params (NOT used by this engine) --\n" : ""
         text += "minSpeed(m/s): \(String(format: "%.2f", header.parameters.minSpeed))\n"
         text += "takeoffG(g): \(String(format: "%.2f", header.parameters.takeoffG))\n"
         text += "landingG(g): \(String(format: "%.2f", header.parameters.landingG))\n"
@@ -999,6 +1037,40 @@ final class SessionLogger {
         }
         if let landingDescentM = header.parameters.v13LandingDescentM {
             text += "v13LandingDescent(m): \(String(format: "%.2f", landingDescentM))\n"
+        }
+        if let v = header.parameters.v15MinRiseM {
+            text += "-- V15 thresholds actually in force --\n"
+            text += "v15MinRise(m): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15YankOpenG {
+            text += "v15YankOpen(g): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15QuietStdG {
+            text += "v15QuietStd(g): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15ImpactG {
+            text += "v15Impact(g): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15FloatFactor {
+            text += "v15FloatFactor: \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15MinFloatFraction {
+            text += "v15MinFloatFraction: \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15MinAirtimeSec {
+            text += "v15MinAirtime(s): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15MaxFlightSec {
+            text += "v15MaxFlight(s): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15AirtimeTaperStartSec {
+            text += "v15AirtimeTaperStart(s): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15GpsVerifyMinSpeedMS {
+            text += "v15GpsVerifyMinSpeed(m/s): \(String(format: "%.2f", v))\n"
+        }
+        if let v = header.parameters.v15ColdStartGraceSec {
+            text += "v15ColdStartGrace(s): \(String(format: "%.2f", v))\n"
         }
         text += "\n"
 

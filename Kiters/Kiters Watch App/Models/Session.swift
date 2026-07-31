@@ -104,6 +104,14 @@ struct Jump: Identifiable, Codable {
     var heightConfidence: Double?
     var baselineQuality: Double?
     var heightFailureReason: String?
+    /// V15 GPS ride verification. `false` means a recent GPS fix showed the
+    /// rider was NOT moving at riding speed at takeoff — the event is real
+    /// enough to keep but must not be counted or used for session records.
+    /// `nil` on older sessions and engines that do not report it; `true` also
+    /// when no fix was available (GPS may never delete a jump).
+    var gpsVerified: Bool?
+    /// Ground speed (m/s) behind that verdict, nil when no recent fix existed.
+    var takeoffGroundSpeed: Double?
 
     init(sessionId: String, startTime: Date) {
         self.id = UUID().uuidString
@@ -127,6 +135,8 @@ struct Jump: Identifiable, Codable {
         self.heightConfidence = nil
         self.baselineQuality = nil
         self.heightFailureReason = nil
+        self.gpsVerified = nil
+        self.takeoffGroundSpeed = nil
     }
 }
 
@@ -140,6 +150,24 @@ struct GPSPoint: Codable {
     let course: Double
     let horizontalAccuracy: Double
     let verticalAccuracy: Double
+
+    init(timestamp: Date,
+         latitude: Double,
+         longitude: Double,
+         altitude: Double,
+         speed: Double,
+         course: Double,
+         horizontalAccuracy: Double,
+         verticalAccuracy: Double) {
+        self.timestamp = timestamp
+        self.latitude = latitude
+        self.longitude = longitude
+        self.altitude = altitude
+        self.speed = max(0, speed)
+        self.course = course
+        self.horizontalAccuracy = horizontalAccuracy
+        self.verticalAccuracy = verticalAccuracy
+    }
     
     init(from location: CLLocation) {
         self.timestamp = location.timestamp

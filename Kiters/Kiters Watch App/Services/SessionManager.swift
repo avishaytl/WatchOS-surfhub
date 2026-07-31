@@ -78,6 +78,11 @@ class SessionManager: ObservableObject {
     private let waterSubmersionManager = WaterSubmersionManager()
     private let workoutManager = WorkoutManager()
     private let storageManager = StorageManager()
+    private lazy var sensorProvider = LiveSensorProvider(
+        motionManager: motionManager,
+        locationManager: locationManager,
+        waterSubmersionManager: waterSubmersionManager
+    )
     /// Selected at each session start based on the "detectionEngine" setting.
     private var jumpDetector: JumpDetecting = JumpDetector()
     private let sessionLogger = SessionLogger.shared
@@ -220,48 +225,8 @@ class SessionManager: ObservableObject {
     // MARK: - Setup
     
     private func setupCallbacks() {
-        // Location updates
-        locationManager.onLocationUpdate = { [weak self] gpsPoint in
-            self?.handleGPSPoint(gpsPoint)
-        }
-        
-        locationManager.onLocationBatch = { [weak self] batch in
-            self?.handleGPSBatch(batch)
-        }
-        
-        // Motion updates
-        motionManager.onIMUSample = { [weak self] sample in
-            self?.handleIMUSample(sample)
-        }
-        
-        motionManager.onIMUBatch = { [weak self] batch in
-            self?.handleIMUBatch(batch)
-        }
-
-        motionManager.onAbsoluteAltitude = { [weak self] sensorT, receivedT, altitudeM, accuracyM, precisionM in
-            self?.handleAbsoluteAltitude(
-                sensorT: sensorT,
-                receivedT: receivedT,
-                altitudeM: altitudeM,
-                accuracyM: accuracyM,
-                precisionM: precisionM
-            )
-        }
-
-        motionManager.onAbsoluteAltitudeStreamRestart = { [weak self] reason in
-            self?.jumpDetector.absoluteAltitudeStreamDidRestart(reason: reason)
-        }
-
-        motionManager.onIMUStreamRecovery = { [weak self] reason in
-            self?.sessionLogger.logEvent("IMU stream recovery: \(reason)")
-        }
-
-        motionManager.onPipelineHealth = { [weak self] health in
-            self?.handleMotionPipelineHealth(health)
-        }
-
-        waterSubmersionManager.onSnapshot = { [weak self] snapshot in
-            self?.motionManager.updateSubmersion(snapshot)
+        sensorProvider.onEvent = { [weak self] event in
+            self?.handleSensorProviderEvent(event)
         }
         
         // Jump detection callbacks (re-wired whenever the detector is swapped).
@@ -286,9 +251,9 @@ class SessionManager: ObservableObject {
         if let v14 = jumpDetector as? JumpDetectorV14 {
             v14.onAbsoluteAltitudeWindowChange = { [weak self] open, reason in
                 if open {
-                    self?.motionManager.beginAbsoluteAltitudeWindow(reason: reason)
+                    self?.sensorProvider.beginAbsoluteAltitudeWindow(reason: reason)
                 } else {
-                    self?.motionManager.endAbsoluteAltitudeWindow(reason: reason)
+                    self?.sensorProvider.endAbsoluteAltitudeWindow(reason: reason)
                 }
             }
         }
@@ -358,7 +323,7 @@ class SessionManager: ObservableObject {
                 guard let self = self else { return }
                 guard active, self.isRecording, !self.isPaused else { return }
                 if self.motionPipelineStarted {
-                    self.motionManager.upgradeToBatchedIfAvailable()
+                    self.sensorProvider.upgradeMotionToBatchedIfAvailable()
                 } else {
                     self.startMotionPipelineIfNeeded(preferBatched: true, reason: "workout-running")
                 }
@@ -382,13 +347,13 @@ class SessionManager: ObservableObject {
     /// No-op when not authorized or when a session is already recording.
     func prewarmGPS() {
         guard !isRecording else { return }
-        locationManager.prewarm()
+        sensorProvider.prewarmLocation()
     }
 
     /// Stop the Home-screen GPS warm-up (e.g. when backgrounded). Never affects
     /// an active session — the LocationManager guards on session ownership.
     func stopGPSPrewarm() {
-        locationManager.stopPrewarm()
+        sensorProvider.stopLocationPrewarm()
         // If no session is running, reset the transient signal indicator.
         if !isRecording {
             isGPSActive = false
@@ -486,7 +451,7 @@ class SessionManager: ObservableObject {
         workoutManager.startWorkout(sport: sport)
 
         print("📍 Starting location tracking...")
-        locationManager.startTracking()
+        sensorProvider.start()
 
         if activeDetectionEngine == .v12AppleSensorFusion || activeDetectionEngine == .v13Pure
             || activeDetectionEngine == .v14Hybrid || activeDetectionEngine == .v15Clean
@@ -568,7 +533,7 @@ class SessionManager: ObservableObject {
         } else {
             absoluteMode = .continuous
         }
-        motionManager.setAbsoluteAcquisitionMode(absoluteMode)
+        sensorProvider.setAbsoluteAcquisitionMode(absoluteMode)
 
         // V15-FIX §3 F5: bypass the shared V13 throttle setting for V15 —
         // it's calibrated for the barometer's native ~3 Hz cadence, and the
@@ -582,8 +547,7 @@ class SessionManager: ObservableObject {
         let absoluteIntervalOverride: Double? = (jumpDetector is JumpDetectorV15
             || jumpDetector is JumpDetectorV14) ? 0.0 : nil
 
-        waterSubmersionManager.start()
-        motionManager.startTracking(
+        sensorProvider.startMotion(
             preferBatched: preferBatched,
             absoluteProcessingIntervalOverrideSec: absoluteIntervalOverride
         )
@@ -612,9 +576,7 @@ class SessionManager: ObservableObject {
         guard currentSession != nil, !isPaused else { return }
         
         // Pause all services
-        locationManager.pauseTracking()
-        motionManager.pauseTracking()
-        waterSubmersionManager.stop()
+        sensorProvider.pause()
         motionPipelineStarted = false
         workoutManager.pauseWorkout()
         
@@ -639,7 +601,7 @@ class SessionManager: ObservableObject {
         guard currentSession != nil, isPaused else { return }
         
         // Resume all services
-        locationManager.resumeTracking()
+        sensorProvider.resumeLocation()
         workoutManager.resumeWorkout()
         if workoutManager.isActive {
             startMotionPipelineIfNeeded(preferBatched: true, reason: "resume-workout-running")
@@ -681,9 +643,7 @@ class SessionManager: ObservableObject {
         finishLiveSessionOnServer(session: session, showPendingPrompt: session.duration >= 60)
 
         // Stop all services
-        locationManager.stopTracking()
-        motionManager.stopTracking()
-        waterSubmersionManager.stop()
+        sensorProvider.stop()
         motionPipelineStarted = false
 
         // Queue the summary only after sensor acquisition has stopped and after
@@ -890,6 +850,43 @@ class SessionManager: ObservableObject {
     }
     
     // MARK: - Data Handling
+
+    private func handleSensorProviderEvent(_ event: SensorProviderEvent) {
+        switch event {
+        case .motion(let sample):
+            handleIMUSample(sample)
+        case .motionBatch(let batch):
+            handleIMUBatch(batch)
+        case .barometer:
+            // Relative altitude and pressure are carried, with their original
+            // timestamp, by the following IMU sample just as before.
+            break
+        case .absoluteAltitude(let reading):
+            handleAbsoluteAltitude(
+                sensorT: reading.sensorT,
+                receivedT: reading.receivedT,
+                altitudeM: reading.altitudeM,
+                accuracyM: reading.accuracyM,
+                precisionM: reading.precisionM
+            )
+        case .gps(let point):
+            handleGPSPoint(point)
+        case .gpsBatch(let batch):
+            handleGPSBatch(batch)
+        case .submersion:
+            // LiveSensorProvider has already placed this snapshot on the
+            // MotionManager ZOH channel used by the next motion event.
+            break
+        case .absoluteAltitudeStreamRestart(let reason):
+            jumpDetector.absoluteAltitudeStreamDidRestart(reason: reason)
+        case .imuStreamRecovery(let reason):
+            sessionLogger.logEvent("IMU stream recovery: \(reason)")
+        case .pipelineHealth(let health):
+            handleMotionPipelineHealth(health)
+        case .diagnostic(_, let message):
+            sessionLogger.logEvent("Sensor provider: \(message)")
+        }
+    }
     
     private func handleGPSPoint(_ point: GPSPoint) {
         latestLiveGPSPoint = point
@@ -1143,13 +1140,29 @@ class SessionManager: ObservableObject {
         recordingPipelineStarted = true
         let mode = detectionMode
         let v13Config = (jumpDetector as? JumpDetectorV13)?.effectiveConfiguration
+        let v15Config = (jumpDetector as? JumpDetectorV15)?.effectiveConfiguration
         sessionLogger.start(
             sessionId: session.id,
             mode: mode,
             sensorOnly: true,
             engine: activeDetectionEngine,
-            v13Config: v13Config
+            v13Config: v13Config,
+            v15Config: v15Config
         )
+        if let config = v15Config {
+            // The legacy `parameters` block in the header carries v7
+            // DetectionMode values that V15 never reads — log the real
+            // thresholds so a session can be explained from its own log.
+            sessionLogger.logEvent(
+                "V15 config minRise=\(config.minRiseM)m yankOpen=\(config.yankOpenG)g "
+                    + "quietStd=\(config.quietStdG)g impact=\(config.impactG)g "
+                    + "floatFactor=\(config.floatFactor) minFloat=\(config.minFloatFraction) "
+                    + "minAirtime=\(config.minAirtimeSec)s maxFlight=\(config.maxFlightSec)s "
+                    + "taperStart=\(config.airtimeTaperStartSec)s "
+                    + "gpsVerifyMinSpeed=\(config.gpsVerifyMinSpeedMS)m/s "
+                    + "coldStartGrace=\(config.coldStartGraceSec)s"
+            )
+        }
         if let config = v13Config {
             V13CalculationLogService.shared.attachSink { record in
                 SessionLogger.shared.logV13Audit(record)
