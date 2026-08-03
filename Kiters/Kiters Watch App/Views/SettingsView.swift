@@ -14,7 +14,7 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: String = "orange"
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("detectionMode") private var detectionModeRaw: String = DetectionMode.standard.rawValue
-    @AppStorage("detectionEngine") private var detectionEngineRaw: String = DetectionEngine.v11Buffered.rawValue
+    @AppStorage("detectionEngine") private var detectionEngineRaw: String = DetectionEngine.v16BigAir.rawValue
     @AppStorage(V13Settings.minCountedHeightM) private var v13MinCountedHeightM = 1.0
     @AppStorage(V13Settings.absoluteAltitudeSampleIntervalSec) private var v13AbsoluteAltitudeSampleIntervalSec = 0.5
     @AppStorage("hapticFeedback") private var hapticFeedback: Bool = true

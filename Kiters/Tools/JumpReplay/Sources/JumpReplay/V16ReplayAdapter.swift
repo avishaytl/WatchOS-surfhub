@@ -77,10 +77,16 @@ final class JumpDetectorV16: JumpDetecting, JumpEngineV16Delegate {
     }
 
     func jumpDetected(_ result: V16Jump) {
+        // Unresolved airtime is encoded as 0 / endTime == startTime, exactly as
+        // JumpDetectorV16.makeJump does on the watch — replay must not invent a
+        // landing the engine never found. `airtimeConfidence` below carries
+        // "unresolved" and is the field to branch on.
+        let airtime = result.airtimeSec ?? 0
         var jump = Jump(sessionId: sessionId, startTime: date(for: result.takeoffT))
-        jump.endTime = date(for: result.takeoffT + (result.airtimeSec ?? configuration.apexPostSec))
+        jump.endTime = date(for: result.takeoffT + airtime)
         jump.height = result.heightM
-        jump.airtime = result.airtimeSec ?? 0
+        jump.airtime = airtime
+        jump.apexTime = result.airtimeSec.map { $0 / 2 }
         jump.jumpDistance = result.distanceM ?? 0
         jump.confidence = result.confidence * 100
         jump.heightSource = "v16-imu-matched-filter"

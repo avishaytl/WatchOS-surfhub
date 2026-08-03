@@ -133,10 +133,10 @@
 "settings.v13_min_counted_height_hint" = "Final count only · detection remains fully sensitive · applies next session";
 "settings.v13_absolute_interval" = "Absolute Sample Interval";
 "settings.v13_absolute_interval_hint" = "0.25–1.0 s processing cadence · Core Motion may deliver the sensor more slowly · applies next session";
-"settings.v16_details" = "V16 Engine Details";
+"settings.v16_details" = "V16.1 Engine Details";
 "settings.v16_details_hint" = "Fixed big-air calibration · sensors, gates and confidence";
-"settings.v16_title" = "V16 Big Air";
-"settings.v16_scope" = "A fully isolated big-air engine, validated for roughly 2.3–8.5 m jumps. V15 remains available for smaller jumps.";
+"settings.v16_title" = "V16.1 Big Air";
+"settings.v16_scope" = "A fully isolated big-air engine, calibrated over 1.26–8.5 m across three sessions. Below about 2.5 m the height is a population estimate, not a measurement. Switching to V15 down there was tested and made it worse, not better.";
 "settings.v16_trigger" = "Pop trigger";
 "settings.v16_lift_shelf" = "Lift shelf";
 "settings.v16_height_window" = "Fixed height window";
@@ -145,7 +145,7 @@
 "settings.v16_sensor_attitude" = "Attitude quaternion is mandatory";
 "settings.v16_sensor_gps" = "GPS is metrics-only, never a gate";
 "settings.v16_sensor_no_baro" = "Barometer is intentionally ignored";
-"settings.v16_airtime_warning" = "Airtime and distance are low-confidence estimates and never decide whether a jump is accepted.";
+"settings.v16_airtime_warning" = "Airtime and distance are low-confidence estimates and never decide whether a jump is accepted. Airtime shows — when the landing was not resolved; that means not measured, not a short flight.";
 "settings.v12_disable_speed_gate" = "Test: V12 no speed gate";
 "settings.v12_debug" = "V12 Debug Lab";
 "settings.v12_debug_hint" = "Tune or bypass only V12 gates";
@@ -261,6 +261,9 @@
 "replay.differs" = "Changed";
 "replay.save_baseline" = "Save regression baseline";
 "replay.telemetry_file" = "Telemetry: %@";
+"replay.offline_local" = "Local offline replay · original sensor timing";
+"logs.run_in_lab" = "Run in Replay Lab";
+"logs.replay_legacy_unavailable" = "Legacy CSV logs do not contain all sensor channels required by the lab.";
 "common.yes" = "Yes";
 "common.no" = "No";
 "logs.title" = "Session Logs";

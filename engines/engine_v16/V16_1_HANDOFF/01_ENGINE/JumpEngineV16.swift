@@ -17,9 +17,9 @@
 //      rider up for a full second or more and world-vertical acceleration
 //      stays positive in a sustained shelf. A wave or chop bump is an impulse
 //      that is over within 0.6 s. Measured: real jumps 0.9–2.8 s of shelf,
-//      control session max 0.6 s across 19 pops. At the shipped 1.25 m/s² /
-//      0.8 s operating point this one test keeps 19/23 real jumps and admits
-//      0/19 control pops — the phantom firewall, no GPS needed.
+//      control session max 0.6 s across 19 pops. At the 0.9 s threshold this
+//      one test keeps 14/14 real jumps and admits 0/19 control pops — the
+//      phantom firewall, no GPS needed.
 //
 //   3. HEIGHT — bounded double integration of world-vertical acceleration over
 //      a FIXED window around the pop, with z(0)=z(T)=0. The apex is then a
@@ -29,49 +29,35 @@
 //      operator and the correlation collapses to r~0; with the fixed window
 //      it is r=0.95. This is a matched filter, not a
 //      trajectory reconstruction, and its output is mapped to metres by a
-//      linear calibration. Validated: MAE 0.43 m over all 23 goldens from
-//      three sessions spanning 1.26–8.5 m (LOO 0.47 m), against 2.07 m for a
-//      constant predictor.
+//      linear calibration. Validated: MAE 0.52 m over all 14 goldens spanning
+//      2.1–8.5 m (LOO 0.57 m on the 12-jump subset it was fitted on); adding
+//      the two largest goldens did not move the slope.
 //
-//   4. AIRTIME — measured from where the water ARRESTS the descent (see
-//      `landing`). 14/14 of the log-287 references resolved, 0.34 s
-//      leave-one-out MAE against 0.75 s for a constant predictor. Still LOW
-//      CONFIDENCE — one session, one rider — so never gate on `airtimeSec`.
-//      It is nil when the descent was never arrested; that is a statement of
-//      "not measured", NOT a short flight. See the note on the sentinel in
-//      JumpDetectorV16.makeJump.
+//   4. AIRTIME — LOW CONFIDENCE. The landing rule tracks shelf -> dip ->
+//      sustained float, but its measured MAE is 0.54 s while a constant
+//      predictor scores 0.78 s, so it barely beats a constant. Never gate on
+//      `airtimeSec`; show it with a caveat or not at all.
 //
 //   5. DISTANCE — derived, so it INHERITS the airtime error: haversine between
-//      the GPS fix before the pop and the one at the estimated landing.
-//      Measured 4.94 m MAE against 7.87 m for a constant predictor, and it
-//      still carries a systematic +5 m bias — open for the next version.
-//      takeoffSpeedMS by contrast is read straight from GPS before the pop;
-//      it carries its own −1.3 mph bias because it is sampled at t0−1.0 s
-//      while the rider is still accelerating into the jump.
+//      the GPS fix before the pop and the one at the estimated landing. With
+//      the true airtime it measures 2.78 m MAE; with V16's own airtime, 6.27 m
+//      (0.54 s x ~8 m/s). takeoffSpeedMS by contrast is read straight from GPS
+//      before the pop and is accurate to 0.64 m/s.
 //
 //  NOT used, and why (measured, not assumed):
 //   • absoluteAltitude — passes a health gate on only 7/21 goldens and, even
 //     when it passes, produced −6.4 m and −2.1 m errors (a negative apex for a
 //     real jump = water over the port). Nothing available predicts when it is
-//     trustworthy, so fusing it injects metre-scale error into a 0.43 m
+//     trustworthy, so fusing it injects metre-scale error into a 0.57 m
 //     estimator.
 //   • relativeAltitude / raw pressure — alive (71 % distinct, max 5 s freeze)
 //     but useless per jump: 67 of the 68 inter-sample steps above 3 m fall
 //     OUTSIDE any jump. Noise exceeds signal in the same band, so no filter or
 //     drift reset recovers it (measured r = 0.19–0.31).
 //
-//  SCOPE: V16 is tuned for big air. Below ~2.5 m the height it reports is a
-//  POPULATION ESTIMATE, not a measurement — 49 apex windows, 6 smoothing
-//  widths, 6 alternative features and both barometer channels were swept and
-//  none beats a constant predictor there. That is an information limit, not a
-//  calibration gap.
-//
-//  DO NOT hand the low band back to V15. It was tried and measured: swapping
-//  V15 in below 2.5 m makes the small-jump MAE WORSE, 0.36 -> 0.47 m, because
-//  V15's barometric paths never fire there and everything falls through to its
-//  ballistic estimate, which is a near-constant by construction. 16.1's
-//  combined calibration is better in BOTH regimes than the big-air-only fit
-//  it replaced.
+//  SCOPE: V16 is tuned for big air. On small-jump sessions (1.3–2.5 m) its
+//  recall is low by design; keep JumpEngineV15 for those until a combined
+//  operating point is validated.
 //
 //
 //  ── V16.1 ───────────────────────────────────────────────────────────────
@@ -209,10 +195,8 @@ public struct V16Config {
     /// — 0.9-3.9 s after every observed landing, with airtime and distance
     /// already resolved, so the emission is complete rather than provisional.
     public var immediateReportM = 2.5
-    /// The LATEST a candidate may be judged (s) — long enough to cover the
-    /// shelf scan and the landing search in the worst case. Measured on the
-    /// reference logs: longest shelf 2.8 s, latest landing 6.6 s, widest gap a
-    /// MERGE had to bridge 6.4 s.
+    /// A candidate is judged this long after its pop — covers the shelf scan
+    /// and the landing search.
     public var evalDelaySec: TimeInterval = 7.5
 
     /// The EARLIEST a candidate may be judged (s).
@@ -407,13 +391,9 @@ public final class JumpEngineV16 {
 
     /// Session end: judge everything still pending and release the held jump.
     public func flush(now: TimeInterval) {
-        // `pending` stays populated across the loop, exactly as in the TS twin:
-        // holdUntil() scans it for rivals, so clearing it first would make the
-        // two engines compute different hold deadlines. The deadlines cannot
-        // change the OUTPUT here — releaseHeld(.infinity) below ignores them —
-        // but the twins are compared on their debug streams too.
-        for c in pending { evaluate(c, now: now) }
+        let rest = pending
         pending.removeAll(keepingCapacity: true)
+        for c in rest { evaluate(c, now: now) }
         releaseHeld(now: .infinity)
     }
 
@@ -446,22 +426,6 @@ public final class JumpEngineV16 {
         guard shelf >= cfg.minLiftPlateauSec else {
             // the shelf only ever ACCUMULATES, so it may still qualify later
             if !forced { return false }
-            // DIAGNOSTICS ONLY — no verdict depends on this branch.
-            //
-            // A log with no attitude at all makes every bin NaN, so the shelf
-            // measures exactly 0.00 s and the rejection is indistinguishable
-            // from real chop. That is how a whole session of `noLiftPlateau
-            // shelf=0.00s` reads as "the gate is working" when in fact the
-            // engine never had a vertical channel to look at. `noAttitude`
-            // above only fires when the window itself is too short.
-            //
-            // NOTE for whoever syncs the TS twin: this reason text is Swift-only
-            // for now. The verdict, and therefore every emitted jump, is
-            // identical — the twin prints noLiftPlateau for this same case.
-            if bins.finiteCount == 0 {
-                onDebug(now, "REJECT t0=\(fmt(t0)) reason=noAttitudeInWindow yank=\(fmt(c.yankG))g")
-                return true
-            }
             onDebug(now, "REJECT t0=\(fmt(t0)) reason=noLiftPlateau shelf=\(fmt(shelf))s yank=\(fmt(c.yankG))g")
             return true
         }
@@ -537,8 +501,7 @@ public final class JumpEngineV16 {
             }
             lastEmit = (t0, heightM)
             delegate?.jumpDetected(jump)
-            onDebug(now, "JUMP t0=\(fmt(t0)) h=\(fmt(heightM))m IMMEDIATE shelf=\(fmt(shelf))s "
-                + "air=\(landingT.map { fmt($0 - t0) } ?? "n/a")s")
+            onDebug(now, "JUMP t0=\(fmt(t0)) h=\(fmt(heightM))m IMMEDIATE shelf=\(fmt(plateau))s")
             return true
         }
         // A straggler behind an already-delivered jump cannot be retracted, so
@@ -603,10 +566,6 @@ public final class JumpEngineV16 {
     private struct Bins {
         let t: [TimeInterval]
         let az: [Double]
-        /// Bins that actually carried an attitude sample. Diagnostics only —
-        /// zero means the window had no vertical channel at all, which is a
-        /// very different thing from a window with no lift in it.
-        let finiteCount: Int
     }
 
     /// 0.1 s bins of world-vertical acceleration, smoothed.
@@ -636,22 +595,17 @@ public final class JumpEngineV16 {
         //   when most samples had no attitude; and requiring every bin outright
         //   let one dropped 0.1 s of CMDeviceMotion silently kill a real jump.)
         var t = [TimeInterval](repeating: 0, count: nBins)
-        var finiteCount = 0
         for k in 0..<nBins {
             t[k] = from + Double(k) * step
-            if attCnt[k] > 0 {
-                azRaw[k] /= Double(attCnt[k])
-                finiteCount += 1
-            } else {
-                azRaw[k] = Double.nan
-            }
+            azRaw[k] = attCnt[k] > 0 ? azRaw[k] / Double(attCnt[k]) : Double.nan
         }
         let w = max(0, Int((cfg.liftSmoothSec / step).rounded()))
-        return Bins(t: t, az: Self.boxSmooth(azRaw, halfWidth: w), finiteCount: finiteCount)
+        return Bins(t: t, az: Self.boxSmooth(azRaw, halfWidth: w))
     }
 
-    /// Landing = the moment the DESCENT IS ARRESTED. LOW CONFIDENCE — see the
-    /// file header.
+    /// Landing: lift shelf opens and closes, then the first dip, confirmed by
+    /// sustained float after it. LOW CONFIDENCE — see the file header.
+    /// Landing = the moment the DESCENT IS ARRESTED.
     ///
     /// A kite flight is a sustained signed excursion: the canopy lifts, then
     /// the rider comes down. Water contact brakes that descent — and it is the

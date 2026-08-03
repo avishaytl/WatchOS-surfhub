@@ -150,7 +150,7 @@ struct JumpCard: View {
             }
             
             HStack {
-                Text(String(format: "%.2f sec", jump.airtime))
+                Text(jump.airtimeText(format: "%.2f sec"))
                     .font(.caption)
                     .foregroundColor(.gray)
                 

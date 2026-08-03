@@ -37,6 +37,10 @@ struct ReplayJumpReport: Codable, Identifiable {
     let airtimeSec: Double
     let confidence: Double
     let acceptedReason: String
+    /// "unresolved" when the engine never found a landing, so `airtimeSec` is
+    /// the 0 sentinel rather than a measurement. Optional, and deliberately not
+    /// part of `fingerprint` — older baselines stay comparable.
+    let airtimeConfidence: String?
 }
 
 struct ReplayRunReport: Codable {
@@ -520,7 +524,8 @@ private final class ReplaySessionProcessor {
             heightM: jump.height,
             airtimeSec: jump.airtime,
             confidence: jump.confidence,
-            acceptedReason: reason
+            acceptedReason: reason,
+            airtimeConfidence: jump.airtimeConfidence
         )
     }
 
@@ -742,13 +747,15 @@ final class ReplaySessionController: ObservableObject {
     private var log: ReplaySessionLog?
     private var provider: ReplaySensorProvider?
     private var processor: ReplaySessionProcessor?
+    private var autoStartSessionID: String?
 
     init() {
+        // Same fallback as SessionManager.detectionEngine, so a fresh install
+        // replays with the engine it would have recorded with.
         let raw = UserDefaults.standard.string(forKey: "detectionEngine")
-            ?? DetectionEngine.v15Clean.rawValue
-        let stored = DetectionEngine(rawValue: raw) ?? .v15Clean
-        selectedEngine = stored == .sensorRecorder ? .v15Clean : stored
-        refreshSessions()
+            ?? DetectionEngine.v16BigAir.rawValue
+        let stored = DetectionEngine(rawValue: raw) ?? .v16BigAir
+        selectedEngine = stored == .sensorRecorder ? .v16BigAir : stored
     }
 
     var progress: Double {
@@ -765,22 +772,34 @@ final class ReplaySessionController: ObservableObject {
         telemetry.timelineSeconds
     }
 
-    func refreshSessions() {
+    func refreshSessions(selecting preferredURL: URL? = nil, autoStart: Bool = false) {
+        let preferredSessionID = preferredURL?.standardizedFileURL.path
+        if let preferredSessionID,
+           preferredSessionID != selectedSessionID,
+           autoStart {
+            autoStartSessionID = preferredSessionID
+        }
         let urls = SessionLogger.shared.allLogURLs()
             .filter { $0.pathExtension.lowercased() == "kslog" }
         sessions = urls.map { url in
-            let attributes = try? FileManager.default.attributesOfItem(atPath: url.path)
+            let normalizedURL = url.standardizedFileURL
+            let attributes = try? FileManager.default.attributesOfItem(atPath: normalizedURL.path)
             let size = attributes?[.size] as? Int64 ?? 0
             return ReplaySessionDescriptor(
-                id: url.path,
-                url: url,
-                displayName: url.deletingPathExtension().lastPathComponent,
+                id: normalizedURL.path,
+                url: normalizedURL,
+                displayName: normalizedURL.deletingPathExtension().lastPathComponent,
                 sizeBytes: size
             )
         }
 
         if let current = selectedSessionID,
            sessions.contains(where: { $0.id == current }) {
+            return
+        }
+        if let preferredSessionID,
+           sessions.contains(where: { $0.id == preferredSessionID }) {
+            selectSession(preferredSessionID)
             return
         }
         if let first = sessions.first {
@@ -790,6 +809,9 @@ final class ReplaySessionController: ObservableObject {
 
     func selectSession(_ id: String) {
         guard let descriptor = sessions.first(where: { $0.id == id }) else { return }
+        if autoStartSessionID != id {
+            autoStartSessionID = nil
+        }
         shutdownRun()
         selectedSessionID = id
         isLoading = true
@@ -1005,6 +1027,11 @@ final class ReplaySessionController: ObservableObject {
                     }
                 }
             }
+        }
+
+        if autoStartSessionID == selectedSessionID {
+            autoStartSessionID = nil
+            provider.start()
         }
     }
 

@@ -149,6 +149,26 @@ struct Jump: Identifiable, Codable {
     }
 }
 
+extension Jump {
+    /// The engine explicitly did not find a landing, so `airtime` holds the 0
+    /// sentinel and `endTime == startTime`. This is "not measured", NOT a
+    /// zero-second flight — V16 reports it on jumps whose descent was never
+    /// arrested, and 2 of the 5 such reference emissions are genuine jumps.
+    var hasUnresolvedAirtime: Bool { airtimeConfidence == "unresolved" }
+
+    /// Airtime for display. Renders "—" when unresolved rather than a
+    /// convincing-looking number — a 1.82 m emission once reached the field
+    /// shown as a 0.34 s flight, shorter than free fall from that height and so
+    /// physically impossible. Never format `airtime` directly in a view.
+    ///
+    /// For the same reason, never FILTER on a low airtime: the shortest
+    /// measured airtime across the whole reference set is 2.40 s, so such a
+    /// filter removes nothing real and removes exactly these sentinels.
+    func airtimeText(format: String) -> String {
+        hasUnresolvedAirtime ? "—" : String(format: format, airtime)
+    }
+}
+
 // MARK: - GPS Point
 struct GPSPoint: Codable {
     let timestamp: Date
@@ -439,8 +459,8 @@ enum DetectionEngine: String, Codable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .v11Buffered: return "V11 (Default)"
-        case .v16BigAir: return "V16 Big Air (Beta)"
+        case .v11Buffered: return "V11 Buffered"
+        case .v16BigAir: return "V16.1 Big Air (Default)"
         case .v15Clean: return "V15 Clean (Beta)"
         case .v14Hybrid: return "V14 Hybrid (Beta)"
         case .sensorRecorder: return "Sensor Recorder"
@@ -455,7 +475,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var description: String {
         switch self {
         case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
-        case .v16BigAir: return "Isolated big-air engine: confirms a sustained world-vertical lift shelf and estimates height with a fixed-window IMU matched filter. Requires attitude quaternion; barometer is ignored and GPS never gates detection. Airtime is low confidence."
+        case .v16BigAir: return "Big-air first, IMU only — the barometer is not used at all. A pop opens a candidate; a sustained LIFT PLATEAU in world-vertical acceleration confirms it, which admits 0 of 19 pops on a waves-only control session. Height is a fixed-window bounded double integration: 19/23 recall at 0.43 m MAE across three sessions, 2.1-8.5 m. Airtime is measured from where the water arrests the descent — 14/14 at 0.34 s. Jumps at or above 2.5 m are delivered ~0.9-3.9 s after landing; smaller ones wait out the dedup hold. Below ~2.5 m the height is a population estimate, not a measurement — the signal carries no height information there, and substituting V15 there makes it worse, not better (0.36 -> 0.47 m), because V15's low-band output is a near-constant by construction."
         case .sensorRecorder: return "Recording only: no jump detection, no formulas. Every sensor (IMU 200Hz, relative + absolute altimeter, GPS, submersion) streams continuously into the session log for offline analysis."
         case .v15Clean: return "IMU-led second generation: a yank spike opens, flight-quiet sustains, a physical impact (or baro return-to-base) closes. The absolute barometer streams continuously for the whole session as the single consumer and measures height via a parabolic apex fit, with relative-pressure and ballistic fallbacks. No GPS or turbulence gates."
         case .v14Hybrid: return "Hybrid: IMU unweight + pressure-baseline formula opens a jump; the absolute altimeter runs only from takeoff to a stable landing baseline and cross-checks the peak height. Works fully without GPS."

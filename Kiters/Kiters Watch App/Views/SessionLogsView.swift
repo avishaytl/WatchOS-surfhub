@@ -229,6 +229,10 @@ struct LogFileRow: View {
         return "\(m) \(day) \(hour):\(min)"
     }
 
+    private var isReplayCompatible: Bool {
+        url.pathExtension.lowercased() == "kslog"
+    }
+
     // MARK: Body
 
     var body: some View {
@@ -253,6 +257,31 @@ struct LogFileRow: View {
                     }
                 }
                 Spacer()
+            }
+
+            // Run this exact local capture through the production detector
+            // adapters. The lab reads the file directly from the watch and
+            // never uploads it or starts the live sensor pipeline.
+            if isReplayCompatible {
+                NavigationLink(destination: ReplayLabView(initialLogURL: url, autoStart: true)) {
+                    HStack {
+                        Image(systemName: "waveform.path.ecg.rectangle.fill")
+                            .font(.system(size: 12))
+                        Text(L("logs.run_in_lab"))
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color.orange.opacity(0.2))
+                    .foregroundColor(.orange)
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Text(L("logs.replay_legacy_unavailable"))
+                    .font(.system(size: 8))
+                    .foregroundColor(.gray)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             // ── Option 1: Share via Messages (text content) ──

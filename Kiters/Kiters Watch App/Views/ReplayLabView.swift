@@ -12,6 +12,13 @@ struct ReplayLabView: View {
     @StateObject private var controller = ReplaySessionController()
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("appTheme") private var appTheme: String = "orange"
+    private let initialLogURL: URL?
+    private let autoStart: Bool
+
+    init(initialLogURL: URL? = nil, autoStart: Bool = false) {
+        self.initialLogURL = initialLogURL
+        self.autoStart = autoStart
+    }
 
     private var themeColor: Color {
         switch appTheme {
@@ -33,6 +40,10 @@ struct ReplayLabView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(L("replay.title"))
                     .font(.headline)
+
+                Label(L("replay.offline_local"), systemImage: "wifi.slash")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundColor(.green)
 
                 if controller.sessions.isEmpty {
                     emptyState
@@ -61,7 +72,12 @@ struct ReplayLabView: View {
         }
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { controller.refreshSessions() }
+        .onAppear {
+            controller.refreshSessions(
+                selecting: initialLogURL,
+                autoStart: autoStart
+            )
+        }
         .onDisappear { controller.shutdown() }
     }
 
@@ -277,7 +293,9 @@ struct ReplayLabView: View {
                     Spacer()
                     Text(String(format: "%.2f m", jump.heightM))
                         .foregroundColor(themeColor)
-                    Text(String(format: "%.2f s", jump.airtimeSec))
+                    Text(jump.airtimeConfidence == "unresolved"
+                         ? "—"
+                         : String(format: "%.2f s", jump.airtimeSec))
                 }
                 .font(.system(size: 9, design: .monospaced))
             }

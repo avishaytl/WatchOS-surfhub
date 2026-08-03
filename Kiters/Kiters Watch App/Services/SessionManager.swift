@@ -184,8 +184,8 @@ class SessionManager: ObservableObject {
     /// Selected jump-detection engine. Read at session start so the user's
     /// Settings choice takes effect on the next session (no app restart).
     private var detectionEngine: DetectionEngine {
-        let raw = UserDefaults.standard.string(forKey: "detectionEngine") ?? DetectionEngine.v11Buffered.rawValue
-        return DetectionEngine(rawValue: raw) ?? .v11Buffered
+        let raw = UserDefaults.standard.string(forKey: "detectionEngine") ?? DetectionEngine.v16BigAir.rawValue
+        return DetectionEngine(rawValue: raw) ?? .v16BigAir
     }
     
     init() {
@@ -811,7 +811,7 @@ class SessionManager: ObservableObject {
         isGPSActive = false
         gpsSignalQuality = .none
         newBestJumpPresentation = nil
-        activeDetectionEngine = .v11Buffered
+        activeDetectionEngine = .v16BigAir
         motionPipelineStarted = false
     }
 

@@ -496,7 +496,7 @@ struct JumpStatsView: View {
                         Text(String(format: "%.2f m", jump.height))
                             .font(.system(size: 32, weight: .bold))
                         
-                        Text(String(format: L("session.airtime_value"), jump.airtime))
+                        Text(jump.airtimeText(format: L("session.airtime_value")))
                             .font(.caption)
                             .foregroundColor(.gray)
                         

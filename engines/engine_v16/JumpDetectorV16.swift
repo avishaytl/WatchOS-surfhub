@@ -88,6 +88,7 @@ final class JumpDetectorV16: JumpDetecting {
         let readiness = Self.readinessReport()
         logEvent(
             "JumpDetector(v16) reset ready=\(readiness.isReady) "
+                + "engine=v\(JumpEngineV16.version) "
                 + "pop=\(configuration.popMinG)g shelf>=\(configuration.minLiftPlateauSec)s "
                 + "lift>\(configuration.liftThreshMS2)m/s2 "
                 + "apex=[-\(configuration.apexPreSec),+\(configuration.apexPostSec)]s "
@@ -183,12 +184,39 @@ final class JumpDetectorV16: JumpDetecting {
 
     private func makeJump(from result: V16Jump) -> Jump {
         var jump = Jump(sessionId: sessionId, startTime: wallDate(from: result.takeoffT))
-        let endOffset = result.airtimeSec ?? configuration.apexPostSec
-        jump.endTime = wallDate(from: result.takeoffT + endOffset)
+        // ⚠️ THE UNRESOLVED-AIRTIME SENTINEL.
+        //
+        // `airtimeSec` is nil when the descent was never arrested — an explicit
+        // "I did not measure this", not a short flight. `Jump.airtime` is a
+        // non-optional Double, so unknown has to be encoded as 0, which makes
+        // endTime == startTime. That collapse is deliberate and must stay
+        // lossless in one direction at least: `airtimeConfidence` below carries
+        // "unresolved", and that is the field every consumer must branch on.
+        //
+        // A previous version stamped endTime at takeoff + apexPostSec instead,
+        // inventing a 2.0 s flight for a jump whose landing was never found.
+        // The same coercion downstream turned an unknown airtime into a
+        // confident-looking 0.34 s reading for a 1.82 m emission — shorter than
+        // free fall from that height (1.21 s), so physically impossible, yet
+        // shown as a measurement.
+        //
+        // THE UI MUST RENDER THIS AS "—", NOT "0.00 sec".
+        // And do NOT filter on airtime < 1 s: the shortest MEASURED airtime in
+        // the whole reference set is 2.40 s, so such a filter removes nothing
+        // real — it removes exactly the 0 sentinels, and 2 of those 5 are
+        // genuine jumps (CLEAN 1.72 m and 1.90 m).
+        let airtime = result.airtimeSec ?? 0
+        jump.endTime = wallDate(from: result.takeoffT + airtime)
         jump.height = result.heightM
-        jump.airtime = result.airtimeSec ?? 0
+        jump.airtime = airtime
         jump.jumpDistance = result.distanceM ?? 0
         jump.rotations = 0
+        // Left nil when the landing is unresolved rather than defaulted to 0 —
+        // apexTime is optional, so unknown can stay unknown here. It is airtime/2
+        // and NOT the engine's own apex argmax: §7.2 measured that argmax at
+        // t0−1.15 s to t0+0.01 s, i.e. at or BEFORE the pop, so using it would
+        // tell the rider the peak happened before takeoff.
+        jump.apexTime = result.airtimeSec.map { $0 / 2 }
         jump.confidence = result.confidence * 100
         jump.heightSource = "v16-imu-matched-filter"
         jump.takeoffSpeed = result.takeoffSpeedMS
@@ -212,7 +240,7 @@ final class JumpDetectorV16: JumpDetecting {
             "conf=\(jump.confidence) barometer=unused gpsGate=none",
         ].joined(separator: " ")
         SessionLogger.shared.logEvent(
-            t: result.takeoffT + (result.airtimeSec ?? configuration.apexPostSec),
+            t: result.takeoffT + (result.airtimeSec ?? 0),
             event: event,
             state: "JUMP",
             speed: result.takeoffSpeedMS ?? latestSpeed()
