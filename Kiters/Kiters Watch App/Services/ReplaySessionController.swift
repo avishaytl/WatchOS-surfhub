@@ -444,6 +444,11 @@ private final class ReplaySessionProcessor {
                 self?.handleEngineDebug(t: t, message: message)
             }
         }
+        if let v16 = detector as? JumpDetectorV16 {
+            v16.onDebugEvent = { [weak self] t, message in
+                self?.handleEngineDebug(t: t, message: message)
+            }
+        }
     }
 
     private func remap(_ sample: IMUSample) -> IMUSample {
@@ -571,6 +576,7 @@ private final class ReplaySessionProcessor {
 
     private static func makeDetector(_ engine: DetectionEngine) -> JumpDetecting {
         switch engine {
+        case .v16BigAir: return JumpDetectorV16()
         case .v15Clean: return JumpDetectorV15()
         case .v14Hybrid: return JumpDetectorV14()
         case .v13Pure: return JumpDetectorV13()
@@ -590,6 +596,9 @@ private final class ReplaySessionProcessor {
         mode: DetectionMode
     ) -> String {
         if let detector = detector as? JumpDetectorV15 {
+            return String(reflecting: detector.effectiveConfiguration)
+        }
+        if let detector = detector as? JumpDetectorV16 {
             return String(reflecting: detector.effectiveConfiguration)
         }
         if let detector = detector as? JumpDetectorV14 {

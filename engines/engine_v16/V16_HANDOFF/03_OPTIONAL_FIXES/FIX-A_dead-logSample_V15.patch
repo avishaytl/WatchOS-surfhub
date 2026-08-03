@@ -1,0 +1,32 @@
+--- a/Kiters Watch App/Services/JumpDetectorV15.swift
++++ b/Kiters Watch App/Services/JumpDetectorV15.swift
+@@ -239,20 +239,19 @@
+             }
+ 
+             self.engine.addIMU(t: motionT, verticalLoadG: verticalLoad, gyroRadS: gyro)
+         }
+ 
+-        let snapshotState = currentState()
+-        if snapshotState != .idle || sampleCount % 5 == 0 {
+-            SessionLogger.shared.logSample(
+-                sample: sample,
+-                speed: latestSpeed(),
+-                baselinePressure: 0,
+-                lowGCount: 0,
+-                state: snapshotState.rawValue
+-            )
+-        }
++        // REMOVED: SessionLogger.logSample(...) without an `event:` is a
++        // guaranteed no-op — its first line is `guard !event.isEmpty else
++        // { return }`. The call still cost an NSLock (currentState) and a
++        // function call on EVERY sample: ~200 wasted lock acquisitions per
++        // second at 200 Hz, on a battery-constrained watch. MOTION rows reach
++        // the log through SessionLogger.logMotionSamples on the MotionManager
++        // batch path, which is unaffected.
++        // The identical block exists in JumpDetector(V7), V10, V11, V12, V13
++        // and V14 — remove it there too.
+     }
+ 
+     /// Declare that a direct absolute-altitude stream exists for this session
+     /// WITHOUT injecting a sample. Replay harnesses need this: a recorded log
+     /// carries the ZOH absolute value on every motion row from t=0, but the

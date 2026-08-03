@@ -1,0 +1,32 @@
+--- a/Kiters Watch App/Models/Session.swift
++++ b/Kiters Watch App/Models/Session.swift
+@@ -415,8 +415,9 @@
+ // MARK: - Jump Detection Engine
+ /// User-selectable jump-detection ENGINE (independent of DetectionMode presets).
+ /// Stored in UserDefaults as "detectionEngine". Takes effect at next session start.
+ enum DetectionEngine: String, Codable, CaseIterable {
++    case v16BigAir = "v16-big-air"     // IMU-only big-air engine: lift-plateau confirmation + fixed-window apex height. Barometer unused.
+     case v11Buffered = "v11-buffered"  // offline buffered engine (3–5 s delayed, fewer false positives) — current default
+     case v15Clean = "v15-clean"        // IMU-led detection (yank→quiet→impact) + continuous single-consumer absolute barometer measuring via apexFit
+     case v14Hybrid = "v14-hybrid"      // IMU+pressure detection; absolute altimeter sampled on demand per jump for the height cross-check
+     case sensorRecorder = "sensor-recorder" // no detection at all: every sensor streams continuously into the .kslog for ground-truth capture
+@@ -428,8 +429,9 @@
+     case v7   // legacy streaming FSM (KitesurfJumpEngineV7)
+ 
+     var displayName: String {
+         switch self {
++        case .v16BigAir: return "V16 Big Air (Beta)"
+         case .v11Buffered: return "V11 (Default)"
+         case .v15Clean: return "V15 Clean (Beta)"
+         case .v14Hybrid: return "V14 Hybrid (Beta)"
+         case .sensorRecorder: return "Sensor Recorder"
+@@ -442,8 +444,9 @@
+         }
+     }
+     var description: String {
+         switch self {
++        case .v16BigAir: return "Big-air first, IMU only. A pop opens a candidate; a sustained LIFT PLATEAU in world-vertical acceleration confirms it (10/10 real jumps vs 0/19 pops on a waves-only control session); height comes from a fixed-window bounded double integration, no barometer at all. Validated 14/14 with 0.52 m MAE on a 2.1–8.5 m session. Airtime is low-confidence. Small jumps (<2.5 m) are outside its regime — use V15 for those."
+         case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
+         case .sensorRecorder: return "Recording only: no jump detection, no formulas. Every sensor (IMU 200Hz, relative + absolute altimeter, GPS, submersion) streams continuously into the session log for offline analysis."
+         case .v15Clean: return "IMU-led second generation: a yank spike opens, flight-quiet sustains, a physical impact (or baro return-to-base) closes. The absolute barometer streams continuously for the whole session as the single consumer and measures height via a parabolic apex fit, with relative-pressure and ballistic fallbacks. No GPS or turbulence gates."
+         case .v14Hybrid: return "Hybrid: IMU unweight + pressure-baseline formula opens a jump; the absolute altimeter runs only from takeoff to a stable landing baseline and cross-checks the peak height. Works fully without GPS."

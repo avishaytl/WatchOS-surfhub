@@ -244,6 +244,10 @@ enum Loader {
                 let rx = scaled(readInt16(b, i + 15), 1000) ?? 0
                 let ry = scaled(readInt16(b, i + 17), 1000) ?? 0
                 let rz = scaled(readInt16(b, i + 19), 1000) ?? 0
+                let qw = scaled(readInt16(b, i + 21), 10000)
+                let qx = scaled(readInt16(b, i + 23), 10000)
+                let qy = scaled(readInt16(b, i + 25), 10000)
+                let qz = scaled(readInt16(b, i + 27), 10000)
 
                 rows.append(RawRow(
                     timestamp: t,
@@ -254,6 +258,10 @@ enum Loader {
                     gyrX: rx, gyrY: ry, gyrZ: rz,
                     event: pendingEvents.isEmpty ? nil : pendingEvents.joined(separator: "; "),
                     motionTimestamp: t,
+                    quatW: qw,
+                    quatX: qx,
+                    quatY: qy,
+                    quatZ: qz,
                     relativeAltitude: latestBaro?.relAlt,
                     barometerTimestamp: latestBaro?.t,
                     absoluteAltitude: latestAbsAlt?.alt,
@@ -421,6 +429,9 @@ enum Loader {
             "absoluteAlt": "absoluteAltitude",
             "absAltT": "absoluteAltitudeTimestamp",
             "absAltTime": "absoluteAltitudeTimestamp",
+            "qw": "quatW", "qx": "quatX", "qy": "quatY", "qz": "quatZ",
+            "attitudeW": "quatW", "attitudeX": "quatX",
+            "attitudeY": "quatY", "attitudeZ": "quatZ",
             "waterDepthM": "waterDepth",
             "waterPressureHPa": "waterPressure"
         ]
@@ -451,6 +462,10 @@ enum Loader {
             wz:   idx("gyrZ"),
             evt:  idx("evt"),
             motionT: idx("motionTimestamp"),
+            qw: idx("quatW"),
+            qx: idx("quatX"),
+            qy: idx("quatY"),
+            qz: idx("quatZ"),
             relAlt: idx("relativeAltitude"),
             baroT: idx("barometerTimestamp"),
             absAlt: idx("absoluteAltitude"),
@@ -501,6 +516,10 @@ enum Loader {
                 gyrZ: map.wz.flatMap { Double(f[$0]) } ?? 0,
                 event: map.evt.flatMap { f[$0] },
                 motionTimestamp: optionalDouble(map.motionT),
+                quatW: optionalDouble(map.qw),
+                quatX: optionalDouble(map.qx),
+                quatY: optionalDouble(map.qy),
+                quatZ: optionalDouble(map.qz),
                 relativeAltitude: optionalDouble(map.relAlt),
                 barometerTimestamp: optionalDouble(map.baroT),
                 absoluteAltitude: optionalDouble(map.absAlt),
@@ -573,6 +592,10 @@ struct RawRow: Decodable {
     let gyrZ: Double
     let event: String?
     let motionTimestamp: Double?
+    let quatW: Double?
+    let quatX: Double?
+    let quatY: Double?
+    let quatZ: Double?
     let relativeAltitude: Double?
     let barometerTimestamp: Double?
     let absoluteAltitude: Double?
@@ -589,6 +612,10 @@ struct RawRow: Decodable {
          gyrX: Double, gyrY: Double, gyrZ: Double,
          event: String? = nil,
          motionTimestamp: Double? = nil,
+         quatW: Double? = nil,
+         quatX: Double? = nil,
+         quatY: Double? = nil,
+         quatZ: Double? = nil,
          relativeAltitude: Double? = nil,
          barometerTimestamp: Double? = nil,
          absoluteAltitude: Double? = nil,
@@ -606,6 +633,10 @@ struct RawRow: Decodable {
         self.gyrX = gyrX; self.gyrY = gyrY; self.gyrZ = gyrZ
         self.event = event
         self.motionTimestamp = motionTimestamp
+        self.quatW = quatW
+        self.quatX = quatX
+        self.quatY = quatY
+        self.quatZ = quatZ
         self.relativeAltitude = relativeAltitude
         self.barometerTimestamp = barometerTimestamp
         self.absoluteAltitude = absoluteAltitude
@@ -664,6 +695,12 @@ struct RawRow: Decodable {
         // The watchOS path stores userAccel in g already (CMDeviceMotion does it).
         // We mirror that contract here: divide by 9.81 once before storing.
         let inv = 1.0 / 9.81
+        let attitudeQuaternion: MotionQuaternion?
+        if let quatW, let quatX, let quatY, let quatZ {
+            attitudeQuaternion = MotionQuaternion(w: quatW, x: quatX, y: quatY, z: quatZ)
+        } else {
+            attitudeQuaternion = nil
+        }
         return IMUSample(
             timestamp: date,
             accelerationX: userAx * inv,
@@ -681,6 +718,7 @@ struct RawRow: Decodable {
             absoluteAltitudeAccuracy: absoluteAltitudeAccuracy,
             absoluteAltitudePrecision: absoluteAltitudePrecision,
             absoluteAltitudeTimestamp: absoluteAltitudeTimestamp,
+            attitudeQuaternion: attitudeQuaternion,
             submerged: submerged,
             waterDepth: waterDepth,
             waterPressure: waterPressure

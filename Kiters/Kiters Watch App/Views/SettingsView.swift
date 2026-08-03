@@ -546,6 +546,38 @@ struct SettingsView: View {
                                 .stroke(themeColor.opacity(0.3), lineWidth: 1)
                         )
                     }
+
+                    if detectionEngineRaw == DetectionEngine.v16BigAir.rawValue {
+                        ZStack {
+                            Color.clear
+                            NavigationLink(destination: V16SettingsView()) {
+                                HStack {
+                                    Image(systemName: "waveform.path.ecg.rectangle")
+                                        .foregroundColor(.cyan)
+                                        .frame(width: 20)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(L("settings.v16_details"))
+                                            .font(.caption)
+                                        Text(L("settings.v16_details_hint"))
+                                            .font(.system(size: 8))
+                                            .foregroundColor(.gray)
+                                            .lineLimit(2)
+                                    }
+                                    Spacer()
+                                    Image(systemName: languageCode == "he" ? "chevron.left" : "chevron.right")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 12)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .overlay(
+                            Rectangle()
+                                .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                        )
+                    }
                 }
 
                 Divider()

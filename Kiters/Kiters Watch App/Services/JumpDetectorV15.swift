@@ -465,7 +465,11 @@ final class JumpDetectorV15: JumpDetecting {
 extension JumpDetectorV15: JumpEngineV15Delegate {
     func jumpDetected(_ result: V15Jump) {
         let jump = makeJump(from: result)
-        playHaptic(for: jump)
+        // Keep low-speed candidates in diagnostics, but do not buzz the rider
+        // for an event the session will intentionally leave out of its count.
+        if result.gpsVerified {
+            playHaptic(for: jump)
+        }
         SessionLogger.shared.logEvent(
             t: result.landingT,
             event: "JUMP(v15) FINAL h=\(jump.height)m src=\(result.heightSource.rawValue) "

@@ -455,6 +455,7 @@ class SessionManager: ObservableObject {
 
         if activeDetectionEngine == .v12AppleSensorFusion || activeDetectionEngine == .v13Pure
             || activeDetectionEngine == .v14Hybrid || activeDetectionEngine == .v15Clean
+            || activeDetectionEngine == .v16BigAir
             || activeDetectionEngine == .sensorRecorder {
             startMotionPipelineIfNeeded(preferBatched: false, reason: "\(activeDetectionEngine.rawValue)-immediate-sensor-start")
         } else {
@@ -472,6 +473,12 @@ class SessionManager: ObservableObject {
         switch requestedEngine {
         case .v11Buffered:
             return (.v11Buffered, JumpDetectorV11(), nil)
+        case .v16BigAir:
+            let readiness = JumpDetectorV16.readinessReport()
+            if !readiness.isReady {
+                print("🪁 V16 selected despite readiness issue; keeping V16 active: \(readiness.logDetails)")
+            }
+            return (.v16BigAir, JumpDetectorV16(), nil)
         case .sensorRecorder:
             return (.sensorRecorder, SensorRecordingDetector(), nil)
         case .v15Clean:
@@ -524,7 +531,11 @@ class SessionManager: ObservableObject {
         // or a restart-induced re-anchor, not a lack of supervision. Every
         // other (older) engine keeps the supervised continuous stream.
         let absoluteMode: MotionManager.AbsoluteAcquisitionMode
-        if jumpDetector is JumpDetectorV14 {
+        if jumpDetector is JumpDetectorV16 {
+            // V16 intentionally never consumes the absolute-altitude channel.
+            // `.onDemand` leaves it off because V16 never opens a window.
+            absoluteMode = .onDemand
+        } else if jumpDetector is JumpDetectorV14 {
             absoluteMode = .onDemand
         } else if jumpDetector is JumpDetectorV15 {
             absoluteMode = .continuousNoWatchdog
@@ -1058,6 +1069,18 @@ class SessionManager: ObservableObject {
             guard let self = self else { return }
             guard var session = self.currentSession else { return }
 
+            // V15 emits low-speed candidates so they remain visible in the
+            // diagnostic log. They must not affect counts, records, or uploads.
+            if jump.gpsVerified == false {
+                let speed = jump.takeoffGroundSpeed
+                    .map { String(format: "%.2f", $0) } ?? "n/a"
+                self.sessionLogger.logEvent(
+                    "JUMP excluded from session: gpsVerified=false takeoffGroundSpeed=\(speed)m/s"
+                )
+                print("↩️ JUMP EXCLUDED (GPS-unverified) — takeoffSpeed=\(speed)m/s")
+                return
+            }
+
             var detectedJump = jump
             detectedJump.sessionId = session.id
             let previousBest = session.jumps.map(\.height).max() ?? 0
@@ -1141,6 +1164,7 @@ class SessionManager: ObservableObject {
         let mode = detectionMode
         let v13Config = (jumpDetector as? JumpDetectorV13)?.effectiveConfiguration
         let v15Config = (jumpDetector as? JumpDetectorV15)?.effectiveConfiguration
+        let v16Config = (jumpDetector as? JumpDetectorV16)?.effectiveConfiguration
         sessionLogger.start(
             sessionId: session.id,
             mode: mode,
@@ -1161,6 +1185,16 @@ class SessionManager: ObservableObject {
                     + "taperStart=\(config.airtimeTaperStartSec)s "
                     + "gpsVerifyMinSpeed=\(config.gpsVerifyMinSpeedMS)m/s "
                     + "coldStartGrace=\(config.coldStartGraceSec)s"
+            )
+        }
+        if let config = v16Config {
+            sessionLogger.logEvent(
+                "V16 config pop=\(config.popMinG)g cluster=\(config.popClusterSec)s "
+                    + "lift=\(config.liftThreshMS2)m/s2 shelf=\(config.minLiftPlateauSec)s "
+                    + "smooth=±\(config.liftSmoothSec)s apexPre=\(config.apexPreSec)s "
+                    + "apexPost=\(config.apexPostSec)s heightScale=\(config.heightScale) "
+                    + "heightOffset=\(config.heightOffsetM)m minReport=\(config.minReportM)m "
+                    + "attitudeGapMax=\(config.maxAttitudeGapSec)s barometer=unused gpsGate=none"
             )
         }
         if let config = v13Config {

@@ -660,6 +660,12 @@ func testV15JumpCalculationIsGPSInvariant() {
     expectEqual(withGPS.confidence, withoutGPS.confidence, "V15 confidence must not depend on GPS")
     expectEqual(withGPS.takeoffT, withoutGPS.takeoffT, "V15 takeoff time must not depend on GPS")
     expectEqual(withGPS.landingT, withoutGPS.landingT, "V15 landing time must not depend on GPS")
+    expect(withGPS.gpsVerified == false, "V15 low-speed GPS fixture must be marked unverified")
+    expect(withoutGPS.gpsVerified == true, "V15 without a GPS fix must fail open")
+    expect(withGPS.takeoffGroundSpeedMS.map { abs($0 - 0.2) < 0.001 } == true,
+           "V15 must preserve the speed used for ride verification")
+    expect(withoutGPS.takeoffGroundSpeedMS == nil,
+           "V15 without GPS must not fabricate a takeoff ground speed")
 }
 
 testStartIsDedupedAndRetriesAfterFailureWindow()

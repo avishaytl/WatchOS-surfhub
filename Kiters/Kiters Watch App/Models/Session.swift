@@ -112,6 +112,12 @@ struct Jump: Identifiable, Codable {
     var gpsVerified: Bool?
     /// Ground speed (m/s) behind that verdict, nil when no recent fix existed.
     var takeoffGroundSpeed: Double?
+    /// V16 matched-filter output before its linear metres calibration.
+    var matchedFilterApexRawM: Double?
+    /// V16 lift-shelf duration — the big-air confirmation statistic.
+    var liftPlateauDurationSec: Double?
+    /// `low` or `unresolved` for V16; nil for engines with a validated airtime.
+    var airtimeConfidence: String?
 
     init(sessionId: String, startTime: Date) {
         self.id = UUID().uuidString
@@ -137,6 +143,9 @@ struct Jump: Identifiable, Codable {
         self.heightFailureReason = nil
         self.gpsVerified = nil
         self.takeoffGroundSpeed = nil
+        self.matchedFilterApexRawM = nil
+        self.liftPlateauDurationSec = nil
+        self.airtimeConfidence = nil
     }
 }
 
@@ -417,6 +426,7 @@ enum DetectionMode: String, Codable, CaseIterable {
 /// Stored in UserDefaults as "detectionEngine". Takes effect at next session start.
 enum DetectionEngine: String, Codable, CaseIterable {
     case v11Buffered = "v11-buffered"  // offline buffered engine (3–5 s delayed, fewer false positives) — current default
+    case v16BigAir = "v16-big-air"      // isolated quaternion/world-Z matched-filter engine for validated big-air sessions
     case v15Clean = "v15-clean"        // IMU-led detection (yank→quiet→impact) + continuous single-consumer absolute barometer measuring via apexFit
     case v14Hybrid = "v14-hybrid"      // IMU+pressure detection; absolute altimeter sampled on demand per jump for the height cross-check
     case sensorRecorder = "sensor-recorder" // no detection at all: every sensor streams continuously into the .kslog for ground-truth capture
@@ -430,6 +440,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .v11Buffered: return "V11 (Default)"
+        case .v16BigAir: return "V16 Big Air (Beta)"
         case .v15Clean: return "V15 Clean (Beta)"
         case .v14Hybrid: return "V14 Hybrid (Beta)"
         case .sensorRecorder: return "Sensor Recorder"
@@ -444,6 +455,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var description: String {
         switch self {
         case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
+        case .v16BigAir: return "Isolated big-air engine: confirms a sustained world-vertical lift shelf and estimates height with a fixed-window IMU matched filter. Requires attitude quaternion; barometer is ignored and GPS never gates detection. Airtime is low confidence."
         case .sensorRecorder: return "Recording only: no jump detection, no formulas. Every sensor (IMU 200Hz, relative + absolute altimeter, GPS, submersion) streams continuously into the session log for offline analysis."
         case .v15Clean: return "IMU-led second generation: a yank spike opens, flight-quiet sustains, a physical impact (or baro return-to-base) closes. The absolute barometer streams continuously for the whole session as the single consumer and measures height via a parabolic apex fit, with relative-pressure and ballistic fallbacks. No GPS or turbulence gates."
         case .v14Hybrid: return "Hybrid: IMU unweight + pressure-baseline formula opens a jump; the absolute altimeter runs only from takeoff to a stable landing baseline and cross-checks the peak height. Works fully without GPS."
@@ -458,6 +470,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var icon: String {
         switch self {
         case .v11Buffered: return "tray.full"
+        case .v16BigAir: return "waveform.path.ecg.rectangle"
         case .v15Clean: return "wind"
         case .v14Hybrid: return "figure.surfing"
         case .sensorRecorder: return "record.circle"

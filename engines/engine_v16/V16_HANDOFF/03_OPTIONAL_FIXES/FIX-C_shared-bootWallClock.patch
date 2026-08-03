@@ -1,0 +1,29 @@
+--- a/Kiters Watch App/Services/JumpDetectorV15.swift
++++ b/Kiters Watch App/Services/JumpDetectorV15.swift
+@@ -75,11 +75,25 @@
+     private var lastRowAbsoluteT: TimeInterval?
+     private var hasDirectAbsoluteStream = false
+     private var independentAltitudeBaseSensorT: TimeInterval?
+     private var independentAltitudeBaseReceivedT: TimeInterval?
+ 
+-    private let bootWallClock = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
++    /// FIX-C: `wall - systemUptime` is NOT a constant — systemUptime does not
++    /// advance in deep sleep and the wall clock is NTP-corrected, so capturing
++    /// it a second time (MotionManager already owns one) yields a different
++    /// value. IMU samples enter the engine on the raw `motion.timestamp`
++    /// (uptime domain) while GPS enters through this conversion, so any drift
++    /// between the two capture moments appears as a GPS-vs-IMU time skew that
++    /// the GPS gates then act on.
++    ///
++    /// Replace the per-adapter capture with the app-wide one, e.g.
++    ///     static let shared = Date().timeIntervalSince1970
++    ///                       - ProcessInfo.processInfo.systemUptime
++    /// exposed from MotionManager (or a small ClockReference type) and injected
++    /// here. Better still: normalise CLLocation.timestamp through the same
++    /// `TimestampNormalizer` the absolute-altimeter path already uses.
++    private let bootWallClock = ClockReference.bootWallClock
+ 
+     init() {
+         engine = JumpEngineV15(cfg)
+         wireEngine()
+     }

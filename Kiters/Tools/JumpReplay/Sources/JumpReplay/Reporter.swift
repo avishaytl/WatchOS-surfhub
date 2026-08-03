@@ -11,6 +11,8 @@ struct ReplayJump: Codable {
     let confidence: Double
     let rotations: Int
     let jumpDistance: Double
+    let gpsVerified: Bool?
+    let takeoffGroundSpeed: Double?
     let accepted: Bool
 }
 
@@ -76,9 +78,18 @@ enum Reporter {
             for j in report.jumps {
                 let apex = j.apexTime.map { String(format: "%.2f", $0) } ?? "-"
                 let mark = j.accepted ? "✓" : "✗"
-                print(String(format: "  [%@] #%d  t=%.2fs  air=%.2fs phys=%.2fs  h=%.2fm(%@)  dist=%.1fm  apex=%@s  conf=%d  rot=%d",
-                             mark, j.index, j.takeoffOffsetSec, j.airtime, j.physicalAirtime ?? j.airtime,
-                             j.height, j.heightSource, j.jumpDistance, apex, Int(j.confidence), j.rotations), to: &s)
+                let gps: String
+                if let verified = j.gpsVerified {
+                    let speed = j.takeoffGroundSpeed
+                        .map { String(format: "%.2fm/s", $0) } ?? "no-fix"
+                    gps = " gps=\(verified ? "✓" : "✗")(\(speed))"
+                } else {
+                    gps = ""
+                }
+                let summary = String(format: "  [%@] #%d  t=%.2fs  air=%.2fs phys=%.2fs  h=%.2fm(%@)  dist=%.1fm  apex=%@s  conf=%d  rot=%d",
+                                     mark, j.index, j.takeoffOffsetSec, j.airtime, j.physicalAirtime ?? j.airtime,
+                                     j.height, j.heightSource, j.jumpDistance, apex, Int(j.confidence), j.rotations)
+                print(summary + gps, to: &s)
             }
         }
         if let matches = report.surfrWindowMatches, !matches.isEmpty {

@@ -1,0 +1,27 @@
+--- a/Kiters Watch App/Services/SessionManager.swift
++++ b/Kiters Watch App/Services/SessionManager.swift
+@@ -454,8 +454,9 @@
+         sensorProvider.start()
+ 
+         if activeDetectionEngine == .v12AppleSensorFusion || activeDetectionEngine == .v13Pure
+             || activeDetectionEngine == .v14Hybrid || activeDetectionEngine == .v15Clean
++            || activeDetectionEngine == .v16BigAir
+             || activeDetectionEngine == .sensorRecorder {
+             startMotionPipelineIfNeeded(preferBatched: false, reason: "\(activeDetectionEngine.rawValue)-immediate-sensor-start")
+         } else {
+             scheduleMotionFallbackIfWorkoutDoesNotStart()
+@@ -469,8 +470,14 @@
+     }
+ 
+     private func makeJumpDetector(for requestedEngine: DetectionEngine) -> (engine: DetectionEngine, detector: JumpDetecting, fallbackReason: String?) {
+         switch requestedEngine {
++        case .v16BigAir:
++            let readiness = JumpDetectorV16.readinessReport()
++            if !readiness.isReady {
++                print("🦘 V16 selected despite readiness issue; keeping V16 active: \(readiness.logDetails)")
++            }
++            return (.v16BigAir, JumpDetectorV16(), nil)
+         case .v11Buffered:
+             return (.v11Buffered, JumpDetectorV11(), nil)
+         case .sensorRecorder:
+             return (.sensorRecorder, SensorRecordingDetector(), nil)

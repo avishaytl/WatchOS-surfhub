@@ -154,7 +154,7 @@ func printUsage() {
 
     Options:
       --format <coreMotion|android>   Force input format (default: auto)
-      --engine <v7|v8|v10|v11|v12|v13|v14|v15>  Jump engine (default: v7). v8 = baro-centric batch; v10 = sensor-grounded kite-aware; v11 = offline buffered; v12 = Apple sensor-fusion; v13 = recall-first pure (post-landing classification); v14 = hybrid IMU+pressure with on-demand absolute cross-check; v15 = clean IMU-led (yank→quiet→impact) with continuous absolute apexFit measurement.
+      --engine <v7|v8|v10|v11|v12|v13|v14|v15|v16>  Jump engine (default: v7). v16 = isolated big-air world-Z lift shelf + fixed-window IMU matched filter; barometer ignored, GPS metrics only.
       --compare-engines               Run two engines (default v10 vs v11) over each log and emit a diff + quality report.
       --compare-baseline <eng>        Baseline engine for --compare-engines (default: v10).
       --compare-candidate <eng>       Candidate engine for --compare-engines (default: v11).
@@ -214,6 +214,8 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 detector = JumpDetectorV14()
             case "v15", "v15-clean":
                 detector = JumpDetectorV15()
+            case "v16", "v16-big-air":
+                detector = JumpDetectorV16()
             default:
                 fputs("unknown engine: \(opts.engine)\n", stderr)
                 return false
@@ -247,6 +249,12 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 let debugBase = log.samples.first?.motionTimestamp ?? 0
                 v15.onDebugEvent = { t, event in
                     print(String(format: "  [v15 %7.2fs] %@", t - debugBase, event))
+                }
+            }
+            if opts.verbose, let v16 = detector as? JumpDetectorV16 {
+                let debugBase = log.samples.first?.motionTimestamp ?? 0
+                v16.onDebugEvent = { t, event in
+                    print(String(format: "  [v16 %7.2fs] %@", t - debugBase, event))
                 }
             }
             if opts.verbose, let v14 = detector as? JumpDetectorV14 {
@@ -370,7 +378,15 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 let (j, base) = pair
                 let takeoff = j.startTime.timeIntervalSince(base)
                 let rich = richV11[round(takeoff * 100) / 100]
-                let accepted = (opts.engine.hasPrefix("v11") || opts.engine.hasPrefix("v12") || opts.engine.hasPrefix("v13") || opts.engine.hasPrefix("v14") || opts.engine.hasPrefix("v15")) ? true : j.confidence >= 50
+                let accepted: Bool
+                if opts.engine.hasPrefix("v15") {
+                    accepted = j.gpsVerified != false
+                } else if opts.engine.hasPrefix("v11") || opts.engine.hasPrefix("v12")
+                            || opts.engine.hasPrefix("v13") || opts.engine.hasPrefix("v14") {
+                    accepted = true
+                } else {
+                    accepted = j.confidence >= 50
+                }
                 return ReplayJump(
                     index: i,
                     takeoffOffsetSec: takeoff,
@@ -382,6 +398,8 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                     confidence: j.confidence,
                     rotations: j.rotations,
                     jumpDistance: j.jumpDistance,
+                    gpsVerified: j.gpsVerified,
+                    takeoffGroundSpeed: j.takeoffGroundSpeed,
                     accepted: accepted
                 )
             }
@@ -702,6 +720,8 @@ private func detectV8(log: LoadedLog, opts: CLIOptions) -> [ReplayJump] {
             confidence: r.confidence * 100,
             rotations: 0,
             jumpDistance: r.jumpDistanceM ?? 0,
+            gpsVerified: nil,
+            takeoffGroundSpeed: nil,
             accepted: true
         )
     }

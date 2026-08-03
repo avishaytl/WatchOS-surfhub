@@ -1497,9 +1497,10 @@ public final class JumpEngineV15 {
             // >= gpsVerifyMinSpeedMS is exactly the independent corroboration
             // that worry lacked, and it is not available to a stationary
             // phantom. Unverified rescues stay rejected.
-            guard !flight.rescued else {
-                rejectDebug(emittedAt, "REJECT reason=rescueNeedsMeasuredHeight "
-                    + "hBal=\(fmt(ballisticH)) air=\(fmt(airtime))")
+            if flight.rescued && !gpsVerified {
+                rejectDebug(emittedAt, "REJECT reason=rescueNeedsMeasuredHeightOrRideVerification "
+                    + "hBal=\(fmt(ballisticH)) air=\(fmt(airtime)) "
+                    + "gpsSpeed=\(fmt(takeoffSpeed ?? 0))")
                 return nil
             }
             if flight.rescued {

@@ -1,0 +1,32 @@
+--- a/Kiters Watch App/Services/JumpDetectorV15.swift
++++ b/Kiters Watch App/Services/JumpDetectorV15.swift
+@@ -274,11 +274,28 @@
+                                  receivedT: TimeInterval,
+                                  altitudeM: Double,
+                                  accuracyM: Double?,
+                                  precisionM: Double?) {
+         guard altitudeM.isFinite else { return }
+-        _ = precisionM
++
++        // `precision` is the ONLY field that tracks whether the fused absolute
++        // altitude is actually alive. Measured over 7,612 samples of log_287:
++        //
++        //   precision = 5.0  ->   968 samples,     2 distinct values (0 %)
++        //                         ...while `accuracy` reported 0.002-2.9,
++        //                         i.e. "excellent" for a frozen channel.
++        //   precision = 0.5  -> 6,644 samples, 5,339 distinct values (80 %)
++        //                         ...while `accuracy` reported ~9.5, "poor".
++        //
++        // So `accuracy` is INVERTED with respect to usefulness and the engine's
++        // accuracy-based drop rule trusts exactly the wrong samples. Treat a
++        // coarse-precision reading as an ABSENT channel, the same way the
++        // engine already treats a frozen one.
++        if let precisionM, precisionM > 1.0 {
++            logEvent("v15 abs drop reason=coarsePrecision precision=\(precisionM) accuracy=\(accuracyM.map { String(format: "%.3f", $0) } ?? "n/a")")
++            return
++        }
+ 
+         submitToEngine { [weak self] in
+             guard let self else { return }
+             self.hasDirectAbsoluteStream = true
+             let t = self.alignedAbsoluteTimestamp(sensorT: sensorT, receivedT: receivedT)

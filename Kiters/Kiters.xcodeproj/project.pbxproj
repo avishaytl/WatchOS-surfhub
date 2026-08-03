@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		AA000003AAAA00030000000A /* Kiters Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = FD21BC4F2F4DCE390045254A /* Kiters Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B16000000000000000000021 /* JumpEngineV16.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000011 /* JumpEngineV16.swift */; };
+		B16000000000000000000022 /* JumpDetectorV16.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000012 /* JumpDetectorV16.swift */; };
+		B16000000000000000000023 /* V16SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000013 /* V16SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +40,9 @@
 /* Begin PBXFileReference section */
 		AA000010AAAA00100000000A /* Kiters.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kiters.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000060AAAA00600000000A /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		B16000000000000000000011 /* JumpEngineV16.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JumpEngineV16.swift; path = ../engines/engine_v16/JumpEngineV16.swift; sourceTree = "<group>"; };
+		B16000000000000000000012 /* JumpDetectorV16.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JumpDetectorV16.swift; path = ../engines/engine_v16/JumpDetectorV16.swift; sourceTree = "<group>"; };
+		B16000000000000000000013 /* V16SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = V16SettingsView.swift; path = ../engines/engine_v16/V16SettingsView.swift; sourceTree = "<group>"; };
 		FD21BC4F2F4DCE390045254A /* Kiters Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Kiters Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -95,12 +101,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B16000000000000000000030 /* Engine V16 */ = {
+			isa = PBXGroup;
+			children = (
+				B16000000000000000000011 /* JumpEngineV16.swift */,
+				B16000000000000000000012 /* JumpDetectorV16.swift */,
+				B16000000000000000000013 /* V16SettingsView.swift */,
+			);
+			name = "Engine V16";
+			sourceTree = "<group>";
+		};
 		FD21BC392F4DCE380045254A = {
 			isa = PBXGroup;
 			children = (
 				AA000060AAAA00600000000A /* Config.xcconfig */,
 				AA000020AAAA00200000000A /* Kiters iOS App */,
 				FD21BC532F4DCE390045254A /* Kiters Watch App */,
+				B16000000000000000000030 /* Engine V16 */,
 				FD21BC432F4DCE380045254A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -231,6 +248,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B16000000000000000000022 /* JumpDetectorV16.swift in Sources */,
+				B16000000000000000000021 /* JumpEngineV16.swift in Sources */,
+				B16000000000000000000023 /* V16SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
