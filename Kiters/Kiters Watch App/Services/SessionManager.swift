@@ -1398,6 +1398,36 @@ class SessionManager: ObservableObject {
         let jData: [[String: Int]]
     }
 
+    /// Speed retention: ground speed 1.5 s AFTER the landing over ground speed
+    /// 1.0 s BEFORE the pop. 114 % means the rider landed and accelerated away,
+    /// 20 % means they stopped dead; the log-287 median is 50 %, so losing half
+    /// the speed is normal and a rider who holds 80 % is doing something right.
+    ///
+    /// ⚠️ Computed HERE, at upload, and not inside JumpEngineV16 where the rest
+    /// of the per-jump diagnostics live. The engine finalises a big jump the
+    /// moment `now` reaches the landing instant, so a fix 1.5 s LATER does not
+    /// exist yet — the engine would silently read the speed AT touchdown
+    /// instead, which is a different and much lower quantity, and one that
+    /// varies with which evaluation path the jump happened to take. At session
+    /// end the whole track is on hand and the number is simply correct.
+    ///
+    /// nil without fixes on both sides, and nil when the landing was never
+    /// resolved. It is an OUTPUT: nothing may gate on it.
+    private func speedRetention(for jump: Jump, in session: Session) -> Double? {
+        guard !jump.hasUnresolvedAirtime, jump.endTime > jump.startTime else { return nil }
+        // ±3 s, the same tolerance the engine applies to its own GPS lookups.
+        func speed(near t: Date) -> Double? {
+            guard let fix = session.gpsPoints.min(by: {
+                abs($0.timestamp.timeIntervalSince(t)) < abs($1.timestamp.timeIntervalSince(t))
+            }), abs(fix.timestamp.timeIntervalSince(t)) <= 3.0 else { return nil }
+            return fix.speed
+        }
+        guard let before = speed(near: jump.startTime.addingTimeInterval(-1.0)),
+              let after = speed(near: jump.endTime.addingTimeInterval(1.5)),
+              before > 0.5 else { return nil }   // a stopped rider has no ratio
+        return after / before
+    }
+
     private func completedSessionUploadPayload(for session: Session) -> CompletedSessionUploadPayload {
         let durMin  = max(1, Int(session.duration / 60))
         let jmax    = session.jumps.map(\.height).max() ?? 0
@@ -1417,7 +1447,7 @@ class SessionManager: ObservableObject {
                 $0.timestamp >= j.startTime && $0.timestamp <= j.endTime
             }
             let jumpTopSpeed = jumpGpsPoints.map(\.speed).max() ?? nearestToTakeoff?.speed ?? 0
-            return [
+            var entry: [String: Int] = [
                 "t": Int(j.startTime.timeIntervalSince(startTime)),
                 "h": Int(j.height * 100),        // cm
                 "a": Int(j.airtime * 10),         // tenths-sec
@@ -1426,6 +1456,36 @@ class SessionManager: ObservableObject {
                 "y": Int(((nearestToTakeoff?.latitude  ?? 0) * 1e4).rounded()),
                 "x": Int(((nearestToTakeoff?.longitude ?? 0) * 1e4).rounded()),
             ]
+
+            // Everything below is OPTIONAL and is emitted only when the engine
+            // measured it. A phone reading an older watch's payload simply does
+            // not see these keys and falls back to its previous behaviour, so
+            // the key must be ABSENT rather than zero — a 0 lat/lng or a 0 %
+            // speed retention would read as a measurement.
+            //
+            // Integers only, like the original seven. ~40 bytes a jump, ~1.2 KB
+            // for a 30-jump session.
+
+            // Drawing anchors: landing and apex positions plus the vertical
+            // shape. Without them the phone draws a straight chord from the
+            // track's bearing — 8.09 m of error on log 287 against 4.55 m with
+            // them. The full reconstructed arc was measured too: 48x the bytes
+            // and no better (5.10 m), because it carries integration noise.
+            if let v = j.landingLatitude   { entry["ly"] = Int((v * 1e4).rounded()) }
+            if let v = j.landingLongitude  { entry["lx"] = Int((v * 1e4).rounded()) }
+            if let v = j.apexLatitude      { entry["py"] = Int((v * 1e4).rounded()) }
+            if let v = j.apexLongitude     { entry["px"] = Int((v * 1e4).rounded()) }
+            if let v = j.riseFraction      { entry["rf"] = Int((v * 100).rounded()) }
+
+            // Rider diagnostics.
+            if let v = j.takeoffYankG      { entry["yk"] = Int((v * 10).rounded()) }
+            if let v = j.landingImpactG    { entry["lg"] = Int((v * 10).rounded()) }
+            if let v = j.rotationRevs      { entry["rt"] = Int((v * 100).rounded()) }
+            if let v = j.edgeLoadG         { entry["eg"] = Int((v * 100).rounded()) }
+            if let v = speedRetention(for: j, in: session) {
+                entry["sr"] = Int((v * 100).rounded())
+            }
+            return entry
         }
 
         var track: [[Int]] = []

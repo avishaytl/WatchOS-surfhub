@@ -89,13 +89,26 @@ final class JumpDetectorV16: JumpDetecting, JumpEngineV16Delegate {
         jump.apexTime = result.airtimeSec.map { $0 / 2 }
         jump.jumpDistance = result.distanceM ?? 0
         jump.confidence = result.confidence * 100
-        jump.heightSource = "v16-imu-matched-filter"
+        // Per-jump, as on the watch: "flight" is the 16.2 metre measurement,
+        // "freefall" a ballistic event, "matched" the 16.1 calibrated fallback
+        // taken when the landing never resolved.
+        jump.heightSource = "v16-imu-\(result.heightSource.rawValue)"
         jump.takeoffSpeed = result.takeoffSpeedMS
         jump.detectionConfidence = result.confidence * 100
         jump.matchedFilterApexRawM = result.apexRawM
         jump.liftPlateauDurationSec = result.liftPlateauSec
         jump.airtimeConfidence = result.airtimeSec == nil ? "unresolved" : "low"
         jump.takeoffGroundSpeed = result.takeoffSpeedMS
+        // Same optional-in, optional-out contract as the watch adapter.
+        jump.landingLatitude = result.landLat
+        jump.landingLongitude = result.landLng
+        jump.apexLatitude = result.apexLat
+        jump.apexLongitude = result.apexLng
+        jump.riseFraction = result.riseFraction
+        jump.takeoffYankG = result.yankG
+        jump.landingImpactG = result.landingImpactG
+        jump.rotationRevs = result.rotationRevs
+        jump.edgeLoadG = result.edgeLoadG
 
         if collectingFlush {
             flushed.append(jump)

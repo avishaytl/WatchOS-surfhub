@@ -119,6 +119,37 @@ struct Jump: Identifiable, Codable {
     /// `low` or `unresolved` for V16; nil for engines with a validated airtime.
     var airtimeConfidence: String?
 
+    // MARK: Flight-path anchors — the phone draws the arc from these
+    //
+    // The take-off fix plus a scalar distance cannot say which WAY the jump
+    // went, so the phone falls back to the GPS track's bearing and draws a
+    // straight chord: 8.09 m of error measured against the mid-flight fixes on
+    // log 287. These two extra positions take that to 4.55 m. All nil when the
+    // landing was never resolved — the phone renders nothing rather than a
+    // guess, and must NOT substitute defaults.
+    var landingLatitude: Double?
+    var landingLongitude: Double?
+    var apexLatitude: Double?
+    var apexLongitude: Double?
+    /// Apex time ÷ airtime, 0...1 — the vertical shape of the arc. Measured
+    /// 0.33-0.61 (median 0.40) across the log-287 goldens; without it the phone
+    /// assumes 0.42 for every jump.
+    var riseFraction: Double?
+
+    // MARK: Rider diagnostics
+    /// Peak load at the pop (g) — how violently the board released.
+    var takeoffYankG: Double?
+    /// Peak load at touchdown (g). A clean landing is progressive, a slam is a
+    /// spike; read with `speedRetention`, which says whether the rider rode away.
+    var landingImpactG: Double?
+    /// Gyro integral over the flight, in revolutions. The WRIST's rotation —
+    /// an arm movement counts — so present it as a rotation INDEX, never as a
+    /// spin count.
+    var rotationRevs: Double?
+    /// Mean load over the 1.5 s before the pop (g): how hard the rider carved
+    /// into the send.
+    var edgeLoadG: Double?
+
     init(sessionId: String, startTime: Date) {
         self.id = UUID().uuidString
         self.sessionId = sessionId
@@ -146,6 +177,15 @@ struct Jump: Identifiable, Codable {
         self.matchedFilterApexRawM = nil
         self.liftPlateauDurationSec = nil
         self.airtimeConfidence = nil
+        self.landingLatitude = nil
+        self.landingLongitude = nil
+        self.apexLatitude = nil
+        self.apexLongitude = nil
+        self.riseFraction = nil
+        self.takeoffYankG = nil
+        self.landingImpactG = nil
+        self.rotationRevs = nil
+        self.edgeLoadG = nil
     }
 }
 
@@ -446,7 +486,7 @@ enum DetectionMode: String, Codable, CaseIterable {
 /// Stored in UserDefaults as "detectionEngine". Takes effect at next session start.
 enum DetectionEngine: String, Codable, CaseIterable {
     case v11Buffered = "v11-buffered"  // offline buffered engine (3–5 s delayed, fewer false positives) — current default
-    case v16BigAir = "v16-big-air"      // isolated quaternion/world-Z matched-filter engine for validated big-air sessions
+    case v16BigAir = "v16-big-air"      // isolated quaternion/world-Z IMU engine; height integrated over the measured flight
     case v15Clean = "v15-clean"        // IMU-led detection (yank→quiet→impact) + continuous single-consumer absolute barometer measuring via apexFit
     case v14Hybrid = "v14-hybrid"      // IMU+pressure detection; absolute altimeter sampled on demand per jump for the height cross-check
     case sensorRecorder = "sensor-recorder" // no detection at all: every sensor streams continuously into the .kslog for ground-truth capture
@@ -460,7 +500,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .v11Buffered: return "V11 Buffered"
-        case .v16BigAir: return "V16.1 Big Air (Default)"
+        case .v16BigAir: return "V16.2 Big Air (Default)"
         case .v15Clean: return "V15 Clean (Beta)"
         case .v14Hybrid: return "V14 Hybrid (Beta)"
         case .sensorRecorder: return "Sensor Recorder"
@@ -475,7 +515,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var description: String {
         switch self {
         case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
-        case .v16BigAir: return "Big-air first, IMU only — the barometer is not used at all. A pop opens a candidate; a sustained LIFT PLATEAU in world-vertical acceleration confirms it, which admits 0 of 19 pops on a waves-only control session. Height is a fixed-window bounded double integration: 19/23 recall at 0.43 m MAE across three sessions, 2.1-8.5 m. Airtime is measured from where the water arrests the descent — 14/14 at 0.34 s. Jumps at or above 2.5 m are delivered ~0.9-3.9 s after landing; smaller ones wait out the dedup hold. Below ~2.5 m the height is a population estimate, not a measurement — the signal carries no height information there, and substituting V15 there makes it worse, not better (0.36 -> 0.47 m), because V15's low-band output is a near-constant by construction."
+        case .v16BigAir: return "Big-air first, IMU only — the barometer is not used at all. A pop opens a candidate; a sustained LIFT SHELF in world-vertical acceleration confirms it, which admits 0 of 19 pops on a waves-only control session. Height is measured by endpoint-anchored double integration over the flight and is reported in metres with no calibration constant: 0.30 m MAE pooled over 37 goldens from five sessions, 0.21 m on a small-jump session (1.5–3.7 m) and 0.42 m on big air (2.1–8.5 m). Recall 36/39. Hand throws on a bench are detected too, so the watch can be tested without going on the water. Airtime is measured from where the water arrests the descent and carries about 0.46 s of error — treat it as an estimate, never as a gate. Jumps at or above 2.5 m are delivered ~0.9-3.9 s after landing; smaller ones wait out the dedup hold."
         case .sensorRecorder: return "Recording only: no jump detection, no formulas. Every sensor (IMU 200Hz, relative + absolute altimeter, GPS, submersion) streams continuously into the session log for offline analysis."
         case .v15Clean: return "IMU-led second generation: a yank spike opens, flight-quiet sustains, a physical impact (or baro return-to-base) closes. The absolute barometer streams continuously for the whole session as the single consumer and measures height via a parabolic apex fit, with relative-pressure and ballistic fallbacks. No GPS or turbulence gates."
         case .v14Hybrid: return "Hybrid: IMU unweight + pressure-baseline formula opens a jump; the absolute altimeter runs only from takeoff to a stable landing baseline and cross-checks the peak height. Works fully without GPS."

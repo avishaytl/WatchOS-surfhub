@@ -92,7 +92,14 @@ final class JumpDetectorV16: JumpDetecting {
                 + "pop=\(configuration.popMinG)g shelf>=\(configuration.minLiftPlateauSec)s "
                 + "lift>\(configuration.liftThreshMS2)m/s2 "
                 + "apex=[-\(configuration.apexPreSec),+\(configuration.apexPostSec)]s "
-                + "height=\(configuration.heightScale)*raw+\(configuration.heightOffsetM)m "
+                // 16.2: the height is the flight integral, in metres. The
+                // scale/offset pair is only the FALLBACK for an unresolved
+                // landing, so the log has to say which one is armed — a field
+                // log that still reads "height=1.91*raw+1.43" would send the
+                // next analysis down the 16.1 path.
+                + "height=\(configuration.heightFromFlight ? "flightIntegral(m)" : "matchedFilter")"
+                + " fallback=\(configuration.heightScale)*raw+\(configuration.heightOffsetM)m "
+                + "freeFall<\(configuration.freeFallG)g/\(configuration.minFreeFallSec)s "
                 + "minReport=\(configuration.minReportM)m barometer=unused gps=metricsOnly "
                 + readiness.logDetails
         )
@@ -218,13 +225,30 @@ final class JumpDetectorV16: JumpDetecting {
         // tell the rider the peak happened before takeoff.
         jump.apexTime = result.airtimeSec.map { $0 / 2 }
         jump.confidence = result.confidence * 100
-        jump.heightSource = "v16-imu-matched-filter"
+        // Which operator produced the number, per jump — "v16-imu-flight" is a
+        // measurement in metres, "v16-imu-matched-filter" is the calibrated
+        // correlate that ran because the landing never resolved. Stamping one
+        // constant here would make the two indistinguishable downstream.
+        jump.heightSource = "v16-imu-\(result.heightSource.rawValue)"
         jump.takeoffSpeed = result.takeoffSpeedMS
         jump.detectionConfidence = result.confidence * 100
         jump.matchedFilterApexRawM = result.apexRawM
         jump.liftPlateauDurationSec = result.liftPlateauSec
         jump.airtimeConfidence = result.airtimeSec == nil ? "unresolved" : "low"
         jump.takeoffGroundSpeed = result.takeoffSpeedMS
+        // Flight-path anchors and rider diagnostics. Every one is optional at
+        // the source and stays optional here — an unresolved landing leaves the
+        // arc un-drawable, and the phone is specified to render nothing rather
+        // than fill in a default.
+        jump.landingLatitude = result.landLat
+        jump.landingLongitude = result.landLng
+        jump.apexLatitude = result.apexLat
+        jump.apexLongitude = result.apexLng
+        jump.riseFraction = result.riseFraction
+        jump.takeoffYankG = result.yankG
+        jump.landingImpactG = result.landingImpactG
+        jump.rotationRevs = result.rotationRevs
+        jump.edgeLoadG = result.edgeLoadG
         return jump
     }
 
@@ -233,7 +257,7 @@ final class JumpDetectorV16: JumpDetecting {
         let airtimeText = result.airtimeSec.map { String(format: "%.2f", $0) } ?? "n/a"
         let distanceText = result.distanceM.map { String(format: "%.2f", $0) } ?? "n/a"
         let event = [
-            "JUMP(v16) FINAL h=\(jump.height)m rawApex=\(result.apexRawM)m",
+            "JUMP(v16) FINAL h=\(jump.height)m src=\(result.heightSource.rawValue) rawApex=\(result.apexRawM)m",
             "shelf=\(result.liftPlateauSec)s air=\(airtimeText)s airConfidence=low",
             "dist=\(distanceText)m yank=\(result.yankG)g peak=\(result.peakG)g",
             "float=\(result.floatFraction) gyro=\(result.maxGyroRadS)rad/s",

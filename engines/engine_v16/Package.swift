@@ -22,6 +22,7 @@ let package = Package(
                 "V16_WATCH_INTEGRATION_REVIEW_HE.pdf",
                 "V16_HANDOFF",
                 "V16_1_HANDOFF",
+                "V16_2_HANDOFF",
                 "Tests",
             ],
             sources: ["JumpEngineV16.swift"]
