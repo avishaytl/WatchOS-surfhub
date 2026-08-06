@@ -6,6 +6,58 @@
 //
 
 import Foundation
+import Compression
+
+/// RFC 1952 (gzip) encoder.
+///
+/// Foundation has no gzip API. `NSData.compressed(using: .zlib)` is the
+/// Compression framework's COMPRESSION_ZLIB, which despite the name emits RAW
+/// DEFLATE (RFC 1951) with no container at all — send that as
+/// `Content-Encoding: gzip` and every decoder rejects it. The 10-byte header
+/// and 8-byte trailer below are what make it a gzip stream; the trailer's CRC
+/// and length are checked by the receiver, so they are not optional padding.
+private enum Gzip {
+    static func compress(_ data: Data) -> Data? {
+        guard !data.isEmpty else { return nil }
+        guard let deflated = try? (data as NSData).compressed(using: .zlib) as Data else {
+            return nil
+        }
+
+        var out = Data(capacity: deflated.count + 18)
+        out.append(contentsOf: [
+            0x1f, 0x8b,             // magic
+            0x08,                   // DEFLATE
+            0x00,                   // no optional fields
+            0x00, 0x00, 0x00, 0x00, // mtime: unset — the filename is in the envelope
+            0x00,                   // no extra flags
+            0xff,                   // unknown OS
+        ])
+        out.append(deflated)
+        withUnsafeBytes(of: crc32(data).littleEndian) { out.append(contentsOf: $0) }
+        // ISIZE is the uncompressed length modulo 2^32 by definition, so the
+        // truncation here is the spec, not a bug.
+        withUnsafeBytes(of: UInt32(truncatingIfNeeded: data.count).littleEndian) {
+            out.append(contentsOf: $0)
+        }
+        return out
+    }
+
+    private static let table: [UInt32] = (0..<256).map { i in
+        (0..<8).reduce(UInt32(i)) { c, _ in (c & 1) == 1 ? 0xEDB8_8320 ^ (c >> 1) : c >> 1 }
+    }
+
+    private static func crc32(_ data: Data) -> UInt32 {
+        var crc: UInt32 = 0xFFFF_FFFF
+        table.withUnsafeBufferPointer { table in
+            data.withUnsafeBytes { raw in
+                for byte in raw.bindMemory(to: UInt8.self) {
+                    crc = table[Int((crc ^ UInt32(byte)) & 0xFF)] ^ (crc >> 8)
+                }
+            }
+        }
+        return crc ^ 0xFFFF_FFFF
+    }
+}
 
 enum CloudSyncError: LocalizedError {
     case missingBaseURL
@@ -72,12 +124,72 @@ final class CloudSyncService {
     private static func makeDefaultSession() -> URLSession {
         let configuration = URLSessionConfiguration.default
         configuration.waitsForConnectivity = true
-        configuration.timeoutIntervalForRequest = 30
-        configuration.timeoutIntervalForResource = 120
+        // IDLE timeout — the longest gap allowed BETWEEN packets, not a cap on
+        // the transfer. 30 s was tight for a watch relaying through the phone
+        // over Bluetooth, where a stall of that length is ordinary.
+        configuration.timeoutIntervalForRequest = 60
+        // TOTAL timeout for the whole transfer, and the one that was actually
+        // failing: a 22 MB session log pushed off the wrist over BT/WiFi does
+        // not finish inside 120 s, so every large upload died with
+        // NSURLErrorTimedOut ("The request timed out") no matter how healthy
+        // the link was. 10 minutes, which is generous even for an uncompressed
+        // body on a slow link — the gzip path below normally lands in seconds.
+        configuration.timeoutIntervalForResource = 600
         return URLSession(configuration: configuration)
     }
 
     func uploadLog(_ fileURL: URL) async throws -> CloudLogUploadResponse {
+        let sessionName = fileURL.deletingPathExtension().lastPathComponent
+        var request = try makeRequest(
+            method: "POST",
+            queryItems: [
+                URLQueryItem(name: "device", value: deviceId),
+                URLQueryItem(name: "session", value: sessionName)
+            ]
+        )
+        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+
+        // The envelope is built inside its own scope so the file bytes and the
+        // uncompressed envelope are both released BEFORE the upload starts. A
+        // 22 MB log otherwise sits in memory three times over — file, envelope,
+        // compressed body — for the whole transfer, on a watch.
+        let payload = try makeUploadPayload(for: fileURL)
+        if payload.isGzipped {
+            // Transport-level encoding. The KLOG envelope's own
+            // `contentEncoding` field still describes the INNER log bytes and
+            // stays "binary" — the server gunzips first, then parses exactly
+            // what it parsed before.
+            request.setValue("gzip", forHTTPHeaderField: "Content-Encoding")
+        }
+
+        let (data, response) = try await session.upload(for: request, from: payload.body)
+        try validate(response)
+
+        let uploadResponse = (try? JSONDecoder().decode(CloudLogUploadResponse.self, from: data))
+            ?? CloudLogUploadResponse(id: nil, status: "uploaded", message: nil, ok: nil, path: nil)
+        if let path = uploadResponse.path, !path.isEmpty {
+            defaults.set(path, forKey: "cloudLastLogPath")
+        }
+        return uploadResponse
+    }
+
+    private struct UploadPayload {
+        let body: Data
+        let isGzipped: Bool
+    }
+
+    /// Reads the log, wraps it in the KLOG envelope, and gzips the result when
+    /// that actually helps.
+    ///
+    /// A session log is half a million lines of decimal numbers, so it deflates
+    /// by roughly 5-10x: the 22 MB upload that was timing out goes out as a few
+    /// MB and lands in seconds. It also clears the server's body-size ceiling,
+    /// which the raw envelope exceeded outright.
+    ///
+    /// Falls back to the uncompressed body whenever compression fails or fails
+    /// to pay — an older server that ignores `Content-Encoding` then still sees
+    /// exactly the bytes it saw before.
+    private func makeUploadPayload(for fileURL: URL) throws -> UploadPayload {
         guard let fileData = try? Data(contentsOf: fileURL) else {
             throw CloudSyncError.missingFileData
         }
@@ -88,16 +200,6 @@ final class CloudSyncService {
         let logContentType = fileURL.pathExtension.lowercased() == "kslog"
             ? "application/x-kiters-session-log"
             : "application/octet-stream"
-
-        let sessionName = fileURL.deletingPathExtension().lastPathComponent
-        var request = try makeRequest(
-            method: "POST",
-            queryItems: [
-                URLQueryItem(name: "device", value: deviceId),
-                URLQueryItem(name: "session", value: sessionName)
-            ]
-        )
-        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
 
         let envelope = BinaryLogEnvelope(fields: [
             .string("type", "session_log"),
@@ -111,15 +213,10 @@ final class CloudSyncService {
         ])
         let body = envelope.encoded()
 
-        let (data, response) = try await session.upload(for: request, from: body)
-        try validate(response)
-
-        let uploadResponse = (try? JSONDecoder().decode(CloudLogUploadResponse.self, from: data))
-            ?? CloudLogUploadResponse(id: nil, status: "uploaded", message: nil, ok: nil, path: nil)
-        if let path = uploadResponse.path, !path.isEmpty {
-            defaults.set(path, forKey: "cloudLastLogPath")
+        if let gzipped = Gzip.compress(body), gzipped.count < body.count {
+            return UploadPayload(body: gzipped, isGzipped: true)
         }
-        return uploadResponse
+        return UploadPayload(body: body, isGzipped: false)
     }
 
     func uploadLogs(_ fileURLs: [URL]) async throws -> Int {
@@ -202,7 +299,10 @@ final class CloudSyncService {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.timeoutInterval = 45
+        // Per-request IDLE timeout; it OVERRIDES timeoutIntervalForRequest, so
+        // leaving it at 45 would have undone half the fix above. It does not
+        // cap the transfer — timeoutIntervalForResource does that.
+        request.timeoutInterval = 60
         request.setValue("*/*", forHTTPHeaderField: "Accept")
 
         if let authToken, !authToken.isEmpty {
