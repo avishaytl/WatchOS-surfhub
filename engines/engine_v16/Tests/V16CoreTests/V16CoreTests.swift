@@ -20,8 +20,8 @@ final class V16CoreTests: XCTestCase {
 
     // MARK: 16.2 identity
 
-    func testEngineReportsVersion16_2() {
-        XCTAssertEqual(JumpEngineV16.version, "16.2")
+    func testEngineReportsVersion16_3() {
+        XCTAssertEqual(JumpEngineV16.version, "16.3")
     }
 
     /// The defaults 16.1 and 16.2 moved, plus the parameters 16.2 introduced.
@@ -29,6 +29,22 @@ final class V16CoreTests: XCTestCase {
     /// with nothing in the log to explain it.
     func testShippedCalibrationDefaults() {
         let cfg = V16Config()
+        // 16.3
+        XCTAssertTrue(cfg.landSettleFallback)
+        XCTAssertEqual(cfg.landSettleBandG, 0.30, accuracy: 1e-9)
+        XCTAssertEqual(cfg.landSettleMinSec, 0.4, accuracy: 1e-9)
+        XCTAssertEqual(cfg.landSettleFromSec, 1.0, accuracy: 1e-9)
+        XCTAssertEqual(cfg.landSettleToSec, 9.0, accuracy: 1e-9)
+        XCTAssertTrue(cfg.phantomFilter)
+        XCTAssertEqual(cfg.phantomShelfSec, 1.05, accuracy: 1e-9)
+        XCTAssertEqual(cfg.phantomShelfWideSec, 1.20, accuracy: 1e-9)
+        XCTAssertEqual(cfg.phantomWideHeightM, 2.0, accuracy: 1e-9)
+        // The wide clause only makes sense as a RELAXATION of the narrow one.
+        XCTAssertGreaterThanOrEqual(cfg.phantomShelfWideSec, cfg.phantomShelfSec)
+        // The settle search must start after the pop, or the take-off's own
+        // quiet moment reads as a landing.
+        XCTAssertGreaterThan(cfg.landSettleFromSec, 0)
+        XCTAssertLessThan(cfg.landSettleFromSec, cfg.landSettleToSec)
         // 16.2
         XCTAssertEqual(cfg.popClusterSec, 0.8, accuracy: 1e-9)
         XCTAssertEqual(cfg.apexAnchorSec, 2.0, accuracy: 1e-9)
@@ -201,12 +217,7 @@ final class V16CoreTests: XCTestCase {
         let engine = JumpEngineV16()
         engine.delegate = delegate
 
-        feed(into: engine, until: 8.0) { t in
-            if t >= 0 && t < 0.02 { return 2.0 }
-            if t >= 0 && t < 1.2 { return 0.57 }
-            if t >= 1.2 { return -0.45 }    // descends to the end of the feed
-            return 0
-        }
+        feedUnresolvedLanding(into: engine)
 
         XCTAssertEqual(delegate.jumps.count, 1)
         XCTAssertNil(delegate.jumps[0].airtimeSec)
@@ -282,14 +293,7 @@ final class V16CoreTests: XCTestCase {
         XCTAssertEqual(source { feedSyntheticJump(into: $0) }, .flight)
         XCTAssertEqual(source { feedThrow(into: $0, freeFallSec: 1.4) }, .freefall)
         // No landing ever resolves -> no window -> the matched-filter fallback.
-        XCTAssertEqual(source { engine in
-            feed(into: engine, until: 8.0) { t in
-                if t >= 0 && t < 0.02 { return 2.0 }
-                if t >= 0 && t < 1.2 { return 0.57 }
-                if t >= 1.2 { return -0.45 }
-                return 0
-            }
-        }, .matched)
+        XCTAssertEqual(source { feedUnresolvedLanding(into: $0) }, .matched)
     }
 
     // MARK: 16.2 change A2 — the free-fall integration window
@@ -530,12 +534,7 @@ final class V16CoreTests: XCTestCase {
         let engine = JumpEngineV16()
         engine.delegate = delegate
 
-        feed(into: engine, until: 8.0, gpsSpeedMS: 10) { t in
-            if t >= 0 && t < 0.02 { return 2.0 }
-            if t >= 0 && t < 1.2 { return 0.57 }
-            if t >= 1.2 { return -0.45 }   // never arrested
-            return 0
-        }
+        feedUnresolvedLanding(into: engine, gpsSpeedMS: 10)
 
         XCTAssertEqual(delegate.jumps.count, 1)
         let jump = delegate.jumps[0]
@@ -606,7 +605,113 @@ final class V16CoreTests: XCTestCase {
         XCTAssertGreaterThan(slam, soft + 1.0)
     }
 
+    // MARK: 16.3 change 1 — the settle fallback
+
+    /// When the descent is never ARRESTED but the rider ends up supported again
+    /// — specific force back to ~1 g and staying there — that instant is the
+    /// landing. It matters far more than a missing airtime: without a window
+    /// the height falls back to the matched filter, and on the five GAVRI jumps
+    /// that never resolved that was the difference between 0.77 m and 0.20 m of
+    /// error. Here the same fixture reads 1.43 m (the matched filter's floor
+    /// output, i.e. no information) with the fallback off and measures a real
+    /// height with it on.
+    func testSettleFallbackSuppliesAWindowWhenTheArrestRuleCannot() {
+        func run(_ cfg: V16Config) -> V16Jump? {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            // Unloaded flight, then straight back to normal support: no
+            // sustained DESCENT for the arrest rule to find the end of.
+            feed(into: engine) { t in
+                if t >= 0 && t < 0.02 { return 2.0 }
+                if t >= 0 && t < 2.6 { return 0.57 }
+                return 0
+            }
+            return delegate.jumps.first
+        }
+
+        var off = V16Config()
+        off.landSettleFallback = false
+
+        guard let withFallback = run(V16Config()), let without = run(off) else {
+            return XCTFail("fixture stopped emitting")
+        }
+        XCTAssertNotNil(withFallback.airtimeSec)
+        XCTAssertEqual(withFallback.heightSource, .flight)
+        XCTAssertNil(without.airtimeSec)
+        XCTAssertEqual(without.heightSource, .matched)
+        XCTAssertGreaterThan(withFallback.heightM, without.heightM + 1.0)
+
+        // The settled run STARTS where support resumes, so the landing lands on
+        // the end of the flight, not landSettleMinSec past it.
+        XCTAssertEqual(withFallback.airtimeSec ?? 0, 2.6, accuracy: 0.15)
+    }
+
+    // MARK: 16.3 change 2 — the phantom filter
+
+    /// An unresolved ARREST landing plus a short lift shelf is a take-off that
+    /// was never followed by a kite flight. Either sign alone is common in real
+    /// jumps, so only the conjunction fires — and it reads the arrest rule
+    /// specifically, not "do we have a landing", because the settle fallback
+    /// often supplies a window for exactly these events and the height still
+    /// uses it. Measured over six logs: removes 8 phantoms, costs zero real
+    /// jumps, and takes the suite's tallest phantom 2.54 -> 1.56 m.
+    func testPhantomFilterRejectsAnIncompleteFlight() {
+        func run(_ cfg: V16Config) -> (jumps: Int, events: [String]) {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            var events: [String] = []
+            engine.onDebug = { _, event in events.append(event) }
+            // Shelf measures 1.10 s and the height 1.43 m, so the second clause
+            // (short-and-small) is the one that fires.
+            feed(into: engine, until: 8.0) { t in
+                if t >= 0 && t < 0.02 { return 2.0 }
+                if t >= 0 && t < 1.2 { return 0.57 }
+                if t >= 1.2 { return -0.45 }   // descends to the end of the feed
+                return 0
+            }
+            return (delegate.jumps.count, events)
+        }
+
+        let on = run(V16Config())
+        XCTAssertEqual(on.jumps, 0)
+        XCTAssertTrue(on.events.contains { $0.contains("reason=incompleteFlight") })
+
+        var off = V16Config()
+        off.phantomFilter = false
+        XCTAssertEqual(run(off).jumps, 1, "the filter, not some other gate, is what removed it")
+    }
+
+    /// The filter must never reach a bench throw. A thrown watch is CAUGHT — a
+    /// deceleration the arrest rule resolves trivially — so `fromArrest` is
+    /// true and the test is skipped no matter how short the shelf is.
+    func testPhantomFilterLeavesBenchThrowsAlone() {
+        let delegate = CaptureDelegate()
+        let engine = JumpEngineV16()
+        engine.delegate = delegate
+
+        feedThrow(into: engine, freeFallSec: 1.4, catchG: 15.0)
+
+        XCTAssertEqual(delegate.jumps.count, 1)
+        XCTAssertNotNil(delegate.jumps[0].airtimeSec)
+    }
+
     // MARK: Helpers
+
+    /// A take-off whose descent is never arrested, and which survives the 16.3
+    /// phantom filter: the shelf runs past phantomShelfWideSec, so neither
+    /// clause fires and the nil-airtime SENTINEL still reaches the delegate.
+    /// That sentinel is load-bearing downstream — see the note in
+    /// JumpDetectorV16.makeJump — so it has to stay under test.
+    private func feedUnresolvedLanding(into engine: JumpEngineV16, gpsSpeedMS: Double? = nil) {
+        feed(into: engine, until: 8.0, gpsSpeedMS: gpsSpeedMS) { t in
+            if t >= 0 && t < 0.02 { return 2.0 }
+            if t >= 0 && t < 1.6 { return 0.57 }
+            if t >= 1.6 { return -0.45 }   // descends to the end of the feed
+            return 0
+        }
+    }
 
     /// Pop, sustained UNLOAD shelf (the flight), water arrest. With the
     /// defaults it measures ~4.2 m over a 3.4 s resolved flight — big air, so

@@ -1,0 +1,15 @@
+
+V16 reference suite   (engine v16.3)
+
+  log     recall   emitted  phantoms  tallest    height    airtime   distance
+  --------------------------------------------------------------------------
+  BENCH    3/4        3         0      -      0.02m     -        -   
+  SMALL   16/16      18         2    1.56m    0.21m    0.81s    4.96m
+  287     14/14      14         0      -      0.42m    0.46s    3.77m
+  NEG      0/0        0         0      -       -        -        -   
+  CLEAN    3/4        3         0      -      0.18m     -        -   
+  V142     2/5        3         1    1.54m    0.23m     -        -   
+  --------------------------------------------------------------------------
+  riding totals: recall 35/39 - pooled height MAE 0.292 m - tallest phantom 1.56 m
+
+  PASS  every guard-rail holds

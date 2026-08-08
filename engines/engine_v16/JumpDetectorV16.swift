@@ -100,6 +100,10 @@ final class JumpDetectorV16: JumpDetecting {
                 + "height=\(configuration.heightFromFlight ? "flightIntegral(m)" : "matchedFilter")"
                 + " fallback=\(configuration.heightScale)*raw+\(configuration.heightOffsetM)m "
                 + "freeFall<\(configuration.freeFallG)g/\(configuration.minFreeFallSec)s "
+                // 16.3: both are on by default and both change which candidates
+                // survive, so a field log has to say whether they were armed.
+                + "settleFallback=\(configuration.landSettleFallback) "
+                + "phantomFilter=\(configuration.phantomFilter) "
                 + "minReport=\(configuration.minReportM)m barometer=unused gps=metricsOnly "
                 + readiness.logDetails
         )

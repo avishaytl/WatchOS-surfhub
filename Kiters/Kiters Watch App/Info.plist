@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Kiters</string>
+	<string>SPOTEQ</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -19,8 +19,11 @@
 		<string>en</string>
 		<string>he</string>
 	</array>
+	<!-- Set explicitly, NOT $(PRODUCT_NAME): the target is still called
+	     "Kiters Watch App", so the substitution would put that string in
+	     front of the user anywhere CFBundleName is read. -->
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>SPOTEQ</string>
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
@@ -36,15 +39,15 @@
 	<key>ISURF_SUPABASE_ANON_KEY</key>
 	<string>$(ISURF_SUPABASE_ANON_KEY)</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Kiters reads your heart rate during sessions to display live BPM on screen.</string>
+	<string>SPOTEQ reads your heart rate during sessions to display live BPM on screen.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Kiters saves your workout sessions to Apple Health so you can track your activity over time.</string>
+	<string>SPOTEQ saves your workout sessions to Apple Health so you can track your activity over time.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Kiters tracks your location while using the app to record speed, distance, and jump locations during your session.</string>
+	<string>SPOTEQ tracks your location while using the app to record speed, distance, and jump locations during your session.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Kiters tracks your location in the background to keep recording your session even when the screen is off.</string>
+	<string>SPOTEQ tracks your location in the background to keep recording your session even when the screen is off.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Kiters uses motion, depth, and pressure sensors to detect jumps and improve water-session measurements.</string>
+	<string>SPOTEQ uses motion, depth, and pressure sensors to detect jumps and improve water-session measurements.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>

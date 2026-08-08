@@ -2,7 +2,7 @@
 //  JumpEngineV16.swift
 //  Kiters Watch App
 //
-//  V16.2 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
+//  V16.3 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
 //  two must stay behaviourally identical (same replay, same numbers).
 //
 //  V16 abandons the barometer as a height source and reconstructs the vertical
@@ -79,6 +79,24 @@
 //  advantage is a 0.75-weight shrink toward a 3.4 s prior, i.e. a constant,
 //  not a measurement.
 //
+//
+//  ── V16.3 ───────────────────────────────────────────────────────────────
+//  Two changes on top of V16.2, both measured over six logs holding 78
+//  confirmed jumps. NEITHER COSTS A SINGLE REAL JUMP: recall is 35/39 before
+//  and after. No new sensors, no new state, no API change.
+//    1. SETTLE FALLBACK — when the descent-arrest rule never resolves, look for
+//       the specific force returning to ~1 g and STAYING there. An unresolved
+//       landing costs more than a missing airtime: it also denies the height
+//       its flight window. Pooled height MAE 0.300 -> 0.292 m, GAVRI 0.468 ->
+//       0.401 m. It runs ONLY when `forced` — offered mid-flight it pre-empts
+//       the better answer and finalises on a partial flight (287: 0.30 -> 0.76 m).
+//       Airtime pays 0.93 -> 1.00 s on GAVRI for it.
+//    2. PHANTOM FILTER — reject when the ARREST rule was unresolved AND the
+//       lift shelf is short. Tallest phantom across the suite 2.54 -> 1.56 m;
+//       log 287's three phantoms go to zero. Every impact-based landing rule
+//       was measured as an alternative and all fire 1.4-3.6 s EARLY: a kite
+//       landing is soft and has NO touchdown spike (see the config comments).
+//  Set landSettleFallback=false and phantomFilter=false for exact V16.2.
 //
 //  ── V16.2 ───────────────────────────────────────────────────────────────
 //  Measured on six reference logs. Recall 31/39 -> 36/39, phantoms 9 -> 8,
@@ -346,6 +364,60 @@ public struct V16Config {
     /// landing (never resolved) is exempt — it means "not measured".
     /// Dormant on all six reference logs; a floor against regression.
     public var minAirtimeSec: TimeInterval = 1.5
+
+    /// V16.3 SETTLE FALLBACK — a second-chance landing for when the
+    /// descent-arrest rule never resolves one.
+    ///
+    /// What it is worth: an unresolved landing costs more than a missing
+    /// airtime, because it also denies the HEIGHT its flight window and drops it
+    /// to the matched-filter fallback. On the 5 GAVRI jumps that never resolved,
+    /// height error was 0.77 m and becomes 0.20 m once this window exists —
+    /// 0.468 -> 0.401 m over the session. Airtime pays 0.93 -> 1.00 s for it.
+    public var landSettleFallback = true
+    /// Distance from 1 g that still counts as settled (g).
+    public var landSettleBandG = 0.30
+    /// How long it must stay inside that band (s).
+    public var landSettleMinSec: TimeInterval = 0.4
+    /// The fallback is searched over [t0 + from, t0 + to] (s). It starts after
+    /// the pop so the take-off's own quiet moment is not mistaken for a landing.
+    public var landSettleFromSec: TimeInterval = 1.0
+    public var landSettleToSec: TimeInterval = 9.0
+
+    /// V16.3 PHANTOM FILTER — reject a jump whose FLIGHT SIGNATURE IS INCOMPLETE.
+    ///
+    /// Two independent weak signs of the same thing, and only their conjunction
+    /// fires: the descent-arrest landing never resolved (no clean end to a
+    /// sustained descent) AND the lift shelf is short (no sustained canopy
+    /// pull). Either alone is common in real jumps; together they say the
+    /// take-off was never followed by a kite flight.
+    ///
+    /// It reads the ARREST rule specifically, not "do we have a landing" —
+    /// landSettleFallback usually supplies a measurement window for these very
+    /// jumps and that window is still used for the height. "Can we measure it"
+    /// and "was it a jump" are separate questions.
+    ///
+    /// Measured across all six reference logs (78 real jumps, 22 emissions with
+    /// no reference counterpart): removes 8, costs ZERO real jumps.
+    ///     287      3 phantoms -> 0    (including the suite's tallest, 2.54 m)
+    ///     smallLog tallest 2.14 m -> 1.56 m, recall still 16/16
+    ///     GAVRI    15 unmatched -> 12
+    ///     BENCH / CLEAN / NEG  untouched — a thrown watch is CAUGHT, a 15-23 g
+    ///                          deceleration the arrest rule always resolves,
+    ///                          so the throws never reach this test.
+    ///
+    /// The second clause exists to spare ONE real jump: a 2.50 m smallLog
+    /// golden at exactly the same 1.10 s shelf as two 1.57/1.59 m phantoms.
+    /// Height separates them by 0.9 m; a single shelf threshold cannot express
+    /// that and has to sell the golden to buy the phantoms. The zero-cost
+    /// region is broad (shelf 1.15-1.25 x height 1.6-2.4 all score 8/0), so
+    /// these are not knife-edge constants — but the height bound IS fitted to
+    /// one point and should be re-checked when a new session lands.
+    public var phantomFilter = true
+    /// Shelf below this rejects on its own (given an unresolved arrest).
+    public var phantomShelfSec: TimeInterval = 1.05
+    /// A longer shelf still rejects, but only for a small jump.
+    public var phantomShelfWideSec: TimeInterval = 1.20
+    public var phantomWideHeightM = 2.0
     /// |a| at or below this counts as SETTLED motion (g).
     /// NOT free fall, despite what this field was originally called. The
     /// stream is |userAcceleration|, which reads ~0 g at REST and ~1.0 g in
@@ -460,7 +532,7 @@ public protocol JumpEngineV16Delegate: AnyObject {
 public final class JumpEngineV16 {
     /// Engine version. Bump whenever a default or a rule changes, so a replay
     /// can be attributed to the exact engine that produced it.
-    public static let version = "16.2"
+    public static let version = "16.3"
 
 
     public weak var delegate: JumpEngineV16Delegate?
@@ -659,7 +731,8 @@ public final class JumpEngineV16 {
 
         // 3. Airtime (low confidence) — resolved BEFORE the height, because the
         //    height now wants the flight window (see 3b).
-        let landingT = landing(bins, t0: t0)
+        let land0 = landing(bins, t0: t0, forced: forced)
+        let landingT = land0.t
         // An unresolved landing is the one thing worth waiting for: it is what
         // makes the emission complete (airtime and distance).
         if landingT == nil && !forced { return false }
@@ -745,6 +818,22 @@ public final class JumpEngineV16 {
             if let p = prevT, s.t - p <= cfg.maxAttitudeGapSec { gyroRadians += s.gyro * (s.t - p) }
             prevT = s.t
         }
+        // 4b. PHANTOM FILTER (see cfg.phantomFilter). Here because it needs both
+        // the shelf and the FINISHED height, and it must run BEFORE the dedup
+        // hold so a rejected candidate never displaces a real jump sitting in
+        // `pending`. It reads the ARREST rule, not landingT — the settle
+        // fallback may well have supplied the window this height was measured
+        // over, and that is a separate question from whether it was a jump.
+        if cfg.phantomFilter && !land0.fromArrest {
+            let short = shelf < cfg.phantomShelfSec
+            let shortAndSmall = shelf < cfg.phantomShelfWideSec && heightM < cfg.phantomWideHeightM
+            if short || shortAndSmall {
+                onDebug(now, "REJECT t0=\(fmt(t0)) reason=incompleteFlight "
+                    + "shelf=\(fmt(shelf))s h=\(fmt(heightM))m noArrest")
+                return true
+            }
+        }
+
         // Two different questions, two different fixes. SPEED wants the entry
         // velocity a moment before the pop starts bleeding it off, so it samples
         // at t0-1.0. DISPLACEMENT must start where the rider actually left the
@@ -958,7 +1047,70 @@ public final class JumpEngineV16 {
     /// MAE with landOffsetSec refitted out-of-sample, versus 0.75 s for a
     /// constant predictor. The old settle-based rule resolved only 17/19.
     /// airtimeSec still carries LOW CONFIDENCE: one session, one rider.
-    private func landing(_ bins: Bins, t0: TimeInterval) -> TimeInterval? {
+    ///
+    /// V16.3 wraps this: `landing()` below tries the arrest rule first and falls
+    /// back to `settleLanding()` at the deadline. `fromArrest` carries which one
+    /// answered, which is what the phantom filter reads.
+    private func landing(_ bins: Bins, t0: TimeInterval, forced: Bool)
+        -> (t: TimeInterval?, fromArrest: Bool) {
+        if let arrest = arrestLanding(bins, t0: t0) { return (arrest, true) }
+        // ONLY at the deadline. `landing()` runs on every sample while the flight
+        // is still in the air, and early on the arrest rule has not seen its
+        // descent yet — a settle window offered then would pre-empt the better
+        // answer and finalise on a partial flight (log 287: 0.30 -> 0.76 m).
+        guard forced, cfg.landSettleFallback else { return (nil, false) }
+        // May only ADD a window, never remove a jump: a settle landing shorter
+        // than minAirtimeSec is discarded rather than used, because a
+        // resolved-but-short flight is REJECTED downstream and these jumps are
+        // currently kept with airtime reported as "not measured". Turning that
+        // into a rejection would trade height accuracy for recall.
+        guard let settle = settleLanding(t0: t0), settle - t0 >= cfg.minAirtimeSec else {
+            return (nil, false)
+        }
+        return (settle, false)
+    }
+
+    /// The specific force returns to ~1 g and STAYS there: the rider is back on
+    /// the water and tracking it. Fallback only — see `landSettleFallback`.
+    ///
+    /// Runs on specific force, NOT on |userAcceleration|: sf is 1 at rest and 0
+    /// in free fall regardless of attitude, so "back to 1 g" is a
+    /// frame-independent statement about being supported again. |ua| reads
+    /// ~1.0 g in free fall and would say the opposite.
+    ///
+    /// Reports the START of the settled run, which is where support resumes;
+    /// the end would be an arbitrary landSettleMinSec later.
+    ///
+    /// `prevT` advances on every sample including rejected ones, so a reset run
+    /// re-accumulates with the real sample spacing instead of assuming a fixed
+    /// rate. The watch runs at 50 Hz and the reference logs at 200 Hz — that is
+    /// the only reason the same constants hold on both.
+    private func settleLanding(t0: TimeInterval) -> TimeInterval? {
+        let need = cfg.landSettleMinSec
+        let from = t0 + cfg.landSettleFromSec, to = t0 + cfg.landSettleToSec
+        var run = 0.0
+        var prevT = Double.nan
+        var i = ringHead
+        while i < ring.count {
+            let s = ring[i]
+            i += 1
+            if s.t < from { continue }
+            if s.t > to { break }
+            let sf = specificForce(s)
+            let dt = prevT.isFinite ? s.t - prevT : 0
+            prevT = s.t
+            if sf.isFinite, abs(sf - 1) < cfg.landSettleBandG {
+                run += dt
+                if run >= need { return s.t - need }
+            } else {
+                run = 0
+            }
+        }
+        return nil
+    }
+
+    /// The primary rule — the contract above describes this function.
+    private func arrestLanding(_ bins: Bins, t0: TimeInterval) -> TimeInterval? {
         var i0 = 0
         while i0 < bins.t.count, bins.t[i0] < t0 { i0 += 1 }
 
