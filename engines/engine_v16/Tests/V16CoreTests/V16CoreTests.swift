@@ -1,7 +1,7 @@
 import XCTest
 @testable import V16Core
 
-/// Behavioural cover for JumpEngineV16 through the 16.4 operating point.
+/// Behavioural cover for JumpEngineV16 through the 16.5 operating point.
 ///
 /// These are RULE tests, not calibration tests. The height/airtime accuracy
 /// figures in the spec were measured on real 200 Hz logs against the HOOLAN
@@ -18,10 +18,10 @@ import XCTest
 /// every number here look upside down.
 final class V16CoreTests: XCTestCase {
 
-    // MARK: 16.4 identity
+    // MARK: 16.5 identity
 
-    func testEngineReportsVersion16_4() {
-        XCTAssertEqual(JumpEngineV16.version, "16.4")
+    func testEngineReportsVersion16_5() {
+        XCTAssertEqual(JumpEngineV16.version, "16.5")
     }
 
     /// The defaults 16.1 and 16.2 moved, plus the parameters 16.2 introduced.
@@ -29,6 +29,8 @@ final class V16CoreTests: XCTestCase {
     /// with nothing in the log to explain it.
     func testShippedCalibrationDefaults() {
         let cfg = V16Config()
+        // 16.5
+        XCTAssertEqual(cfg.heightPreRollSec, 0.3, accuracy: 1e-9)
         // 16.4
         XCTAssertEqual(cfg.minLiftPlateauSec, 0.6, accuracy: 1e-9)
         XCTAssertEqual(cfg.strongShelfSec, 1.05, accuracy: 1e-9)
@@ -266,9 +268,12 @@ final class V16CoreTests: XCTestCase {
         // after the descent ends and well before the scan window closes.
         XCTAssertGreaterThan(airtime, 1.2)
         XCTAssertLessThan(airtime, V16Config().plateauScanSec)
-        // 1.32 m — a jump the 16.1 minReportM of 1.4 would have censored.
-        XCTAssertGreaterThanOrEqual(delegate.jumps[0].heightM, 1.2)
-        XCTAssertLessThan(delegate.jumps[0].heightM, 1.4)
+        // The resolved landing must select the measured-flight path. Its exact
+        // synthetic height changed in 16.5 because that window now includes
+        // the 0.3 s takeoff pre-roll; this landing test must not pin the old
+        // V16.4 fixture value.
+        XCTAssertEqual(delegate.jumps[0].heightSource, .flight)
+        XCTAssertGreaterThanOrEqual(delegate.jumps[0].heightM, V16Config().minReportM)
     }
 
     /// nil, not 0, when the descent is never arrested. The whole sentinel
@@ -315,6 +320,75 @@ final class V16CoreTests: XCTestCase {
                        cfg.heightScale * matched.jumps[0].apexRawM + cfg.heightOffsetM,
                        accuracy: 0.01)
         XCTAssertNotEqual(flight.jumps[0].heightM, matched.jumps[0].heightM, accuracy: 0.01)
+    }
+
+    // MARK: 16.5 — height-only takeoff pre-roll
+
+    /// t0 is the strongest pop, after the ascent has already started. V16.5
+    /// includes the preceding 0.3 s only in the resolved-flight height window;
+    /// detection, airtime and GPS distance must retain their original anchors.
+    func testHeightPreRollChangesOnlyResolvedFlightHeight() {
+        func run(_ cfg: V16Config) -> V16Jump? {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedSyntheticJump(
+                into: engine,
+                heightLeadInG: 0.35,
+                gpsSpeedMS: 10,
+                cfg: cfg
+            )
+            return delegate.jumps.first
+        }
+
+        var noPreRoll = V16Config()
+        noPreRoll.heightPreRollSec = 0
+        guard let baseline = run(noPreRoll), let shipped = run(V16Config()) else {
+            return XCTFail("pre-roll fixture did not emit")
+        }
+
+        XCTAssertGreaterThan(shipped.heightM, baseline.heightM + 0.05)
+        XCTAssertEqual(shipped.takeoffT, baseline.takeoffT, accuracy: 1e-9)
+        XCTAssertEqual(shipped.airtimeSec ?? -1, baseline.airtimeSec ?? -1, accuracy: 1e-9)
+        XCTAssertEqual(shipped.distanceM ?? -1, baseline.distanceM ?? -1, accuracy: 0.01)
+    }
+
+    /// A free-fall window has directly observed physical boundaries. It must
+    /// remain exact regardless of the kite-flight pre-roll setting.
+    func testHeightPreRollDoesNotWidenAFreeFallWindow() {
+        func height(_ preRoll: Double) -> Double? {
+            var cfg = V16Config()
+            cfg.heightPreRollSec = preRoll
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedThrow(into: engine, freeFallSec: 1.4)
+            return delegate.jumps.first?.heightM
+        }
+
+        XCTAssertEqual(height(0) ?? -1, height(0.9) ?? -2, accuracy: 1e-9)
+    }
+
+    /// Without a resolved landing there is no flight window to pre-roll. The
+    /// matched-filter fallback and its nil airtime/distance contract stay put.
+    func testHeightPreRollDoesNotAffectAnUnresolvedLandingFallback() {
+        func jump(_ preRoll: Double) -> V16Jump? {
+            var cfg = V16Config()
+            cfg.heightPreRollSec = preRoll
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedUnresolvedLanding(into: engine, gpsSpeedMS: 10)
+            return delegate.jumps.first
+        }
+
+        guard let baseline = jump(0), let shifted = jump(0.9) else {
+            return XCTFail("unresolved fixture did not emit")
+        }
+        XCTAssertEqual(shifted.heightM, baseline.heightM, accuracy: 1e-9)
+        XCTAssertEqual(shifted.heightSource, .matched)
+        XCTAssertNil(shifted.airtimeSec)
+        XCTAssertNil(shifted.distanceM)
     }
 
     /// A longer arc measures taller, quadratically — the height IS the arc, and
@@ -797,6 +871,7 @@ final class V16CoreTests: XCTestCase {
         into engine: JumpEngineV16,
         unloadG: Double = 0.57,
         flightSec: Double = 2.0,
+        heightLeadInG: Double? = nil,
         attitudeDropout: ClosedRange<Double>? = nil,
         gpsSpeedMS: Double? = nil,
         gyroRadS: Double = 0,
@@ -821,6 +896,7 @@ final class V16CoreTests: XCTestCase {
             if t >= 0 && t < 0.02 { return 2.0 }
             if t >= 0 && t < flightSec { return unloadG }
             if t >= flightSec && t < flightSec + 0.8 { return -0.45 }
+            if let heightLeadInG, t >= -0.3 && t < 0 { return heightLeadInG }
             if t >= -1.5 && t < 0 { return -carveG }
             return 0
         }

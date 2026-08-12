@@ -25,6 +25,7 @@ let package = Package(
                 "V16_2_HANDOFF",
                 "V16_3_HANDOFF",
                 "V16_4_HANDOFF",
+                "V16_5_HANDOFF",
                 "Tests",
             ],
             sources: ["JumpEngineV16.swift"]

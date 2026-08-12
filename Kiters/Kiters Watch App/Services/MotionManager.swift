@@ -215,7 +215,7 @@ class MotionManager: ObservableObject {
 
     /// How the absolute-altitude stream is acquired for the session.
     /// `.continuous` starts it at session start and keeps the freeze watchdog
-    /// (V13 and older engines). `.onDemand` keeps it OFF until the jump engine
+    /// (including V16's diagnostic stream). `.onDemand` keeps it OFF until the jump engine
     /// opens a window via `beginAbsoluteAltitudeWindow` and stops it again on
     /// `endAbsoluteAltitudeWindow` (V14). `.continuousNoWatchdog` runs the
     /// stream start-to-stop with NO watchdog restarts (V15, spec P4: every
@@ -597,6 +597,9 @@ class MotionManager: ObservableObject {
             case .continuous:
                 startAbsoluteAltitudeLocked(reason: "sessionStart")
                 startAltimeterWatchdogLocked()
+                SessionLogger.shared.logEvent(
+                    "Absolute altitude acquisition: continuous supervised stream"
+                )
             case .continuousNoWatchdog:
                 startAbsoluteAltitudeLocked(reason: "sessionStart")
                 SessionLogger.shared.logEvent("Absolute altitude acquisition: continuous single-consumer, no watchdog restarts")

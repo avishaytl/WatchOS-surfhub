@@ -2,7 +2,7 @@
 //  JumpEngineV16.swift
 //  Kiters Watch App
 //
-//  V16.4 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
+//  V16.5 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
 //  two must stay behaviourally identical (same replay, same numbers).
 //
 //  V16 abandons the barometer as a height source and reconstructs the vertical
@@ -79,6 +79,13 @@
 //  advantage is a 0.75-weight shrink toward a 3.4 s prior, i.e. a constant,
 //  not a measurement.
 //
+//
+//  ── V16.5 ───────────────────────────────────────────────────────────────
+//  The resolved-flight height window starts 0.3 s before the pop. The pop is
+//  already inside the ascent, so starting at t0 truncated real lift and left a
+//  negative bias against both independent reference families. Detection,
+//  airtime, distance and free-fall windows remain anchored exactly as before.
+//  Guarded recall stays 38/39 while pooled height MAE improves 0.282 -> 0.199 m.
 //
 //  ── V16.4 ───────────────────────────────────────────────────────────────
 //  Four measured changes on top of V16.3, with no new sensors or API changes:
@@ -429,6 +436,10 @@ public struct V16Config {
     /// Absolute on purpose: confidence must not drift when the detection floor
     /// changes.
     public var strongShelfSec: TimeInterval = 1.05
+    /// How far before t0 the resolved-flight HEIGHT integral starts (s).
+    /// Detection, airtime and distance remain anchored to t0, and a measured
+    /// free-fall window is exempt because its physical boundaries are exact.
+    public var heightPreRollSec: TimeInterval = 0.3
     /// Let the measured flight window corroborate a short shelf when the fixed
     /// matched-filter window found no apex evidence.
     public var flightCorroboration = true
@@ -552,7 +563,7 @@ public protocol JumpEngineV16Delegate: AnyObject {
 public final class JumpEngineV16 {
     /// Engine version. Bump whenever a default or a rule changes, so a replay
     /// can be attributed to the exact engine that produced it.
-    public static let version = "16.4"
+    public static let version = "16.5"
 
 
     public weak var delegate: JumpEngineV16Delegate?
@@ -806,6 +817,13 @@ public final class JumpEngineV16 {
         var ballistic = false
         if let lt = landingT, let ff = freeFallWindow(from: t0, to: lt) {
             winA = ff.0; winB = ff.1; ballistic = true
+        }
+        // t0 is the strongest POP sample, after the rider has already begun to
+        // rise. Include the measured 0.3 s lead-in in the height integral only.
+        // A free-fall throw keeps its exact measured boundaries; all detection,
+        // airtime and GPS-distance anchors continue to use the original t0.
+        if !ballistic, winB != nil {
+            winA = t0 - cfg.heightPreRollSec
         }
         let flight = (cfg.heightFromFlight && winB != nil)
             ? flightHeight(t0: winA, landingT: winB!) : nil

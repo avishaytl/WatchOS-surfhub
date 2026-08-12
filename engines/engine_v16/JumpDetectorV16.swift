@@ -109,7 +109,9 @@ final class JumpDetectorV16: JumpDetecting {
                 + "flightCorroboration=\(configuration.flightCorroboration) "
                 + "shortShelfFlight=\(configuration.shortShelfFlightM)m "
                 + "strongShelf=\(configuration.strongShelfSec)s "
-                + "minReport=\(configuration.minReportM)m barometer=unused gps=metricsOnly "
+                + "heightPreRoll=\(configuration.heightPreRollSec)s "
+                + "minReport=\(configuration.minReportM)m "
+                + "absoluteAltitude=diagnosticOnly gps=metricsOnly "
                 + readiness.logDetails
         )
     }

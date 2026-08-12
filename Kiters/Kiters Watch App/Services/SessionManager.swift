@@ -530,13 +530,12 @@ class SessionManager: ObservableObject {
         // engine's takeoff→stable-landing window. V15 and V13 are the
         // continuous single-consumer (spec P4): stream start-to-stop, no
         // watchdog restarts — every observed freeze was a competing consumer
-        // or a restart-induced re-anchor, not a lack of supervision. Every
-        // other (older) engine keeps the supervised continuous stream.
+        // or a restart-induced re-anchor, not a lack of supervision. V16 keeps
+        // the supervised continuous stream as a diagnostic channel only; its
+        // jump height remains strictly IMU-derived.
         let absoluteMode: MotionManager.AbsoluteAcquisitionMode
         if jumpDetector is JumpDetectorV16 {
-            // V16 intentionally never consumes the absolute-altitude channel.
-            // `.onDemand` leaves it off because V16 never opens a window.
-            absoluteMode = .onDemand
+            absoluteMode = .continuous
         } else if jumpDetector is JumpDetectorV14 {
             absoluteMode = .onDemand
         } else if jumpDetector is JumpDetectorV15 {
@@ -1214,12 +1213,14 @@ class SessionManager: ObservableObject {
                 "V16 engine=v\(JumpEngineV16.version) config pop=\(config.popMinG)g cluster=\(config.popClusterSec)s "
                     + "lift=\(config.liftThreshMS2)m/s2 shelf=\(config.minLiftPlateauSec)s "
                     + "strongShelf=\(config.strongShelfSec)s "
+                    + "heightPreRoll=\(config.heightPreRollSec)s "
                     + "flightCorroboration=\(config.flightCorroboration) "
                     + "shortShelfFlight=\(config.shortShelfFlightM)m "
                     + "smooth=±\(config.liftSmoothSec)s apexPre=\(config.apexPreSec)s "
                     + "apexPost=\(config.apexPostSec)s heightScale=\(config.heightScale) "
                     + "heightOffset=\(config.heightOffsetM)m minReport=\(config.minReportM)m "
-                    + "attitudeGapMax=\(config.maxAttitudeGapSec)s barometer=unused gpsGate=none"
+                    + "attitudeGapMax=\(config.maxAttitudeGapSec)s "
+                    + "absoluteAltitude=diagnosticOnly gpsGate=none"
             )
         }
         if let config = v13Config {

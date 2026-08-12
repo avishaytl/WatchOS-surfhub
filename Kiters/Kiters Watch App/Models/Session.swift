@@ -519,7 +519,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .v11Buffered: return "V11 Buffered"
-        case .v16BigAir: return "V16.4 Big Air (Default)"
+        case .v16BigAir: return "V16.5 Big Air (Default)"
         case .v15Clean: return "V15 Clean (Beta)"
         case .v14Hybrid: return "V14 Hybrid (Beta)"
         case .sensorRecorder: return "Sensor Recorder"
@@ -534,7 +534,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var description: String {
         switch self {
         case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
-        case .v16BigAir: return "Big-air first, IMU only — the barometer is not used at all. A pop opens a candidate; a sustained LIFT SHELF in world-vertical acceleration confirms it, with the measured flight window providing corroboration when a long flight overflows the fixed window. Height is measured by endpoint-anchored double integration over the flight and is reported in metres with no calibration constant: 0.28 m pooled MAE and 38/39 guarded recall across the V16.4 reference suite. The waves-only negative control stays silent and the tallest false reading remains 1.56 m. Hand throws on a bench are detected too, so the watch can be tested without going on the water. Airtime is estimated from where the water arrests the descent and is never used as a gate. Distance is omitted when no landing window was measured. Jumps at or above 2.5 m are delivered immediately after evaluation; smaller ones wait out the dedup hold."
+        case .v16BigAir: return "Big-air first, IMU only — absolute altitude is recorded for diagnostics but never used as a height source. A pop opens a candidate; a sustained LIFT SHELF in world-vertical acceleration confirms it, with the measured flight window providing corroboration when a long flight overflows the fixed window. V16.5 starts only the height integral 0.3 s before the pop, improving pooled height MAE to 0.20 m while retaining 38/39 guarded recall. The waves-only negative control stays silent and the tallest false reading remains 1.57 m. Hand throws on a bench are detected too, so the watch can be tested without going on the water. Airtime is estimated from where the water arrests the descent and is never used as a gate. Distance is omitted when no landing window was measured. Jumps at or above 2.5 m are delivered immediately after evaluation; smaller ones wait out the dedup hold."
         case .sensorRecorder: return "Recording only: no jump detection, no formulas. Every sensor (IMU 200Hz, relative + absolute altimeter, GPS, submersion) streams continuously into the session log for offline analysis."
         case .v15Clean: return "IMU-led second generation: a yank spike opens, flight-quiet sustains, a physical impact (or baro return-to-base) closes. The absolute barometer streams continuously for the whole session as the single consumer and measures height via a parabolic apex fit, with relative-pressure and ballistic fallbacks. No GPS or turbulence gates."
         case .v14Hybrid: return "Hybrid: IMU unweight + pressure-baseline formula opens a jump; the absolute altimeter runs only from takeoff to a stable landing baseline and cross-checks the peak height. Works fully without GPS."

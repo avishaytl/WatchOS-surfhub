@@ -33,7 +33,7 @@ struct V16SettingsView: View {
                 )
                 metric(
                     L("settings.v16_height_window"),
-                    String(format: "−%.1f / +%.1f s", config.apexPreSec, config.apexPostSec)
+                    String(format: "t0 − %.1f s", config.heightPreRollSec)
                 )
                 metric(L("settings.v16_min_height"), String(format: "%.1f m", config.minReportM))
 
