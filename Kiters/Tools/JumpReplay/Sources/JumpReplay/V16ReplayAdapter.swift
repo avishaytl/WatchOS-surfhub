@@ -25,6 +25,7 @@ final class JumpDetectorV16: JumpDetecting, JumpEngineV16Delegate {
     }
 
     var effectiveConfiguration: V16Config { configuration }
+    var engineVersion: String { "v\(JumpEngineV16.version)" }
 
     func reset(mode: DetectionMode) {
         _ = mode
@@ -98,6 +99,7 @@ final class JumpDetectorV16: JumpDetecting, JumpEngineV16Delegate {
         jump.matchedFilterApexRawM = result.apexRawM
         jump.liftPlateauDurationSec = result.liftPlateauSec
         jump.airtimeConfidence = result.airtimeSec == nil ? "unresolved" : "low"
+        jump.distanceConfidence = result.distanceM == nil ? "unresolved" : "low"
         jump.takeoffGroundSpeed = result.takeoffSpeedMS
         // Same optional-in, optional-out contract as the watch adapter.
         jump.landingLatitude = result.landLat

@@ -3,14 +3,14 @@ import Foundation
 struct ReplayJump: Codable {
     let index: Int
     let takeoffOffsetSec: Double  // seconds from first sample
-    let airtime: Double
+    let airtime: Double?
     let physicalAirtime: Double?
     let height: Double
     let heightSource: String  // "baro" or "kin"
     let apexTime: Double?
     let confidence: Double
     let rotations: Int
-    let jumpDistance: Double
+    let jumpDistance: Double?
     let gpsVerified: Bool?
     let takeoffGroundSpeed: Double?
     let accepted: Bool
@@ -19,6 +19,7 @@ struct ReplayJump: Codable {
 struct ReplayReport: Codable {
     let file: String
     let format: String
+    let engineVersion: String?
     let detectedRateHz: Double
     let sampleCount: Int
     let durationSec: Double
@@ -69,6 +70,9 @@ enum Reporter {
     static func printHuman<S: TextOutputStream>(_ report: ReplayReport, _ s: inout S) {
         print("════════════════════════════════════════════════", to: &s)
         print("File:    \(report.file)", to: &s)
+        if let engineVersion = report.engineVersion {
+            print("Engine:  \(engineVersion)", to: &s)
+        }
         print("Format:  \(report.format)  rate=\(String(format: "%.1f", report.detectedRateHz)) Hz  samples=\(report.sampleCount)  dur=\(String(format: "%.1f", report.durationSec))s", to: &s)
         print("Mode:    \(report.detectionMode)  mockSpeed=\(String(format: "%.1f", report.mockSpeedMps)) m/s", to: &s)
         print("Jumps:   \(report.jumps.count) (accepted=\(report.jumps.filter { $0.accepted }.count))", to: &s)
@@ -76,8 +80,11 @@ enum Reporter {
             print("  (no jumps detected)", to: &s)
         } else {
             for j in report.jumps {
-                let apex = j.apexTime.map { String(format: "%.2f", $0) } ?? "-"
+                let apex = j.apexTime.map { String(format: "%.2fs", $0) } ?? "—"
                 let mark = j.accepted ? "✓" : "✗"
+                let airtime = j.airtime.map { String(format: "%.2fs", $0) } ?? "—"
+                let physicalAirtime = j.physicalAirtime.map { String(format: "%.2fs", $0) } ?? "—"
+                let distance = j.jumpDistance.map { String(format: "%.1fm", $0) } ?? "—"
                 let gps: String
                 if let verified = j.gpsVerified {
                     let speed = j.takeoffGroundSpeed
@@ -86,9 +93,9 @@ enum Reporter {
                 } else {
                     gps = ""
                 }
-                let summary = String(format: "  [%@] #%d  t=%.2fs  air=%.2fs phys=%.2fs  h=%.2fm(%@)  dist=%.1fm  apex=%@s  conf=%d  rot=%d",
-                                     mark, j.index, j.takeoffOffsetSec, j.airtime, j.physicalAirtime ?? j.airtime,
-                                     j.height, j.heightSource, j.jumpDistance, apex, Int(j.confidence), j.rotations)
+                let summary = String(format: "  [%@] #%d  t=%.2fs  air=%@ phys=%@  h=%.2fm(%@)  dist=%@  apex=%@  conf=%d  rot=%d",
+                                     mark, j.index, j.takeoffOffsetSec, airtime, physicalAirtime,
+                                     j.height, j.heightSource, distance, apex, Int(j.confidence), j.rotations)
                 print(summary + gps, to: &s)
             }
         }
@@ -127,8 +134,15 @@ enum Reporter {
         for (i, e) in expected.jumps.enumerated() {
             guard i < actual.jumps.count else { break }
             let a = actual.jumps[i]
-            if abs(a.airtime - e.airtime) > tol.airtimeAbs {
-                fails.append("jump#\(i) airtime: \(a.airtime) vs \(e.airtime) (±\(tol.airtimeAbs))")
+            switch (a.airtime, e.airtime) {
+            case let (actual?, expected?):
+                if abs(actual - expected) > tol.airtimeAbs {
+                    fails.append("jump#\(i) airtime: \(actual) vs \(expected) (±\(tol.airtimeAbs))")
+                }
+            case (nil, nil):
+                break
+            default:
+                fails.append("jump#\(i) airtime availability: \(String(describing: a.airtime)) vs \(String(describing: e.airtime))")
             }
             if e.height > 0 {
                 let rel = abs(a.height - e.height) / e.height
@@ -183,13 +197,18 @@ enum SurfrReference {
             let j = best.element
             let dt = j.takeoffOffsetSec - ref.time
             let dh = j.height - ref.height
-            let da = j.airtime - ref.airtime
-            let dd = j.jumpDistance - ref.distance
+            let da = j.airtime.map { $0 - ref.airtime }
+            let dd = j.jumpDistance.map { $0 - ref.distance }
+            let airtime = j.airtime.map { String(format: "%.2fs", $0) } ?? "—"
+            let airtimeDelta = da.map { String(format: "%+.2fs", $0) } ?? "—"
+            let distance = j.jumpDistance.map { String(format: "%.1fm", $0) } ?? "—"
+            let distanceDelta = dd.map { String(format: "%+.1fm", $0) } ?? "—"
             residuals.append(abs(dt))
-            print(String(format: "  #%d Surfr %.0fs -> ours %.2fs  dt=%+.2fs  h=%.2f/%.2fm dh=%+.2fm  air=%.2f/%.2fs da=%+.2fs  dist=%.0f/%.1fm dd=%+.1fm",
+            let prefix = String(format: "  #%d Surfr %.0fs -> ours %.2fs  dt=%+.2fs  h=%.2f/%.2fm dh=%+.2fm",
                          ref.index, ref.time, j.takeoffOffsetSec, dt,
-                         ref.height, j.height, dh, ref.airtime, j.airtime, da,
-                         ref.distance, j.jumpDistance, dd), to: &s)
+                         ref.height, j.height, dh)
+            print(prefix + "  air=\(String(format: "%.2fs", ref.airtime))/\(airtime) da=\(airtimeDelta)"
+                + "  dist=\(String(format: "%.0fm", ref.distance))/\(distance) dd=\(distanceDelta)", to: &s)
         }
         let extras = max(0, accepted.count - jumps.count)
         let pass = residuals.count == jumps.count && residuals.allSatisfy { $0 <= 3.0 }
@@ -238,8 +257,8 @@ enum SurfrReference {
             let j = best.element
             let dt = j.takeoffOffsetSec - ref.time
             let dh = j.height - ref.height
-            let da = j.airtime - ref.airtime
-            let dd = j.jumpDistance - ref.distance
+            let da = j.airtime.map { $0 - ref.airtime }
+            let dd = j.jumpDistance.map { $0 - ref.distance }
             var failures: [String] = []
 
             if abs(dt) > tolerances.timeSec {
@@ -248,16 +267,26 @@ enum SurfrReference {
             if abs(dh) > tolerances.heightM {
                 failures.append(String(format: "dh=%+.2fm", dh))
             }
-            if abs(da) > tolerances.airtimeSec {
-                failures.append(String(format: "da=%+.2fs", da))
+            if let da {
+                if abs(da) > tolerances.airtimeSec {
+                    failures.append(String(format: "da=%+.2fs", da))
+                }
+            } else {
+                failures.append("air=n/a")
             }
-            if abs(dd) > tolerances.distanceM {
-                failures.append(String(format: "dd=%+.1fm", dd))
+            if let dd {
+                if abs(dd) > tolerances.distanceM {
+                    failures.append(String(format: "dd=%+.1fm", dd))
+                }
+            } else {
+                failures.append("dist=n/a")
             }
 
             let prefix = failures.isEmpty ? "PASS" : "FAIL"
             if !failures.isEmpty { ok = false }
-            lines.append(String(format: "%@ #%d ref t=%.0fs h=%.2fm air=%.2fs dist=%.0fm -> actual t=%.2fs h=%.2fm air=%.2fs dist=%.1fm%@",
+            let actualAir = j.airtime.map { String(format: "%.2fs", $0) } ?? "—"
+            let actualDistance = j.jumpDistance.map { String(format: "%.1fm", $0) } ?? "—"
+            lines.append(String(format: "%@ #%d ref t=%.0fs h=%.2fm air=%.2fs dist=%.0fm -> actual t=%.2fs h=%.2fm air=%@ dist=%@%@",
                                 prefix,
                                 ref.index,
                                 ref.time,
@@ -266,8 +295,8 @@ enum SurfrReference {
                                 ref.distance,
                                 j.takeoffOffsetSec,
                                 j.height,
-                                j.airtime,
-                                j.jumpDistance,
+                                actualAir,
+                                actualDistance,
                                 failures.isEmpty ? "" : " (" + failures.joined(separator: ", ") + ")"))
         }
 

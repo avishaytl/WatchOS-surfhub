@@ -2,7 +2,7 @@
 //  JumpEngineV16.swift
 //  Kiters Watch App
 //
-//  V16.3 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
+//  V16.4 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
 //  two must stay behaviourally identical (same replay, same numbers).
 //
 //  V16 abandons the barometer as a height source and reconstructs the vertical
@@ -79,6 +79,17 @@
 //  advantage is a 0.75-weight shrink toward a 3.4 s prior, i.e. a constant,
 //  not a measurement.
 //
+//
+//  ── V16.4 ───────────────────────────────────────────────────────────────
+//  Four measured changes on top of V16.3, with no new sensors or API changes:
+//    1. A short shelf that the fixed matched-filter window cannot corroborate
+//       is deferred until the measured flight window can be checked.
+//    2. minLiftPlateauSec moves 0.70 -> 0.60 s.
+//    3. An unresolved landing reports no distance instead of a truncated chord.
+//    4. Confidence uses the absolute 1.05 s strong-shelf threshold.
+//  Guarded recall improves 35/39 -> 38/39 and pooled height MAE 0.292 ->
+//  0.282 m; the negative control remains silent and the tallest phantom stays
+//  1.56 m. Set flightCorroboration=false and minLiftPlateauSec=0.7 for V16.3.
 //
 //  ── V16.3 ───────────────────────────────────────────────────────────────
 //  Two changes on top of V16.2, both measured over six logs holding 78
@@ -229,10 +240,9 @@ public struct V16Config {
     /// 1.25 / 0.8 dominates the previous 1.5 / 0.9 — recall 17/23 -> 19/23 with
     /// the same single true phantom and still ZERO control false positives.
     ///
-    /// V16.2: 0.7 is the FLOOR, not the bar. The four goldens smallLog used to
-    /// miss carry shelves of 0.7/0.7/0.6/0.8 s; the old 0.8 rejected all four.
-    /// Shelves in [0.7, shelfFullSec) must clear shortShelfApexM to be admitted.
-    public var minLiftPlateauSec: TimeInterval = 0.7
+    /// V16.4: 0.6 is the floor. Lowering it further recovered nothing in the
+    /// seven-log suite and introduced a phantom on log 287.
+    public var minLiftPlateauSec: TimeInterval = 0.6
     /// A shelf at or above this is accepted on its own, with no corroboration.
     public var shelfFullSec: TimeInterval = 0.8
     /// A shelf between minLiftPlateauSec and shelfFullSec needs apex >= this.
@@ -415,6 +425,16 @@ public struct V16Config {
     public var phantomFilter = true
     /// Shelf below this rejects on its own (given an unresolved arrest).
     public var phantomShelfSec: TimeInterval = 1.05
+    /// Shelf at or above which a jump is reported at high confidence (s).
+    /// Absolute on purpose: confidence must not drift when the detection floor
+    /// changes.
+    public var strongShelfSec: TimeInterval = 1.05
+    /// Let the measured flight window corroborate a short shelf when the fixed
+    /// matched-filter window found no apex evidence.
+    public var flightCorroboration = true
+    /// Minimum measured flight height for deferred corroboration (m). This is
+    /// intentionally equal to the reporting floor.
+    public var shortShelfFlightM = 1.2
     /// A longer shelf still rejects, but only for a small jump.
     public var phantomShelfWideSec: TimeInterval = 1.20
     public var phantomWideHeightM = 2.0
@@ -532,7 +552,7 @@ public protocol JumpEngineV16Delegate: AnyObject {
 public final class JumpEngineV16 {
     /// Engine version. Bump whenever a default or a rule changes, so a replay
     /// can be attributed to the exact engine that produced it.
-    public static let version = "16.3"
+    public static let version = "16.4"
 
 
     public weak var delegate: JumpEngineV16Delegate?
@@ -723,10 +743,15 @@ public final class JumpEngineV16 {
         // above it (1.30 / 1.07). Requiring apex >= shortShelfApexM on the short
         // ones holds smallLog at 16/16 with 4 phantoms and keeps the clean
         // control session at 0.
-        if shelf < cfg.shelfFullSec && apex < cfg.shortShelfApexM {
+        let needsCorroboration = shelf < cfg.shelfFullSec && apex < cfg.shortShelfApexM
+        if needsCorroboration {
             if !forced { return false }   // the shelf accumulates; it may still grow
-            onDebug(now, "REJECT t0=\(fmt(t0)) reason=shortShelfNoApex shelf=\(fmt(shelf))s apex=\(fmt(apex))")
-            return true
+            // The fixed 4.5 s window can miss long flights. V16.4 defers this
+            // verdict until the measured flight window is available below.
+            if !cfg.flightCorroboration {
+                onDebug(now, "REJECT t0=\(fmt(t0)) reason=shortShelfNoApex shelf=\(fmt(shelf))s apex=\(fmt(apex))")
+                return true
+            }
         }
 
         // 3. Airtime (low confidence) — resolved BEFORE the height, because the
@@ -785,6 +810,14 @@ public final class JumpEngineV16 {
         let flight = (cfg.heightFromFlight && winB != nil)
             ? flightHeight(t0: winA, landingT: winB!) : nil
         var flightH: Double? = flight?.heightM
+        // Deferred corroboration: when the fixed window found no usable apex,
+        // the measured flight must independently clear the reporting floor.
+        if needsCorroboration,
+           flightH == nil || flightH! < cfg.shortShelfFlightM {
+            let flightText = flightH.map(fmt) ?? "none"
+            onDebug(now, "REJECT t0=\(fmt(t0)) reason=shortShelfNoApex shelf=\(fmt(shelf))s apex=\(fmt(apex)) flight=\(flightText)")
+            return true
+        }
         // A ballistic event may be reported as peak-above-release (1.0) or as
         // total vertical path (2.0). See throwHeightScale.
         if let f = flightH, ballistic, cfg.throwHeightScale != 1 {
@@ -850,6 +883,10 @@ public final class JumpEngineV16 {
         } else if let launch, let landingT {
             distanceM = launch.spd * (landingT - t0)
         }
+        // An unresolved landing leaves tEnd at apexPostSec, which is not a
+        // measured flight window. Reporting that truncated chord as distance
+        // is worse than reporting the measurement as unavailable.
+        if landingT == nil { distanceM = nil }
 
         // The drawing anchors and the post-flight diagnostics. Everything that
         // needs a bounded flight is nil without one; edgeLoadG is measured
@@ -876,7 +913,7 @@ public final class JumpEngineV16 {
             maxGyroRadS: round2(maxGyro),
             takeoffSpeedMS: launch.map { round2($0.spd) },
             distanceM: distanceM.map(round2),
-            confidence: shelf >= cfg.minLiftPlateauSec * 1.5 ? 0.75 : 0.55,
+            confidence: shelf >= cfg.strongShelfSec ? 0.75 : 0.55,
             landLat: landingT == nil ? nil : land?.lat,
             landLng: landingT == nil ? nil : land?.lng,
             apexLat: apexFix?.lat,

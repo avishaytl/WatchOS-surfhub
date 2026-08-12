@@ -391,6 +391,8 @@ class SessionManager: ObservableObject {
         maxSpeed = 0
         currentSpeed = 0
         duration = 0
+        heartRate = 0
+        activeCalories = 0
         gpsPointCount = 0
         isGPSActive = false
         lastGPSAccuracy = 0
@@ -645,13 +647,12 @@ class SessionManager: ObservableObject {
 
         guard var session = currentSession else { return }
 
-        // Live lifecycle is independent of workout/log/local-save handling.
-        // Close the server session first so a delayed HealthKit callback cannot
-        // leave the backend showing this session as active.
+        // Freeze the riding session before stopping its sensor owners. The
+        // watch-ingest `end` waits for a bounded HealthKit aggregate below, so
+        // calories/maxHr belong to this exact session and survive retry.
         session.endTime = Date()
         session.status = .completed
         currentSession = session
-        finishLiveSessionOnServer(session: session, showPendingPrompt: session.duration >= 60)
 
         // Stop all services
         sensorProvider.stop()
@@ -686,11 +687,26 @@ class SessionManager: ObservableObject {
         // callback. The completed Session value is captured below for save/upload.
         resetFinishedSessionState()
         
-        // End workout and save
-        workoutManager.endWorkout { [weak self] workout in
+        // End workout, attach the bounded aggregate, then close watch-ingest.
+        // WorkoutManager delivers within five seconds even if HealthKit stalls.
+        workoutManager.endWorkout { [weak self] healthMetrics in
             guard let self = self else { return }
+            var completedSession = session
+            completedSession.activeCalories = healthMetrics.caloriesForUpload
+            completedSession.maxHeartRate = healthMetrics.maxHrForUpload
 
-            if session.duration < 60 {
+            let caloriesText = completedSession.activeCalories.map { "\($0)kcal" } ?? "n/a"
+            let maxHrText = completedSession.maxHeartRate.map { "\($0)bpm" } ?? "n/a"
+            print(
+                "⌚️ Session health end localSessionId=\(completedSession.id) "
+                    + "calories=\(caloriesText) maxHr=\(maxHrText)"
+            )
+            self.finishLiveSessionOnServer(
+                session: completedSession,
+                showPendingPrompt: completedSession.duration >= 60
+            )
+
+            if completedSession.duration < 60 {
                 self.deleteLogFile(completedLogURL)
                 print("⌚️ Session discarded — shorter than 60 seconds")
                 DispatchQueue.main.async {
@@ -704,9 +720,9 @@ class SessionManager: ObservableObject {
             }
             
             // Save session locally
-            self.storageManager.saveSession(session)
-            self.storageManager.markPendingCloudUpload(sessionId: session.id)
-            print("✅ Session saved: \(session.jumps.count) jumps, \(String(format: "%.2f", session.distance/1000))km")
+            self.storageManager.saveSession(completedSession)
+            self.storageManager.markPendingCloudUpload(sessionId: completedSession.id)
+            print("✅ Session saved: \(completedSession.jumps.count) jumps, \(String(format: "%.2f", completedSession.distance/1000))km")
             
             // Always present the end-of-session prompt and keep it open until the
             // user explicitly chooses (upload / keep local / discard). The session
@@ -714,7 +730,7 @@ class SessionManager: ObservableObject {
             // live metadata may already be on the cloud, but nothing here may
             // dismiss the prompt on the user's behalf.
             DispatchQueue.main.async {
-                self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: completedLogURL)
+                self.pendingCloudUpload = PendingSessionCloudUpload(session: completedSession, logURL: completedLogURL)
             }
         }
     }
@@ -1092,7 +1108,10 @@ class SessionManager: ObservableObject {
                 self.newBestJumpPresentation = detectedJump
             }
 
-            print("🎉 JUMP DETECTED! Height: \(String(format: "%.2f", jump.height))m, Airtime: \(String(format: "%.2f", jump.airtime))s")
+            let airtimeText = jump.hasUnresolvedAirtime
+                ? "n/a"
+                : String(format: "%.2fs", jump.airtime)
+            print("🎉 JUMP DETECTED! Height: \(String(format: "%.2f", jump.height))m, Airtime: \(airtimeText)")
             self.handleUploadOnJump(detectedJump)
         }
 
@@ -1123,7 +1142,10 @@ class SessionManager: ObservableObject {
             self.currentSession = session
             self.jumpCount = session.jumps.count
 
-            print("🔧 JUMP REFINED! Height: \(String(format: "%.2f", updated.height))m, Airtime: \(String(format: "%.2f", updated.airtime))s")
+            let airtimeText = updated.hasUnresolvedAirtime
+                ? "n/a"
+                : String(format: "%.2fs", updated.airtime)
+            print("🔧 JUMP REFINED! Height: \(String(format: "%.2f", updated.height))m, Airtime: \(airtimeText)")
             // Push the corrected metrics to the cloud (only records if it improves a PB).
             self.handleUploadOnJump(updated)
         }
@@ -1189,8 +1211,11 @@ class SessionManager: ObservableObject {
         }
         if let config = v16Config {
             sessionLogger.logEvent(
-                "V16 config pop=\(config.popMinG)g cluster=\(config.popClusterSec)s "
+                "V16 engine=v\(JumpEngineV16.version) config pop=\(config.popMinG)g cluster=\(config.popClusterSec)s "
                     + "lift=\(config.liftThreshMS2)m/s2 shelf=\(config.minLiftPlateauSec)s "
+                    + "strongShelf=\(config.strongShelfSec)s "
+                    + "flightCorroboration=\(config.flightCorroboration) "
+                    + "shortShelfFlight=\(config.shortShelfFlightM)m "
                     + "smooth=±\(config.liftSmoothSec)s apexPre=\(config.apexPreSec)s "
                     + "apexPost=\(config.apexPostSec)s heightScale=\(config.heightScale) "
                     + "heightOffset=\(config.heightOffsetM)m minReport=\(config.minReportM)m "
@@ -1394,6 +1419,8 @@ class SessionManager: ObservableObject {
         let spdKmh: Int
         let distKm: Double
         let avgKmh: Double
+        let calories: Int?
+        let maxHr: Int?
         let track: [[Int]]
         let jData: [[String: Int]]
     }
@@ -1432,7 +1459,10 @@ class SessionManager: ObservableObject {
         let durMin  = max(1, Int(session.duration / 60))
         let jmax    = session.jumps.map(\.height).max() ?? 0
         let jcnt    = session.jumps.count
-        let airS    = session.jumps.map(\.airtime).max() ?? 0
+        let airS    = session.jumps
+            .filter { !$0.hasUnresolvedAirtime }
+            .map(\.airtime)
+            .max() ?? 0
         let spdKmh  = Int(session.maxSpeed * 3.6)
         let distKm  = session.distance / 1000
         let avgKmh  = session.avgSpeed * 3.6
@@ -1450,12 +1480,21 @@ class SessionManager: ObservableObject {
             var entry: [String: Int] = [
                 "t": Int(j.startTime.timeIntervalSince(startTime)),
                 "h": Int(j.height * 100),        // cm
-                "a": Int(j.airtime * 10),         // tenths-sec
                 "s": Int(jumpTopSpeed * 3.6),     // km/h
-                "d": Int(j.jumpDistance * 10),    // dm
                 "y": Int(((nearestToTakeoff?.latitude  ?? 0) * 1e4).rounded()),
                 "x": Int(((nearestToTakeoff?.longitude ?? 0) * 1e4).rounded()),
             ]
+
+            // Preserve the legacy `Double` sentinels in the local model, but do
+            // not turn "not measured" into measured zeroes in the upload. The
+            // airtime check also covers V16 sessions saved before the dedicated
+            // distance marker was added.
+            if !j.hasUnresolvedAirtime {
+                entry["a"] = Int(j.airtime * 10)        // tenths-sec
+            }
+            if !j.hasUnresolvedAirtime && !j.hasUnresolvedDistance {
+                entry["d"] = Int(j.jumpDistance * 10)    // dm
+            }
 
             // Everything below is OPTIONAL and is emitted only when the engine
             // measured it. A phone reading an older watch's payload simply does
@@ -1508,6 +1547,8 @@ class SessionManager: ObservableObject {
             spdKmh: spdKmh,
             distKm: distKm,
             avgKmh: avgKmh,
+            calories: session.activeCalories,
+            maxHr: session.maxHeartRate,
             track: track,
             jData: jData
         )
@@ -1607,6 +1648,8 @@ class SessionManager: ObservableObject {
                 spdKmh: payload.spdKmh,
                 distKm: payload.distKm,
                 avgKmh: payload.avgKmh,
+                calories: payload.calories,
+                maxHr: payload.maxHr,
                 track: finalTrack,
                 jData: payload.jData
             )

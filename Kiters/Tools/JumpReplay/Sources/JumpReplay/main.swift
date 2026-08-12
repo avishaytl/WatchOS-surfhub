@@ -154,7 +154,7 @@ func printUsage() {
 
     Options:
       --format <coreMotion|android>   Force input format (default: auto)
-      --engine <v7|v8|v10|v11|v12|v13|v14|v15|v16>  Jump engine (default: v7). v16 = isolated big-air world-Z lift shelf + fixed-window IMU matched filter; barometer ignored, GPS metrics only.
+      --engine <v7|v8|v10|v11|v12|v13|v14|v15|v16>  Jump engine (default: v7). v16 = isolated big-air world-Z lift shelf + measured-flight IMU height with fixed-window corroboration; barometer ignored, GPS metrics only.
       --compare-engines               Run two engines (default v10 vs v11) over each log and emit a diff + quality report.
       --compare-baseline <eng>        Baseline engine for --compare-engines (default: v10).
       --compare-candidate <eng>       Candidate engine for --compare-engines (default: v11).
@@ -194,6 +194,7 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
         let durationSec = log.timelineDurationSec
 
         let replayJumps: [ReplayJump]
+        var replayEngineVersion: String?
         if opts.engine == "v8" {
             replayJumps = detectV8(log: log, opts: opts)
         } else {
@@ -220,6 +221,7 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 fputs("unknown engine: \(opts.engine)\n", stderr)
                 return false
             }
+            replayEngineVersion = (detector as? JumpDetectorV16)?.engineVersion
             // Offline replay has no run loop to drain DispatchQueue.main, so run the
             // streaming analysis inline and deliver callbacks synchronously.
             detector.synchronousAnalysis = true
@@ -355,7 +357,7 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
             // Buffered/refined engines need a final flush so the closing seconds
             // are analysed and V12's delayed refinement is delivered. V13 hands
             // back jumps still settling at the end of the log.
-            if opts.engine.hasPrefix("v11") || opts.engine.hasPrefix("v12") || opts.engine.hasPrefix("v13") || opts.engine.hasPrefix("v14") || opts.engine.hasPrefix("v15") {
+            if opts.engine.hasPrefix("v11") || opts.engine.hasPrefix("v12") || opts.engine.hasPrefix("v13") || opts.engine.hasPrefix("v14") || opts.engine.hasPrefix("v15") || opts.engine.hasPrefix("v16") {
                 let late = detector.endSession()
                 for jump in late {
                     capturedJumps.append((jump, log.samples.first?.timestamp ?? jump.startTime))
@@ -390,14 +392,18 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
                 return ReplayJump(
                     index: i,
                     takeoffOffsetSec: takeoff,
-                    airtime: j.airtime,
-                    physicalAirtime: j.endTime.timeIntervalSince(j.startTime),
+                    airtime: j.hasUnresolvedAirtime ? nil : j.airtime,
+                    physicalAirtime: j.hasUnresolvedAirtime
+                        ? nil
+                        : j.endTime.timeIntervalSince(j.startTime),
                     height: j.height,
                     heightSource: rich?.heightSource.rawValue ?? j.heightSource ?? "unknown",
                     apexTime: j.apexTime,
                     confidence: j.confidence,
                     rotations: j.rotations,
-                    jumpDistance: j.jumpDistance,
+                    jumpDistance: j.hasUnresolvedAirtime || j.hasUnresolvedDistance
+                        ? nil
+                        : j.jumpDistance,
                     gpsVerified: j.gpsVerified,
                     takeoffGroundSpeed: j.takeoffGroundSpeed,
                     accepted: accepted
@@ -408,6 +414,7 @@ func runOne(url: URL, opts: CLIOptions, stdout: inout StdoutStream) throws -> Bo
         let report = ReplayReport(
             file: url.lastPathComponent,
             format: log.format.rawValue,
+            engineVersion: replayEngineVersion,
             detectedRateHz: log.detectedRate,
             sampleCount: log.samples.count,
             durationSec: durationSec,
@@ -654,8 +661,10 @@ private func makeSurfrWindowMatches(log: LoadedLog, jumps: [ReplayJump]) -> [Sur
             nearestAcceptedDeltaSec: nearestAccepted.map { $0.takeoffOffsetSec - ref.time },
             nearestAcceptedHeightM: nearestAccepted?.height,
             nearestAcceptedHeightDeltaM: nearestAccepted.map { $0.height - ref.height },
-            nearestAcceptedAirtimeSec: nearestAccepted?.airtime,
-            nearestAcceptedAirtimeDeltaSec: nearestAccepted.map { $0.airtime - ref.airtime },
+            nearestAcceptedAirtimeSec: nearestAccepted.flatMap { $0.airtime },
+            nearestAcceptedAirtimeDeltaSec: nearestAccepted.flatMap { jump in
+                jump.airtime.map { $0 - ref.airtime }
+            },
             acceptedWithinTolerance: nearestAccepted.map { abs($0.takeoffOffsetSec - ref.time) <= 3.0 && $0.height >= 1.0 } ?? false,
             windowSignalAccepted: nearestEvent.map { abs($0.0 - ref.time) <= 10.0 } ?? false
                 && maxAccel >= 1.5

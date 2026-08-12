@@ -676,7 +676,7 @@ final class SessionLogger {
             device: currentDeviceInfo(),
             engines: BinaryLogEngines(
                 active: engine?.rawValue ?? "unknown",
-                candidates: ["v11-buffered", "v12-apple-sensor-fusion", "v13-pure", "v14-hybrid", "sensor-recorder"]
+                candidates: DetectionEngine.allCases.map(\.rawValue)
             ),
             streams: BinaryLogStreams(
                 motionHz: 200,

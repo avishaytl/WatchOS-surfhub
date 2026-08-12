@@ -18,7 +18,6 @@ let package = Package(
             path: "Kiters Watch App/Services",
             exclude: [
                 "AuthService.swift",
-                "BinaryLogEnvelope.swift",
                 "CloudSyncService.swift",
                 "GoogleSignInService.swift",
                 "JumpDetecting.swift",
@@ -52,7 +51,17 @@ let package = Package(
                 "WaterSubmersionManager.swift",
                 "WorkoutManager.swift",
             ],
-            sources: ["LiveSessionUploadState.swift", "JumpEngineV12.swift", "JumpEngineV13.swift", "JumpEngineV14.swift", "V14HeightAnalyzer.swift", "JumpEngineV15.swift"]
+            sources: [
+                "BinaryLogEnvelope.swift",
+                "LiveSessionUploadState.swift",
+                "SessionHealthMetrics.swift",
+                "WatchSessionEndPayload.swift",
+                "JumpEngineV12.swift",
+                "JumpEngineV13.swift",
+                "JumpEngineV14.swift",
+                "V14HeightAnalyzer.swift",
+                "JumpEngineV15.swift",
+            ]
         ),
         .executableTarget(
             name: "WatchLiveSessionCoreChecks",

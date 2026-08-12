@@ -104,6 +104,11 @@ final class JumpDetectorV16: JumpDetecting {
                 // survive, so a field log has to say whether they were armed.
                 + "settleFallback=\(configuration.landSettleFallback) "
                 + "phantomFilter=\(configuration.phantomFilter) "
+                // 16.4: a low fixed-window apex may defer to the measured
+                // flight, and confidence has its own absolute shelf threshold.
+                + "flightCorroboration=\(configuration.flightCorroboration) "
+                + "shortShelfFlight=\(configuration.shortShelfFlightM)m "
+                + "strongShelf=\(configuration.strongShelfSec)s "
                 + "minReport=\(configuration.minReportM)m barometer=unused gps=metricsOnly "
                 + readiness.logDetails
         )
@@ -239,6 +244,7 @@ final class JumpDetectorV16: JumpDetecting {
         jump.matchedFilterApexRawM = result.apexRawM
         jump.liftPlateauDurationSec = result.liftPlateauSec
         jump.airtimeConfidence = result.airtimeSec == nil ? "unresolved" : "low"
+        jump.distanceConfidence = result.distanceM == nil ? "unresolved" : "low"
         jump.takeoffGroundSpeed = result.takeoffSpeedMS
         // Flight-path anchors and rider diagnostics. Every one is optional at
         // the source and stays optional here — an unresolved landing leaves the
@@ -258,12 +264,14 @@ final class JumpDetectorV16: JumpDetecting {
 
     private func deliver(_ result: V16Jump) {
         let jump = makeJump(from: result)
-        let airtimeText = result.airtimeSec.map { String(format: "%.2f", $0) } ?? "n/a"
-        let distanceText = result.distanceM.map { String(format: "%.2f", $0) } ?? "n/a"
+        let airtimeText = result.airtimeSec.map { String(format: "%.2fs", $0) } ?? "n/a"
+        let distanceText = result.distanceM.map { String(format: "%.2fm", $0) } ?? "n/a"
+        let airtimeConfidence = result.airtimeSec == nil ? "unresolved" : "low"
+        let distanceConfidence = result.distanceM == nil ? "unresolved" : "low"
         let event = [
             "JUMP(v16) FINAL h=\(jump.height)m src=\(result.heightSource.rawValue) rawApex=\(result.apexRawM)m",
-            "shelf=\(result.liftPlateauSec)s air=\(airtimeText)s airConfidence=low",
-            "dist=\(distanceText)m yank=\(result.yankG)g peak=\(result.peakG)g",
+            "shelf=\(result.liftPlateauSec)s air=\(airtimeText) airConfidence=\(airtimeConfidence)",
+            "dist=\(distanceText) distConfidence=\(distanceConfidence) yank=\(result.yankG)g peak=\(result.peakG)g",
             "float=\(result.floatFraction) gyro=\(result.maxGyroRadS)rad/s",
             "conf=\(jump.confidence) barometer=unused gpsGate=none",
         ].joined(separator: " ")

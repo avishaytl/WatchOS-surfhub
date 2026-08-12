@@ -101,7 +101,7 @@ indirect enum BinaryLogValue {
 
 // MARK: - Envelope (top-level container)
 
-struct BinaryLogEnvelope {
+public struct BinaryLogEnvelope {
 
     enum Field {
         case string(String, String)   // (key, value)
@@ -133,7 +133,7 @@ struct BinaryLogEnvelope {
     }
 
     /// Serialize an arbitrary JSON-shaped object (used by the lifecycle uploader).
-    static func encode(object: [String: Any]) -> Data {
+    public static func encode(object: [String: Any]) -> Data {
         container(.from(object))
     }
 
@@ -153,7 +153,7 @@ extension BinaryLogEnvelope {
 
     /// Decode a KLOG container back into a JSON-compatible object.
     /// Blob values are returned as `Data`. Returns `nil` on malformed input.
-    static func decodeToObject(_ data: Data) -> [String: Any]? {
+    public static func decodeToObject(_ data: Data) -> [String: Any]? {
         let bytes = [UInt8](data)
         var offset = 0
         guard bytes.count >= 6, Array(bytes[0..<4]) == magic else { return nil }

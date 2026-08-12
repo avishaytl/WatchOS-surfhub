@@ -1,13 +1,13 @@
 import XCTest
 @testable import V16Core
 
-/// Behavioural cover for JumpEngineV16 at the 16.2 operating point.
+/// Behavioural cover for JumpEngineV16 through the 16.4 operating point.
 ///
 /// These are RULE tests, not calibration tests. The height/airtime accuracy
 /// figures in the spec were measured on real 200 Hz logs against the HOOLAN
 /// goldens (see V16_2_HANDOFF/04_REFERENCE/hoolan287_reference.mjs) and cannot
 /// be reproduced from a synthetic square wave — what is asserted here is that
-/// each rule 16.1 and 16.2 changed still behaves the way the spec says it does.
+/// each shipped rule still behaves the way the handoff says it does.
 ///
 /// ⚠️ SIGN, the thing 16.2 is built on. `az` is world-vertical
 /// userAcceleration and reads +1 g in FREE FALL, i.e. it is the NEGATIVE of the
@@ -18,10 +18,10 @@ import XCTest
 /// every number here look upside down.
 final class V16CoreTests: XCTestCase {
 
-    // MARK: 16.2 identity
+    // MARK: 16.4 identity
 
-    func testEngineReportsVersion16_3() {
-        XCTAssertEqual(JumpEngineV16.version, "16.3")
+    func testEngineReportsVersion16_4() {
+        XCTAssertEqual(JumpEngineV16.version, "16.4")
     }
 
     /// The defaults 16.1 and 16.2 moved, plus the parameters 16.2 introduced.
@@ -29,6 +29,12 @@ final class V16CoreTests: XCTestCase {
     /// with nothing in the log to explain it.
     func testShippedCalibrationDefaults() {
         let cfg = V16Config()
+        // 16.4
+        XCTAssertEqual(cfg.minLiftPlateauSec, 0.6, accuracy: 1e-9)
+        XCTAssertEqual(cfg.strongShelfSec, 1.05, accuracy: 1e-9)
+        XCTAssertTrue(cfg.flightCorroboration)
+        XCTAssertEqual(cfg.shortShelfFlightM, 1.2, accuracy: 1e-9)
+        XCTAssertEqual(cfg.shortShelfFlightM, cfg.minReportM, accuracy: 1e-9)
         // 16.3
         XCTAssertTrue(cfg.landSettleFallback)
         XCTAssertEqual(cfg.landSettleBandG, 0.30, accuracy: 1e-9)
@@ -49,7 +55,6 @@ final class V16CoreTests: XCTestCase {
         XCTAssertEqual(cfg.popClusterSec, 0.8, accuracy: 1e-9)
         XCTAssertEqual(cfg.apexAnchorSec, 2.0, accuracy: 1e-9)
         XCTAssertTrue(cfg.heightFromFlight)
-        XCTAssertEqual(cfg.minLiftPlateauSec, 0.7, accuracy: 1e-9)
         XCTAssertEqual(cfg.shelfFullSec, 0.8, accuracy: 1e-9)
         XCTAssertEqual(cfg.shortShelfApexM, 0.30, accuracy: 1e-9)
         XCTAssertEqual(cfg.freeFallG, 0.25, accuracy: 1e-9)
@@ -103,8 +108,8 @@ final class V16CoreTests: XCTestCase {
     }
 
     /// A shelf that stops short of minLiftPlateauSec is still a reject — this
-    /// is the one gate standing between chop and the wrist. 16.2 lowered the
-    /// floor 0.8 -> 0.7; it did not remove it.
+    /// is the one gate standing between chop and the wrist. V16.4 lowered the
+    /// floor to 0.6 s; it did not remove it.
     func testShelfShorterThanTheFloorIsRejected() {
         let delegate = CaptureDelegate()
         let engine = JumpEngineV16()
@@ -114,7 +119,7 @@ final class V16CoreTests: XCTestCase {
 
         feed(into: engine) { t in
             if t >= 0 && t < 0.02 { return 2.0 }
-            if t >= 0 && t < 0.5 { return 0.32 }   // 0.5 s of lift, need 0.7
+            if t >= 0 && t < 0.5 { return 0.32 }   // too short after smoothing
             if t >= 0.5 && t < 1.3 { return -0.45 }
             return 0
         }
@@ -123,7 +128,7 @@ final class V16CoreTests: XCTestCase {
         XCTAssertTrue(reasons.contains { $0.contains("reason=noLiftPlateau") })
     }
 
-    // MARK: 16.2 change D — short shelves are admitted only with corroboration
+    // MARK: Short shelves are admitted only with corroboration
 
     /// Opening the floor to 0.7 s recovers four real goldens but also 15 low
     /// phantoms, and those pile up exactly ON the floor (median shelf 0.70,
@@ -132,7 +137,7 @@ final class V16CoreTests: XCTestCase {
     /// shortShelfApexM as well. One extra 0.1 s bin of the SAME signal takes it
     /// over shelfFullSec, where the shelf stands on its own — and the rejection
     /// reason changes accordingly.
-    func testShortShelfNeedsApexCorroborationButAFullShelfDoesNot() {
+    func testShortShelfNeedsApexOrFlightCorroborationButAFullShelfDoesNot() {
         func reasons(shelfLength: Double) -> [String] {
             let engine = JumpEngineV16()
             var events: [String] = []
@@ -153,6 +158,64 @@ final class V16CoreTests: XCTestCase {
         let full = reasons(shelfLength: 1.00)
         XCTAssertFalse(full.contains { $0.contains("reason=shortShelfNoApex") })
         XCTAssertTrue(full.contains { $0.contains("reason=belowMinReport") })
+    }
+
+    // MARK: 16.4 — deferred flight corroboration
+
+    /// A long flight can overflow the fixed 4.5 s matched-filter window even
+    /// though the measured flight arc is well above the reporting floor. V16.4
+    /// defers the short-shelf verdict until that flight measurement exists.
+    func testFlightWindowCanCorroborateAShortShelf() {
+        func run(_ cfg: V16Config) -> (jump: V16Jump?, events: [String]) {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            var events: [String] = []
+            engine.onDebug = { _, event in events.append(event) }
+            feed(into: engine, until: 12.0) { t in
+                if t >= 0 && t < 0.02 { return 2.0 }
+                if t >= 0 && t < 0.65 { return 0.35 }
+                if t >= 0.65 && t < 4.8 { return 0.08 }
+                if t >= 4.8 && t < 5.6 { return -0.45 }
+                return 0
+            }
+            return (delegate.jumps.first, events)
+        }
+
+        let shipped = run(V16Config())
+        guard let jump = shipped.jump else {
+            return XCTFail("the flight window did not recover the short-shelf fixture: \(shipped.events)")
+        }
+        XCTAssertLessThan(jump.liftPlateauSec, V16Config().shelfFullSec)
+        XCTAssertLessThan(jump.apexRawM, V16Config().shortShelfApexM)
+        XCTAssertGreaterThanOrEqual(jump.heightM, V16Config().shortShelfFlightM)
+
+        var v163 = V16Config()
+        v163.flightCorroboration = false
+        let previous = run(v163)
+        XCTAssertNil(previous.jump)
+        XCTAssertTrue(previous.events.contains { $0.contains("reason=shortShelfNoApex") })
+    }
+
+    /// Confidence has its own absolute 1.05 s shelf. If it were still derived
+    /// as minLiftPlateauSec * 1.5, V16.4's 0.6 s floor would incorrectly mark
+    /// this 0.9 s shelf as high confidence.
+    func testConfidenceUsesTheAbsoluteStrongShelfThreshold() {
+        let delegate = CaptureDelegate()
+        let engine = JumpEngineV16()
+        engine.delegate = delegate
+        feed(into: engine, until: 12.0) { t in
+            if t >= 0 && t < 0.02 { return 2.0 }
+            if t >= 0 && t < 0.85 { return 0.35 }
+            if t >= 0.85 && t < 4.8 { return 0.04 }
+            if t >= 4.8 && t < 5.6 { return -0.45 }
+            return 0
+        }
+
+        guard let jump = delegate.jumps.first else { return XCTFail("fixture did not emit") }
+        XCTAssertGreaterThanOrEqual(jump.liftPlateauSec, V16Config().shelfFullSec)
+        XCTAssertLessThan(jump.liftPlateauSec, V16Config().strongShelfSec)
+        XCTAssertEqual(jump.confidence, 0.55, accuracy: 1e-9)
     }
 
     // MARK: 16.1 change 4 — boxSmooth NaN poisoning
@@ -539,6 +602,7 @@ final class V16CoreTests: XCTestCase {
         XCTAssertEqual(delegate.jumps.count, 1)
         let jump = delegate.jumps[0]
         XCTAssertNil(jump.airtimeSec)
+        XCTAssertNil(jump.distanceM)
         XCTAssertNil(jump.landLat)
         XCTAssertNil(jump.landLng)
         XCTAssertNil(jump.apexLat)

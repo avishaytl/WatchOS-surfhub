@@ -9,11 +9,11 @@ struct ContentView: View {
                 .font(.system(size: 80))
                 .foregroundStyle(.blue)
 
-            Text("Kiters")
+            Text("SPOTEQ")
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
-            Text("Open Kiters on your\nApple Watch to start tracking\nyour kitesurfing sessions.")
+            Text("Open SPOTEQ on your\nApple Watch to start tracking\nyour kitesurfing sessions.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -21,7 +21,7 @@ struct ContentView: View {
 
             Spacer()
 
-            Text("Kiters is a standalone Apple Watch app.\nNo iPhone needed during sessions.")
+            Text("SPOTEQ is a standalone Apple Watch app.\nNo iPhone needed during sessions.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)

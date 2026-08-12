@@ -103,24 +103,26 @@ final class WatchSessionUploader {
              spdKmh: Int, distKm: Double,
              windKts: Int? = nil, dir: String? = nil, avgKmh: Double? = nil,
              stars: Int = 3,
+             calories: Int? = nil, maxHr: Int? = nil,
              track: [[Int]], jData: [[String: Int]]) async throws -> EndResponse {
-        var body: [String: Any] = [
-            "type":   "end",
-            "sessId": sessId,
-            "durMin": durMin,
-            "jmax":   jmax,
-            "jcnt":   jcnt,
-            "airS":   airS,
-            "spdKmh": spdKmh,
-            "distKm": distKm,
-            "stars":  stars,
-            "track":  track,
-            "jData":  jData,
-        ]
-        if let windKts { body["windKts"] = windKts }
-        if let dir     { body["dir"]     = dir     }
-        if let avgKmh  { body["avgKmh"]  = avgKmh  }
-        let json = try await post(body)
+        let payload = WatchSessionEndPayload(
+            sessId: sessId,
+            durMin: durMin,
+            jmax: jmax,
+            jcnt: jcnt,
+            airS: airS,
+            spdKmh: spdKmh,
+            distKm: distKm,
+            windKts: windKts,
+            dir: dir,
+            avgKmh: avgKmh,
+            stars: stars,
+            calories: calories,
+            maxHr: maxHr,
+            track: track,
+            jData: jData
+        )
+        let json = try await post(payload.object())
         return EndResponse(broken: json["broken"] as? [String] ?? [])
     }
 

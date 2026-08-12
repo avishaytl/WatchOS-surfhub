@@ -94,6 +94,96 @@ func testJumpRecordsQueueAndFlushOnlySessionBests() {
     expectEqual(state.claimPendingRecord(sessionId: "other"), nil, "wrong session should not claim pending records")
 }
 
+func testSessionHealthMetricsAccumulateRoundAndReset() {
+    var metrics = SessionHealthMetrics()
+    metrics.recordActiveCalories(411.4)
+    metrics.recordActiveCalories(411.6)
+    metrics.recordActiveCalories(400)
+    metrics.recordHeartRate(142.4)
+    metrics.recordHeartRate(168.6)
+    metrics.recordHeartRate(155)
+
+    expectEqual(metrics.caloriesForUpload, 412, "active calories should round once at upload")
+    expectEqual(metrics.maxHrForUpload, 169, "max HR should keep and round the session peak")
+
+    metrics.reset()
+    expectEqual(metrics.caloriesForUpload, nil, "reset should clear calories between sessions")
+    expectEqual(metrics.maxHrForUpload, nil, "reset should clear max HR between sessions")
+
+    for invalid in [0.0, -1.0, .nan, .infinity, -.infinity, Double.greatestFiniteMagnitude] {
+        metrics.recordActiveCalories(invalid)
+        metrics.recordHeartRate(invalid)
+    }
+    expectEqual(metrics.caloriesForUpload, nil, "invalid calories must stay unavailable")
+    expectEqual(metrics.maxHrForUpload, nil, "invalid heart rates must stay unavailable")
+}
+
+func testWatchSessionEndPayloadHealthFieldsAndKLOGTypes() {
+    let payload = WatchSessionEndPayload(
+        sessId: 123,
+        durMin: 96,
+        jmax: 4.3,
+        jcnt: 21,
+        airS: 2.4,
+        spdKmh: 41,
+        distKm: 18.2,
+        windKts: 22,
+        dir: "NW",
+        avgKmh: 19.5,
+        stars: 4,
+        calories: 412,
+        maxHr: 168,
+        track: [[320000, 340000]],
+        jData: [["h": 430, "a": 24]]
+    )
+    let body = payload.object()
+    let expectedKeys: Set<String> = [
+        "type", "sessId", "durMin", "jmax", "jcnt", "airS", "spdKmh",
+        "distKm", "windKts", "dir", "avgKmh", "stars", "calories",
+        "maxHr", "track", "jData",
+    ]
+    expectEqual(Set(body.keys), expectedKeys, "end body should preserve old keys and add only health fields")
+    expectEqual(body["calories"] as? Int, 412, "end body should use exact calories casing and integer type")
+    expectEqual(body["maxHr"] as? Int, 168, "end body should use exact maxHr casing and integer type")
+    expectEqual(body["windKts"] as? Int, 22, "wind speed must remain in the end payload")
+    expectEqual(body["dir"] as? String, "NW", "wind direction must remain in the end payload")
+
+    guard let decoded = BinaryLogEnvelope.decodeToObject(payload.encodedKLOG()) else {
+        fputs("FAIL: end KLOG payload should decode\n", stderr)
+        exit(1)
+    }
+    expect(decoded["calories"] is Int, "calories must use the KLOG integer tag")
+    expect(decoded["maxHr"] is Int, "maxHr must use the KLOG integer tag")
+    expectEqual(decoded["calories"] as? Int, 412, "KLOG calories should round-trip exactly")
+    expectEqual(decoded["maxHr"] as? Int, 168, "KLOG maxHr should round-trip exactly")
+}
+
+func testWatchSessionEndPayloadOmitsUnavailableHealth() {
+    func body(calories: Int?, maxHr: Int?) -> [String: Any] {
+        WatchSessionEndPayload(
+            sessId: 1,
+            durMin: 1,
+            jmax: 0,
+            jcnt: 0,
+            airS: 0,
+            spdKmh: 0,
+            distKm: 0,
+            calories: calories,
+            maxHr: maxHr,
+            track: [[0, 0]],
+            jData: []
+        ).object()
+    }
+
+    for candidate in [body(calories: nil, maxHr: nil),
+                      body(calories: 0, maxHr: 0),
+                      body(calories: -1, maxHr: -1)] {
+        expect(candidate["calories"] == nil, "unavailable calories must be omitted")
+        expect(candidate["maxHr"] == nil, "unavailable maxHr must be omitted")
+        expectEqual(candidate["type"] as? String, "end", "health omission must not alter lifecycle type")
+    }
+}
+
 func testGPSStationaryGateOnlyAppliesWhenReliableGPSExists() {
     expect(
         !V7GPSStationaryGate.accepts(heightMeters: 1.3, movementDistanceMeters: 0.6, hasReliableGPS: true),
@@ -672,6 +762,9 @@ testStartIsDedupedAndRetriesAfterFailureWindow()
 testFallbackStartUsesZeroCoordinateAndAcceptsLateServerId()
 testPingTrackAndRecordGatingMatchLiveSessionContract()
 testJumpRecordsQueueAndFlushOnlySessionBests()
+testSessionHealthMetricsAccumulateRoundAndReset()
+testWatchSessionEndPayloadHealthFieldsAndKLOGTypes()
+testWatchSessionEndPayloadOmitsUnavailableHealth()
 testGPSStationaryGateOnlyAppliesWhenReliableGPSExists()
 testBackgroundNoiseGateRequiresAllNoiseSignals()
 testV12PipelineEmitsInstantAndRefinedJump()

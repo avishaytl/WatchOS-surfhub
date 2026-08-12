@@ -216,6 +216,10 @@ struct MetricsView: View {
             .padding(.vertical, 6)
             
             // Bottom row: Max Distance | Max Airtime | Max Speed - ANCHORED TO BOTTOM
+            let maxMeasuredAirtime = sessionManager.currentSession?.jumps
+                .filter { !$0.hasUnresolvedAirtime }
+                .map(\.airtime)
+                .max()
             HStack(spacing: 6) {
                 CompactMetric(
                     icon: "location.circle",
@@ -227,7 +231,7 @@ struct MetricsView: View {
                 
                 CompactMetric(
                     icon: "timer.circle",
-                    value: formatAirtime(sessionManager.currentSession?.jumps.max(by: { $0.airtime < $1.airtime })?.airtime ?? 0),
+                    value: maxMeasuredAirtime.map(formatAirtime) ?? "—",
                     label: L("session.airtime"),
                     // unit: "s",
                     iconColor: .white

@@ -26,6 +26,11 @@ struct V16SettingsView: View {
                     L("settings.v16_lift_shelf"),
                     String(format: "> %.1f m/s² · ≥ %.1f s", config.liftThreshMS2, config.minLiftPlateauSec)
                 )
+                metric(L("settings.v16_strong_shelf"), String(format: "≥ %.2f s", config.strongShelfSec))
+                metric(
+                    L("settings.v16_flight_corroboration"),
+                    String(format: "≥ %.1f m", config.shortShelfFlightM)
+                )
                 metric(
                     L("settings.v16_height_window"),
                     String(format: "−%.1f / +%.1f s", config.apexPreSec, config.apexPostSec)

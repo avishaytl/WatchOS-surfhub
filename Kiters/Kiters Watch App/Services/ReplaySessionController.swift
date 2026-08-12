@@ -604,7 +604,7 @@ private final class ReplaySessionProcessor {
             return String(reflecting: detector.effectiveConfiguration)
         }
         if let detector = detector as? JumpDetectorV16 {
-            return String(reflecting: detector.effectiveConfiguration)
+            return "engine=v\(JumpEngineV16.version);" + String(reflecting: detector.effectiveConfiguration)
         }
         if let detector = detector as? JumpDetectorV14 {
             return String(reflecting: detector.effectiveConfiguration)
