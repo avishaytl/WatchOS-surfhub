@@ -26,6 +26,8 @@ let package = Package(
                 "V16_3_HANDOFF",
                 "V16_4_HANDOFF",
                 "V16_5_HANDOFF",
+                "V16_7_HANDOFF",
+                "V16_7_INTEGRATION_NOTES.md",
                 "Tests",
             ],
             sources: ["JumpEngineV16.swift"]

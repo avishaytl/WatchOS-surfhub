@@ -10,7 +10,7 @@
 - [x] Automatic code signing with Development Team
 - [x] Privacy Manifest (`PrivacyInfo.xcprivacy`) created
 - [x] `ITSAppUsesNonExemptEncryption = NO` added (no custom encryption)
-- [x] Version string aligned (`1.0` / Build `1`)
+- [x] Version source aligned through `Config.xcconfig` (`1.3` / Build `167`)
 - [x] Deprecated API usage fixed (`onChange`)
 - [x] Localized `SessionDetailView` strings
 - [x] Implemented `deleteAllSessions()` properly
@@ -29,38 +29,17 @@
 1. Go to [App Store Connect](https://appstoreconnect.apple.com)
 2. Click **My Apps** → **+** → **New App**
 3. Fill in:
-   - **Platform**: watchOS
-   - **Name**: Kiters
+   - **Platform**: iOS (watch-only container with an embedded watchOS app)
+   - **Name**: SPOTEQ
    - **Primary Language**: English (U.S.)
-   - **Bundle ID**: `com.Kiters.watchkitapp` (must match project)
+   - **Bundle ID**: `com.avishayportal.kiters` (embedded watch app: `com.avishayportal.kiters.watchapp`)
    - **SKU**: `kiters-watchos-v1` (any unique string)
 4. Click **Create**
 
-### 3. App Icon (REQUIRED — currently missing!)
-Your `AppIcon.appiconset/Contents.json` declares a 1024×1024 watchOS icon slot but **no image file is referenced**. You must:
-
-1. Create a **1024×1024 px** PNG icon (no transparency, no rounded corners — Apple applies the mask)
-2. Save it as `AppIcon.png` in:
-   ```
-   Kiters Watch App/Assets.xcassets/AppIcon.appiconset/
-   ```
-3. Update `Contents.json`:
-   ```json
-   {
-     "images" : [
-       {
-         "filename" : "AppIcon.png",
-         "idiom" : "universal",
-         "platform" : "watchos",
-         "size" : "1024x1024"
-       }
-     ],
-     "info" : {
-       "author" : "xcode",
-       "version" : 1
-     }
-   }
-   ```
+### 3. App Icon
+Both the iOS container and the embedded watchOS app contain a referenced
+1024×1024 `AppIcon.png` without alpha. Validate the asset catalogs again before
+each release; no icon generation step is currently required.
 
 ### 4. App Store Metadata (in App Store Connect)
 Prepare the following:
@@ -121,17 +100,43 @@ Host this as a simple webpage (GitHub Pages, Notion public page, etc.)
 
 In **Xcode**:
 1. Select the **Kiters** scheme (not "Kiters Watch App")
-2. Set destination to **Any watchOS Device (arm64)**
+2. Set destination to **Any iOS Device (arm64)**. The iOS container embeds the
+   watchOS app; archiving the watch target alone does not create an uploadable
+   App Store archive.
 3. Menu → **Product** → **Archive**
 4. In the Organizer, click **Distribute App**
 5. Choose **App Store Connect** → **Upload**
 6. Follow the prompts (Xcode will validate automatically)
 
+Equivalent command-line flow from the repository root:
+
+```bash
+mkdir -p .release
+xcodebuild \
+  -project Kiters/Kiters.xcodeproj \
+  -scheme Kiters \
+  -configuration Release \
+  -destination 'generic/platform=iOS' \
+  -archivePath "$PWD/.release/SPOTEQ.xcarchive" \
+  -allowProvisioningUpdates \
+  archive
+
+xcodebuild \
+  -exportArchive \
+  -archivePath "$PWD/.release/SPOTEQ.xcarchive" \
+  -exportPath "$PWD/.release/TestFlight" \
+  -exportOptionsPlist "$PWD/Kiters/ExportOptions-TestFlight.plist" \
+  -allowProvisioningUpdates
+```
+
+`ExportOptions-TestFlight.plist` uses `destination=upload`, so the export step
+uploads the archive directly to App Store Connect.
+
 ### 8. Review Readiness Checklist
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | App Icon (1024×1024) | ⚠️ **NEEDS IMAGE** |
+| 1 | App Icon (1024×1024) | ✅ Present for both targets |
 | 2 | Privacy Manifest | ✅ Created |
 | 3 | Info.plist usage descriptions | ✅ Complete |
 | 4 | HealthKit entitlements | ✅ Configured |
@@ -141,7 +146,7 @@ In **Xcode**:
 | 8 | App description & metadata | ⚠️ **YOU NEED TO FILL IN ASC** |
 | 9 | Code signing | ✅ Automatic |
 | 10 | Export compliance (`ITSAppUsesNonExemptEncryption`) | ✅ Set to NO |
-| 11 | Version/Build numbers | ✅ Aligned (1.0 / 1) |
+| 11 | Version/Build numbers | ✅ Sourced from `Config.xcconfig` (1.3 / 167) |
 | 12 | Localization | ✅ English + Hebrew |
 | 13 | Deprecated APIs | ✅ Fixed |
 | 14 | Debug print statements | ⚠️ Consider replacing with `AppLogger` |
@@ -175,7 +180,7 @@ To test: Tap "Start Session" → Select "Kitesurfing" → The session view will 
 - Apple review typically takes **24–48 hours**
 - If rejected, address the specific issues and resubmit
 - For subsequent updates, increment `CURRENT_PROJECT_VERSION` (Build number) in project settings
-- `MARKETING_VERSION` stays at `1.0` until you do a feature release
+- `MARKETING_VERSION` is currently `1.3`; change it only for a marketing release
 
 ## Version Numbering Strategy
 - **Marketing Version** (`CFBundleShortVersionString`): `1.0`, `1.1`, `2.0` etc.

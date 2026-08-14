@@ -19,20 +19,25 @@ jobs:
       - name: Cache Swift build
         uses: actions/cache@v4
         with:
-          path: Tools/JumpReplay/.build
-          key: ${{ runner.os }}-jumpreplay-${{ hashFiles('Tools/JumpReplay/Sources/**/*.swift', 'Tools/JumpReplay/Package.swift') }}
+          path: |
+            Kiters/Tools/JumpReplay/.build
+            engines/engine_v16/.build
+          key: ${{ runner.os }}-jumpreplay-${{ hashFiles('Kiters/Tools/JumpReplay/Sources/**/*.swift', 'Kiters/Tools/JumpReplay/Package.swift', 'engines/engine_v16/**/*.swift') }}
           restore-keys: |
             ${{ runner.os }}-jumpreplay-
 
-      - name: Run regression tests
+      - name: Run V16 rule tests
+        run: swift test --package-path engines/engine_v16
+
+      - name: Run replay regression tests
         run: |
-          chmod +x Tools/JumpReplay/verify.sh
-          Tools/JumpReplay/verify.sh
+          chmod +x Kiters/Tools/JumpReplay/verify.sh
+          Kiters/Tools/JumpReplay/verify.sh
 
       - name: Upload actual outputs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: actual-outputs-${{ github.run_id }}
-          path: Tools/JumpReplay/output/*.actual.json
+          path: Kiters/Tools/JumpReplay/output/*.actual.json
           retention-days: 7

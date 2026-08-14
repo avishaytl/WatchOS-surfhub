@@ -9,6 +9,7 @@
 *.xcuserdatad/
 xcuserdata/
 DerivedData/
+.release/
 *.hmap
 *.ipa
 *.dSYM.zip

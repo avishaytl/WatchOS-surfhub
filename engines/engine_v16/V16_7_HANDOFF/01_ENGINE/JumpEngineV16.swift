@@ -1,8 +1,8 @@
 //
 //  JumpEngineV16.swift
-//  Kiters Watch App
+//  SurfHubWatch
 //
-//  V16.7 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
+//  V16.1 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
 //  two must stay behaviourally identical (same replay, same numbers).
 //
 //  V16 abandons the barometer as a height source and reconstructs the vertical
@@ -17,143 +17,100 @@
 //      rider up for a full second or more and world-vertical acceleration
 //      stays positive in a sustained shelf. A wave or chop bump is an impulse
 //      that is over within 0.6 s. Measured: real jumps 0.9–2.8 s of shelf,
-//      control session max 0.6 s across 19 pops. At the shipped 1.25 m/s² /
-//      0.8 s operating point this one test keeps 19/23 real jumps and admits
-//      0/19 control pops — the phantom firewall, no GPS needed.
+//      control session max 0.6 s across 19 pops. At the 0.9 s threshold this
+//      one test keeps 14/14 real jumps and admits 0/19 control pops — the
+//      phantom firewall, no GPS needed.
 //
-//   3. HEIGHT — endpoint-anchored double integration of the TRUE vertical
-//      acceleration (-az) over the MEASURED FLIGHT, with z(0)=z(T)=0. The
-//      result is metres directly: no scale, no offset. Pooled over 37 goldens
-//      from five sessions it measures 0.300 m MAE, and the best linear map
-//      that could be fitted to the raw output is h = 1.032*z + 0.048 — the
-//      identity to within 3 % and 5 cm, which is the signature of a
-//      measurement rather than a correlate. See §3b of evaluate() for why
-//      V16.0/V16.1 could not find this (a sign) and how the window is chosen.
+//   3. HEIGHT — bounded double integration of world-vertical acceleration over
+//      a FIXED window around the pop, with z(0)=z(T)=0. The apex is then a
+//      LINEAR FUNCTIONAL of the acceleration with support T, and two jumps
+//      compare only if the SAME functional is applied — i.e. the same T. With
+//      a per-jump window (even the TRUE airtime) each jump gets a different
+//      operator and the correlation collapses to r~0; with the fixed window
+//      it is r=0.95. This is a matched filter, not a
+//      trajectory reconstruction, and its output is mapped to metres by a
+//      linear calibration. Validated: MAE 0.52 m over all 14 goldens spanning
+//      2.1–8.5 m (LOO 0.57 m on the 12-jump subset it was fitted on); adding
+//      the two largest goldens did not move the slope.
 //
-//      The V16.1 MATCHED FILTER — the same integral over a FIXED window,
-//      mapped to metres by heightScale/heightOffsetM — is KEPT as the
-//      fallback for the 3 of 37 goldens whose landing never resolves, since
-//      the flight integral needs a bounded window. Set heightFromFlight=false
-//      to restore V16.1 behaviour exactly.
+//   4. AIRTIME — LOW CONFIDENCE, and the second reference makes that stronger,
+//      not weaker. Leave-one-out against each reference:
 //
-//   4. AIRTIME — measured from where the water ARRESTS the descent (see
-//      `landing`). 14/14 of the log-287 references resolved, 0.46 s MAE
-//      (V16.1 measured 0.34 s; t0 now marks the TRUE take-off, so the flight
-//      measures longer — an accepted regression, see the V16.2 notes). Still
-//      LOW CONFIDENCE — one session, one rider — so never gate on `airtimeSec`.
-//      It is nil when the descent was never arrested; that is a statement of
-//      "not measured", NOT a short flight. See the note on the sentinel in
-//      JumpDetectorV16.makeJump.
+//                                 287 (HOOLAN)   GAVRI (Surfr)
+//        constant (median)           1.000 s        0.412 s
+//        OUR measured airtime        0.464 s        1.001 s  <- loses on GAVRI
+//        ballistic from our height   0.275 s        0.483 s
+//
+//      The two sessions pick OPPOSITE best predictors, so there is no
+//      cross-validated improvement available — the optimal shrink toward the
+//      constant is a=0.80 on one and a=0.05 on the other. Do not ship a blend;
+//      that is the trap V15 fell into, where a 0.75-weight shrink toward a
+//      3.4 s prior looked like accuracy and was a constant.
+//
+//      The references are not equivalent, which explains the split: HOOLAN's
+//      airtime is r=0.952 with HOOLAN's own HEIGHT — very nearly derived from
+//      it. Surfr's is r=0.540, i.e. it carries real independent information,
+//      and ours correlates r=0.062 with it — none at all. Our spread on GAVRI
+//      is 1.15 s sd against their 0.53 s, so on small and mid jumps this rule
+//      contributes variance rather than signal.
+//
+//      What that does NOT license: rewriting the landing rule. Every
+//      alternative was measured on both references and all are worse — impact
+//      peak, first |sf| crossing, gyro settle and impact-then-settle all fire
+//      1.4-3.6 s EARLY, because a kite landing is soft and has no touchdown
+//      spike. A 2-D sweep of landDipMS2 x landDipMinSec finds no better joint
+//      operating point (the GAVRI-favouring corner costs 0.292 -> 0.331 m
+//      pooled height). Never gate on `airtimeSec`.
 //
 //   5. DISTANCE — derived, so it INHERITS the airtime error: haversine between
-//      the GPS fix AT the pop and the one at the estimated landing. Measured
-//      3.87 m MAE on log 287 and 6.19 m on smallLog after V16.2 stopped
-//      sampling the displacement origin 1 s early (12.80 m before).
-//      takeoffSpeedMS by contrast is still read at t0−1.0 s — deliberately,
-//      because that is the entry speed before the pop bleeds it off — and so
-//      carries its own −1.3 mph bias.
+//      the GPS fix before the pop and the one at the estimated landing. With
+//      the true airtime it measures 2.78 m MAE; with V16's own airtime, 6.27 m
+//      (0.54 s x ~8 m/s). takeoffSpeedMS by contrast is read straight from GPS
+//      before the pop and is accurate to 0.64 m/s.
 //
 //  NOT used, and why (measured, not assumed):
 //   • absoluteAltitude — passes a health gate on only 7/21 goldens and, even
 //     when it passes, produced −6.4 m and −2.1 m errors (a negative apex for a
 //     real jump = water over the port). Nothing available predicts when it is
-//     trustworthy, so fusing it injects metre-scale error into a 0.43 m
+//     trustworthy, so fusing it injects metre-scale error into a 0.57 m
 //     estimator.
 //   • relativeAltitude / raw pressure — alive (71 % distinct, max 5 s freeze)
 //     but useless per jump: 67 of the 68 inter-sample steps above 3 m fall
 //     OUTSIDE any jump. Noise exceeds signal in the same band, so no filter or
 //     drift reset recovers it (measured r = 0.19–0.31).
 //
-//  SCOPE: V16 is tuned for big air, and V16.2 closes the small-jump gap. On
-//  the 16-golden smallLog session (1.5–3.7 m) recall is 16/16 and height MAE
-//  0.21 m — the first operating point that beats a constant predictor (0.50 m)
-//  in that band. Below ~2.5 m the height is still the weakest part of the
-//  range, but it is no longer a population estimate.
-//
-//  DO NOT hand the low band back to V15. It was tried and measured twice.
-//  16.1: swapping V15 in below 2.5 m makes the small-jump MAE WORSE, 0.36 ->
-//  0.47 m, because V15's barometric paths never fire there and everything
-//  falls through to its ballistic estimate, a near-constant by construction.
-//  16.2: V15's RAW landing is also worse than ours (airtime MAE 0.92 s vs
-//  0.71 s on smallLog, 1.40 s vs 0.34 s on log 287) — its apparent airtime
-//  advantage is a 0.75-weight shrink toward a 3.4 s prior, i.e. a constant,
-//  not a measurement.
+//  SCOPE: V16 is tuned for big air, but the small-jump gap is closed. On the
+//  16-golden smallLog session (1.5–3.7 m) recall is 16/16 with 4 phantoms, none
+//  above 2.48 m, after the shelf floor moved to 0.7 s with apex corroboration on
+//  the short shelves. Do NOT fall back to V15 there: measured on that session,
+//  V15's own landing detection is WORSE (raw airtime MAE 0.92 s vs 0.71 s here,
+//  and 1.40 s vs 0.34 s on log 287) — its apparent airtime advantage is a 0.75-
+//  weight shrink toward a 3.4 s prior, i.e. a constant, not a measurement.
+//  Below ~2.5 m the HEIGHT remains a population estimate, not a measurement.
 //
 //
-//  ── V16.7 ───────────────────────────────────────────────────────────────
-//  The height window starts 0.5 s before the pop. On big-air candidates it also
-//  extends 0.8 s beyond max(resolved airtime, 5 s), triggered by airtime >= 4 s
-//  OR a first-pass height >= 3.5 m. The streaming engine waits for that window
-//  unless the 7.5 s evaluation deadline forces a shorter tail. A single,
-//  explicit identity reference calibration maps the measured height to Surfr
-//  as displayed. Recall is unchanged; pooled height MAE is 0.454 m over the
-//  complete reference set and 0.502 m for jumps at or above 4 m.
-//
-//  ── V16.5 ───────────────────────────────────────────────────────────────
-//  The resolved-flight height window starts 0.3 s before the pop. The pop is
-//  already inside the ascent, so starting at t0 truncated real lift and left a
-//  negative bias against both independent reference families. Detection,
-//  airtime, distance and free-fall windows remain anchored exactly as before.
-//  Guarded recall stays 38/39 while pooled height MAE improves 0.282 -> 0.199 m.
-//
-//  ── V16.4 ───────────────────────────────────────────────────────────────
-//  Four measured changes on top of V16.3, with no new sensors or API changes:
-//    1. A short shelf that the fixed matched-filter window cannot corroborate
-//       is deferred until the measured flight window can be checked.
-//    2. minLiftPlateauSec moves 0.70 -> 0.60 s.
-//    3. An unresolved landing reports no distance instead of a truncated chord.
-//    4. Confidence uses the absolute 1.05 s strong-shelf threshold.
-//  Guarded recall improves 35/39 -> 38/39 and pooled height MAE 0.292 ->
-//  0.282 m; the negative control remains silent and the tallest phantom stays
-//  1.56 m. Set flightCorroboration=false and minLiftPlateauSec=0.7 for V16.3.
-//
-//  ── V16.3 ───────────────────────────────────────────────────────────────
-//  Two changes on top of V16.2, both measured over six logs holding 78
-//  confirmed jumps. NEITHER COSTS A SINGLE REAL JUMP: recall is 35/39 before
-//  and after. No new sensors, no new state, no API change.
-//    1. SETTLE FALLBACK — when the descent-arrest rule never resolves, look for
-//       the specific force returning to ~1 g and STAYING there. An unresolved
-//       landing costs more than a missing airtime: it also denies the height
-//       its flight window. Pooled height MAE 0.300 -> 0.292 m, GAVRI 0.468 ->
-//       0.401 m. It runs ONLY when `forced` — offered mid-flight it pre-empts
-//       the better answer and finalises on a partial flight (287: 0.30 -> 0.76 m).
-//       Airtime pays 0.93 -> 1.00 s on GAVRI for it.
-//    2. PHANTOM FILTER — reject when the ARREST rule was unresolved AND the
-//       lift shelf is short. Tallest phantom across the suite 2.54 -> 1.56 m;
-//       log 287's three phantoms go to zero. Every impact-based landing rule
-//       was measured as an alternative and all fire 1.4-3.6 s EARLY: a kite
-//       landing is soft and has NO touchdown spike (see the config comments).
-//  Set landSettleFallback=false and phantomFilter=false for exact V16.2.
-//
-//  ── V16.2 ───────────────────────────────────────────────────────────────
-//  Measured on six reference logs. Recall 31/39 -> 36/39, phantoms 9 -> 8,
-//  TALLEST phantom 3.73 -> 2.54 m, pooled height MAE 0.575 -> 0.300 m, and
-//  hand throws on a bench detected for the first time (0/4 -> 3/4, height MAE
-//  0.02 m) so the watch can be tested without going on the water. The control
-//  session still emits ZERO. Airtime regressed 0.34 -> 0.46 s; accepted.
-//    1. HEIGHT IS NOW A MEASUREMENT — flight-window integration of -az, no
-//       calibration constants (§3b of evaluate, `flightHeight`). The V16.1
-//       matched filter and its heightScale/heightOffsetM stay as the fallback
-//       for an unresolved landing; heightFromFlight=false restores V16.1.
-//    2. FREE-FALL WINDOW — a ballistic event is bounded exactly by its free
-//       fall, which never occurs while riding (0 runs in 187 minutes). Bench
-//       height 0.83 -> 0.02 m, every kite log unchanged to the digit.
-//    3. popClusterSec 2.0 -> 0.8 — t0 was walking forward onto the LANDING
-//       (on a throw the catch is 15-23 g against a 3-6 g release), so the
-//       shelf scan started after the flight was over.
-//    4. apexAnchorSec 2.0 (new) — decouples the height window from t0 so 3.
-//       does not cost log 287 its height (0.519 -> 0.643 m without it).
-//    5. minLiftPlateauSec 0.8 -> 0.7 as a FLOOR, with apex corroboration
-//       below shelfFullSec. smallLog 12/16 -> 16/16, control still 0.
-//    6. The immediate-report path now honours dedup — two jumps both over
-//       immediateReportM inside dedupSec used to BOTH fire (one take-off
-//       delivered twice, seen as a 4.39 m "phantom" 3.4 s after a real one).
-//    7. Distance samples its ORIGIN at t0, not t0-1.0 s, which folded a whole
-//       second of riding (~8 m) into every jump. MAE 12.80 -> 6.19 m.
-//    8. minReportM 1.4 -> 1.2 — now a pure DISPLAY threshold, since the
-//       flight integral has no 1.43 m structural floor.
-//    9. minAirtimeSec 1.5 (new) — a dormant floor against regression.
-//  Rejected after measurement: see 03_DOCS/REJECTED.md in the handoff.
+//  ── V16.4 ────────────────────────────────────────────────────────────────
+//  1. FLIGHT CORROBORATION. The short-shelf gate judged a candidate on the
+//     FIXED 4.5 s matched-filter window and ran BEFORE the landing was known,
+//     so a long flight overflowed it: apex read 0.00-0.19 while the same
+//     integral over the FLIGHT window returned metres. It now defers and asks
+//     the flight window. CLEAN 3/4 -> 4/4, V142 2/5 -> 4/5, Yaniv 20/24 ->
+//     23/24, guarded recall 35/39 -> 38/39, pooled height 0.292 -> 0.282 m,
+//     with the control still silent and the tallest phantom still 1.56 m.
+//  2. minLiftPlateauSec 0.7 -> 0.6. Identical on six of seven logs; recovers
+//     one real jump on Yaniv. Below 0.6 recall is FLAT all the way to 0.3
+//     while 287 gains a phantom, so the gate is not what blocks the rest.
+//  3. NO FLIGHT WINDOW, NO DISTANCE. An unresolved landing left tEnd at
+//     apexPostSec, so the reported span covered 2 s of a 4-5 s flight.
+//     smallLog distance 4.96 -> 4.50 m, its correlation 0.456 -> 0.585.
+//  4. `confidence` pinned to strongShelfSec (1.05 s) instead of derived from
+//     minLiftPlateauSec//  1.5. Equal at a 0.70 s gate, but they answer
+//     different questions, and lowering the gate would otherwise relabel the
+//     very band the phantom filter treats as suspect.
+//  Rejected after measurement: interpolating the GPS distance endpoints (287
+//  improves, smallLog worsens, pooled a wash), path length instead of the
+//  chord, a global airtime offset, deep unloading as a second detection path,
+//  and reduced lift smoothing (it breaks 287 and smallLog).
 //
 //  ── V16.1 ───────────────────────────────────────────────────────────────
 //  Changes since V16.0, each measured before being kept:
@@ -196,16 +153,14 @@ public struct V16Config {
     /// Takeoff pop floor (g). Goldens measured 1.4–4.7 g.
     public var popMinG = 1.4
     /// Two pops closer than this are one takeoff; the stronger anchors t0.
-    ///
-    /// 0.8, not 2.0. The window governs how far t0 may WALK FORWARD onto a
-    /// stronger pop, and a take-off's own pop burst measures 0.80 s median
-    /// across the 14 goldens — 2.0 s was far wider than the thing it merges.
-    /// On a thrown watch the ordering inverts: the release is 3-6 g and the
-    /// CATCH is 15-23 g, 0.9-1.7 s later, so the anchor walked onto the landing
-    /// and the shelf scan then started after the flight was over (the watch's
-    /// own log: shelf=0.00-0.30 s on a 17 g yank). At 0.8 the anchor stays on
-    /// the release and all four bench throws are found; the height is protected
-    /// separately by apexAnchorSec.
+    // 0.8, not 2.0. The window governs how far t0 may WALK FORWARD onto a
+    // stronger pop, and a take-off's own pop burst measures 0.80 s median across
+    // the 14 goldens — 2.0 s was far wider than the thing it merges. On a thrown
+    // watch the ordering inverts: the release is 3-6 g and the CATCH is 15-23 g,
+    // 0.9-1.7 s later, so the anchor walked onto the landing and the shelf scan
+    // then started after the flight was over (the watch's own log: shelf=0.00-0.30 s
+    // on a 17 g yank). At 0.8 the anchor stays on the release and all four bench
+    // throws are found; the height is protected separately by apexAnchorSec.
     public var popClusterSec: TimeInterval = 0.8
 
     /// World-vertical acceleration above this counts as lift (m/s²).
@@ -222,7 +177,7 @@ public struct V16Config {
     public var apexAnchorSec: TimeInterval = 2.0
     /// V16.2: measure the height by endpoint-anchored integration over the
     /// flight instead of the calibrated matched filter. The filter stays as the
-    /// fallback whenever the landing is unresolved. false = V16.1 behaviour.
+    /// fallback whenever the landing is unresolved.
     public var heightFromFlight = true
     /// |specific force| below this counts as FREE FALL (g). 1.0 = at rest.
     /// Free fall is the ONLY exactly-correct integration window and it is
@@ -255,9 +210,9 @@ public struct V16Config {
     /// The phantom firewall: required continuous lift shelf (s).
     /// 1.25 / 0.8 dominates the previous 1.5 / 0.9 — recall 17/23 -> 19/23 with
     /// the same single true phantom and still ZERO control false positives.
-    ///
-    /// V16.4: 0.6 is the floor. Lowering it further recovered nothing in the
-    /// seven-log suite and introduced a phantom on log 287.
+    // 0.7 is the FLOOR, not the bar. The four goldens smallLog used to miss
+    // carry shelves of 0.7/0.7/0.6/0.8 s; the old 0.8 rejected all four.
+    // Shelves in [0.7, shelfFullSec) must clear shortShelfApexM to be admitted.
     public var minLiftPlateauSec: TimeInterval = 0.6
     /// A shelf at or above this is accepted on its own, with no corroboration.
     public var shelfFullSec: TimeInterval = 0.8
@@ -304,14 +259,12 @@ public struct V16Config {
     /// jump (18/23 -> 19/23), lowers MAE 0.44 -> 0.43 m and still emits
     /// NOTHING on the pops-and-waves control. Lower does nothing: 1.43 m is
     /// the smallest height the calibration can produce.
-    ///
-    /// V16.2: 1.2. That 1.4 existed because the MATCHED FILTER could not output
-    /// below heightOffsetM = 1.43 m, so anything lower was structurally
-    /// unreachable. The flight integral has no such floor — it returns what it
-    /// measures — so this is now a pure DISPLAY threshold. Swept on all six
-    /// logs: 1.2 recovers two real goldens the 1.4 floor censored (287 @282 s
-    /// measures 1.39 m against a 2.3 m reference) at no extra phantom. Below
-    /// 1.1 the phantoms climb.
+    // 1.2. The old 1.4 existed because the MATCHED FILTER could not output below
+    // heightOffsetM = 1.43 m, so anything lower was structurally unreachable. The
+    // V16.2 flight integral has no such floor — it returns what it measures — so
+    // this is now a pure DISPLAY threshold. Swept on all six logs: 1.2 recovers
+    // two real goldens the 1.4 floor censored (287 @282 s measures 1.39 m against
+    // a 2.3 m reference) at no extra phantom. Below 1.1 the phantoms climb.
     public var minReportM = 1.2
     /// Emissions closer than this are the same jump; the higher wins.
     /// Window in which a later, stronger candidate may still supersede an
@@ -350,10 +303,8 @@ public struct V16Config {
     /// — 0.9-3.9 s after every observed landing, with airtime and distance
     /// already resolved, so the emission is complete rather than provisional.
     public var immediateReportM = 2.5
-    /// The LATEST a candidate may be judged (s) — long enough to cover the
-    /// shelf scan and the landing search in the worst case. Measured on the
-    /// reference logs: longest shelf 2.8 s, latest landing 6.6 s, widest gap a
-    /// MERGE had to bridge 6.4 s.
+    /// A candidate is judged this long after its pop — covers the shelf scan
+    /// and the landing search.
     public var evalDelaySec: TimeInterval = 7.5
 
     /// The EARLIEST a candidate may be judged (s).
@@ -388,11 +339,17 @@ public struct V16Config {
     public var landOffsetSec: TimeInterval = 0.4
     /// A RESOLVED flight shorter than this is a knock, not a jump. A nil
     /// landing (never resolved) is exempt — it means "not measured".
-    /// Dormant on all six reference logs; a floor against regression.
     public var minAirtimeSec: TimeInterval = 1.5
 
-    /// V16.3 SETTLE FALLBACK — a second-chance landing for when the
-    /// descent-arrest rule never resolves one.
+    /// SECOND-CHANCE landing, used ONLY when the descent-arrest rule returns nil.
+    /// Then the specific force settles back to ~1 g and stays there — the rider
+    /// is tracking the water again.
+    ///
+    /// Why it is a fallback and never the primary rule: measured head to head on
+    /// both references, descent-arrest wins on airtime (GAVRI 0.93 s / 287
+    /// 0.46 s) against settle (1.14 s / 1.08 s). Every impact-based alternative
+    /// is far worse and fires 1.4-3.6 s EARLY, because a kite landing is soft —
+    /// there is no touchdown spike to find.
     ///
     /// What it is worth: an unresolved landing costs more than a missing
     /// airtime, because it also denies the HEIGHT its flight window and drops it
@@ -409,7 +366,7 @@ public struct V16Config {
     public var landSettleFromSec: TimeInterval = 1.0
     public var landSettleToSec: TimeInterval = 9.0
 
-    /// V16.3 PHANTOM FILTER — reject a jump whose FLIGHT SIGNATURE IS INCOMPLETE.
+    /// PHANTOM FILTER — reject a jump whose FLIGHT SIGNATURE IS INCOMPLETE.
     ///
     /// Two independent weak signs of the same thing, and only their conjunction
     /// fires: the descent-arrest landing never resolved (no clean end to a
@@ -442,30 +399,43 @@ public struct V16Config {
     /// Shelf below this rejects on its own (given an unresolved arrest).
     public var phantomShelfSec: TimeInterval = 1.05
     /// Shelf at or above which a jump is reported at high confidence (s).
-    /// Absolute on purpose: confidence must not drift when the detection floor
-    /// changes.
+    /// Absolute on purpose — see the note at the `confidence` assignment.
     public var strongShelfSec: TimeInterval = 1.05
-    /// How far before t0 the resolved-flight HEIGHT integral starts (s).
-    /// Detection, airtime and distance remain anchored to t0, and a measured
-    /// free-fall window is exempt because its physical boundaries are exact.
+    /// How far BEFORE t0 the height integral starts (s). Height window only —
+    /// detection, airtime and distance still use t0. See the note at the
+    /// pre-roll in evaluate().
     public var heightPreRollSec: TimeInterval = 0.5
-    /// Tail added after the resolved landing for selected big-air windows.
+    /// How far AFTER the resolved landing the height integral runs, on jumps
+    /// whose airtime reaches `heightPostRollMinAirSec` (s). See the note at the
+    /// post-roll in evaluate().
     public var heightPostRollSec: TimeInterval = 0.8
-    /// Trigger A: resolved airtime at or above this value gets the post-roll.
+    /// Airtime at or above which the post-roll applies (s). Gated on AIRTIME and
+    /// not on height: a height gate blocks exactly the jumps that need it.
     public var heightPostRollMinAirSec: TimeInterval = 4.0
-    /// Trigger B: first-pass height at or above this value gets the post-roll.
+    /// First-pass height at or above which the post-roll applies (m). The OTHER
+    /// trigger: the two failure modes are mirror images, so neither gate alone
+    /// is enough. See the note at the post-roll in evaluate().
     public var heightPostRollMinM: Double = 3.5
-    /// Minimum flight span used before adding the post-roll on a triggered jump.
+    /// Floor on the flight window before the post-roll is added (s). A landing
+    /// resolved this early on a jump this size is not believed.
     public var heightPostRollFloorSec: TimeInterval = 5.0
-    /// Reference calibration: reported = slope * measured + offset.
-    /// Identity is the measured optimum for matching Surfr as displayed.
+    /// Reference calibration applied to the reported height — the single place
+    /// where the measurement is mapped onto whatever counts as truth. See the
+    /// note at the assignment in evaluate(). Identity targets Surfr as
+    /// displayed and is a MEASURED optimum, not an unset default. For
+    /// videogrammetric truth use 0.8025 / +0.7309.
     public var heightCalSlope: Double = 1.0
+    /// Offset of the reference calibration (m). See `heightCalSlope`.
     public var heightCalOffsetM: Double = 0.0
-    /// Let the measured flight window corroborate a short shelf when the fixed
-    /// matched-filter window found no apex evidence.
+    /// Let the FLIGHT window corroborate a short shelf when the fixed apex
+    /// window found nothing. See the note at `needsCorroboration`.
     public var flightCorroboration = true
-    /// Minimum measured flight height for deferred corroboration (m). This is
-    /// intentionally equal to the reporting floor.
+    /// Flight height a short-shelf candidate must reach to survive (m).
+    /// Set to minReportM: anything clearing the reporting floor on the flight
+    /// window has produced a real vertical excursion, and the phantom filter and
+    /// the control session keep the rest out. Swept 1.2-3.0 m on all seven logs
+    /// — the negative control stays silent and the tallest phantom stays 1.56 m
+    /// at every value, while recall keeps climbing as it drops.
     public var shortShelfFlightM = 1.2
     /// A longer shelf still rejects, but only for a small jump.
     public var phantomShelfWideSec: TimeInterval = 1.20
@@ -496,23 +466,7 @@ public struct V16Config {
 // MARK: - Output
 
 public struct V16Jump {
-    /// Which operator produced `heightM`. The operators are NOT interchangeable and
-    /// a session log that does not say which one ran cannot be re-analysed:
-    ///   "flight"   — V16.2 integral over the measured flight, in metres.
-    ///   "freefall" — the same integral over a measured FREE-FALL window, i.e.
-    ///                a ballistic event (a thrown watch), not a kite jump.
-    ///   "matched"  — the V16.1 fixed-window matched filter with
-    ///                heightScale/heightOffsetM applied. The fallback, taken
-    ///                when the landing never resolved.
-    /// V16.7 applies heightCalSlope/heightCalOffsetM to every source after its
-    /// operator has produced a measured or fallback height.
-    public enum HeightSource: String {
-        case flight, freefall, matched
-    }
-    public let heightSource: HeightSource
-    /// Reported height (m), after the shared V16.7 reference calibration.
-    /// `.matched` remains a calibrated correlate; the other sources are direct
-    /// measurements before that final mapping.
+    /// Calibrated height (m).
     public let heightM: Double
     /// Raw matched-filter apex before calibration (m) — diagnostics only.
     public let apexRawM: Double
@@ -529,52 +483,6 @@ public struct V16Jump {
     public let distanceM: Double?
     /// 0.75 with a strong shelf, 0.55 at the threshold.
     public let confidence: Double
-
-    // MARK: Flight-path anchors — what the phone needs to DRAW the jump
-    //
-    // The phone has the take-off fix and a scalar distance, so it cannot know
-    // which WAY the jump went and draws a straight chord from the GPS track's
-    // bearing. Measured against the mid-flight fixes on log 287 that chord is
-    // 8.09 m out; adding the landing and apex positions takes it to 4.55 m for
-    // ~16 bytes. The full 64-point reconstructed arc costs 48x the bytes and is
-    // no better (5.10 m) — it carries the integration's high-frequency noise,
-    // while a quadratic through these three anchors does not.
-    //
-    // ⚠️ ALL nil when the landing is unresolved: there is no flight window, so
-    // there is no apex and no landing fix. The phone renders nothing rather
-    // than a guess — do NOT substitute defaults.
-    public let landLat: Double?
-    public let landLng: Double?
-    public let apexLat: Double?
-    public let apexLng: Double?
-    /// Apex time as a fraction of the flight, 0...1 — the VERTICAL shape.
-    /// Measured 0.33-0.61 across the 14 log-287 goldens (median 0.40), so it is
-    /// a real per-jump quantity; without it the phone assumes 0.42 for every
-    /// jump.
-    public let riseFraction: Double?
-
-    // MARK: Rider diagnostics
-    //
-    // Each was measured on the 14 log-287 goldens and kept only because its
-    // spread is real. A metric whose spread is noise is a fake feature.
-
-    /// Peak load around touchdown (g). Measured 0.5-1.9 g (median 1.1).
-    ///
-    /// ⚠️ The window may be TRUNCATED. It runs to landingT + 0.7 s, but a jump
-    /// over immediateReportM is finalised the moment `now` reaches the landing,
-    /// so the tail usually has not been sampled yet. Widening the emission
-    /// guard to wait for it would add ~0.7 s of latency to every big jump —
-    /// an algorithm change, which this payload work is explicitly not. Read it
-    /// as "peak load at touchdown", not as a fixed-support statistic.
-    public let landingImpactG: Double?
-    /// Gyro integral over the flight, in revolutions. Measured 0.59-1.79
-    /// (median 1.18). This is the WRIST's rotation — an arm movement counts —
-    /// so the UI must call it a rotation index, never a spin count.
-    public let rotationRevs: Double?
-    /// Mean load over the 1.5 s BEFORE the pop (g): how hard the rider was
-    /// carving into the send. Measured 0.41-1.14 g (median 0.72). Independent
-    /// of the landing, so it survives an unresolved one.
-    public let edgeLoadG: Double?
 }
 
 public protocol JumpEngineV16Delegate: AnyObject {
@@ -733,29 +641,11 @@ public final class JumpEngineV16 {
         guard shelf >= cfg.minLiftPlateauSec else {
             // the shelf only ever ACCUMULATES, so it may still qualify later
             if !forced { return false }
-            // DIAGNOSTICS ONLY — no verdict depends on this branch.
-            //
-            // A log with no attitude at all makes every bin NaN, so the shelf
-            // measures exactly 0.00 s and the rejection is indistinguishable
-            // from real chop. That is how a whole session of `noLiftPlateau
-            // shelf=0.00s` reads as "the gate is working" when in fact the
-            // engine never had a vertical channel to look at. `noAttitude`
-            // above only fires when the window itself is too short.
-            //
-            // NOTE for whoever syncs the TS twin: this reason text is Swift-only
-            // for now. The verdict, and therefore every emitted jump, is
-            // identical — the twin prints noLiftPlateau for this same case.
-            if bins.finiteCount == 0 {
-                onDebug(now, "REJECT t0=\(fmt(t0)) reason=noAttitudeInWindow yank=\(fmt(c.yankG))g")
-                return true
-            }
             onDebug(now, "REJECT t0=\(fmt(t0)) reason=noLiftPlateau shelf=\(fmt(shelf))s yank=\(fmt(c.yankG))g")
             return true
         }
 
-        // 2. The matched-filter apex — the V16.2 height FALLBACK, and still the
-        //    corroborating evidence for a short shelf.
-        //
+        // 2. Height from the fixed-support matched filter.
         // DECOUPLED ANCHOR. t0 marks the TAKE-OFF — that is what airtime and the
         // shelf scan need, and popClusterSec keeps it there. The apex window wants
         // something different: the calibration was fitted with the window centred
@@ -780,16 +670,27 @@ public final class JumpEngineV16 {
         let needsCorroboration = shelf < cfg.shelfFullSec && apex < cfg.shortShelfApexM
         if needsCorroboration {
             if !forced { return false }   // the shelf accumulates; it may still grow
-            // The fixed 4.5 s window can miss long flights. V16.4 defers this
-            // verdict until the measured flight window is available below.
+            // SECOND CHANCE, from the flight window. The test above reads the
+            // FIXED [-apexPreSec, +apexPostSec] matched filter, 4.5 s wide. A
+            // long flight overflows it: on Yaniv the jumps Surfr caught and we
+            // did not have reference airtimes of 4.3-4.8 s, and their apex over
+            // the fixed window reads 0.00-0.19 while the same integral over the
+            // FLIGHT window returns metres. Since V16.2 the flight window is the
+            // better measurement anyway — so when the fixed window says nothing,
+            // ask the flight window before discarding the candidate. Deferred
+            // rather than decided here because the landing is not yet resolved.
+            //
+            // Measured on all seven logs: CLEAN 3/4 -> 4/4, V142 2/5 -> 4/5,
+            // Yaniv 20/24 -> 23/24, guarded recall 35/39 -> 38/39, pooled height
+            // 0.292 -> 0.282 m. The negative control stays at zero and the
+            // tallest phantom stays 1.56 m; 287 and smallLog do not move.
             if !cfg.flightCorroboration {
                 onDebug(now, "REJECT t0=\(fmt(t0)) reason=shortShelfNoApex shelf=\(fmt(shelf))s apex=\(fmt(apex))")
                 return true
             }
         }
-
-        // 3. Airtime (low confidence) — resolved BEFORE the height, because the
-        //    height now wants the flight window (see 3b).
+        // 3. Airtime — resolved BEFORE the height, because the height now wants
+        //    the flight window (see below).
         let land0 = landing(bins, t0: t0, forced: forced)
         let landingT = land0.t
         // An unresolved landing is the one thing worth waiting for: it is what
@@ -802,7 +703,7 @@ public final class JumpEngineV16 {
         // number on the wrist before the rider is down.
         if let lt = landingT, now < lt, !forced { return false }
         // A RESOLVED flight shorter than this is a watch knock. nil must pass —
-        // 3 of the 37 real jumps across the reference logs never resolve one.
+        // 3 of the 35 real jumps across the reference logs never resolve one.
         if let lt = landingT, lt - t0 < cfg.minAirtimeSec {
             onDebug(now, "REJECT t0=\(fmt(t0)) reason=airtimeTooShort air=\(fmt(lt - t0))s")
             return true
@@ -812,9 +713,8 @@ public final class JumpEngineV16 {
         //
         // V16.2 replaces the calibrated matched filter with a direct measurement.
         // Over the FLIGHT window, endpoint-anchored double integration of the TRUE
-        // vertical acceleration returns the apex in METRES, before V16.7's
-        // shared reference-calibration stage. Pooled over 37 goldens from five
-        // sessions it measures 0.317 m
+        // vertical acceleration returns the apex in METRES, with no scale and no
+        // offset. Pooled over 37 goldens from five sessions it measures 0.317 m
         // MAE raw, and the best linear map that could be fitted to it is
         // h = 1.032*z + 0.048 — the identity to within 3 % and 5 cm. That is the
         // signature of a measurement rather than a correlate.
@@ -842,78 +742,181 @@ public final class JumpEngineV16 {
         if let lt = landingT, let ff = freeFallWindow(from: t0, to: lt) {
             winA = ff.0; winB = ff.1; ballistic = true
         }
-        // t0 is the strongest POP sample, after the rider has already begun to
-        // rise. Include the measured 0.5 s lead-in in the height integral only.
-        // A free-fall throw keeps its exact measured boundaries; all detection,
-        // airtime and GPS-distance anchors continue to use the original t0.
-        if !ballistic, winB != nil {
-            winA = t0 - cfg.heightPreRollSec
-        }
-        // The descent-arrest rule can close while a big-air rider is still
-        // descending. This presents as either long airtime with a low height or
-        // a tall first pass with short airtime, so the post-roll has two
-        // independent triggers. Since this is a streaming engine, do not ask
-        // flightHeight() for samples that have not arrived: defer until the
-        // requested tail is resident, or use the available tail when forced at
-        // the evaluation deadline. A measured free-fall window is exact and is
-        // never widened.
-        if !ballistic, let resolvedLanding = winB, cfg.heightPostRollSec > 0 {
-            let airtime = resolvedLanding - t0
-            let firstPass = cfg.heightFromFlight
-                ? flightHeight(t0: winA, landingT: resolvedLanding)
-                : nil
-            let shouldPostRoll = airtime >= cfg.heightPostRollMinAirSec
-                || (firstPass?.heightM ?? -.infinity) >= cfg.heightPostRollMinM
-            if shouldPostRoll {
-                let requestedEnd = t0
-                    + max(airtime, cfg.heightPostRollFloorSec)
-                    + cfg.heightPostRollSec
+
+        // TAKE-OFF PRE-ROLL. t0 is the POP — the strongest sample of the
+        // take-off burst — and the rider is already rising by then. Starting the
+        // integral there truncates the first part of the ascent, and the
+        // signature is a NEGATIVE height bias that both references show
+        // independently: -0.118 m against Surfr on Gavri's 15 second-precision
+        // rows, -0.210 m against HOOLAN on 287 + smallLog.
+        //
+        // Sweeping the window start traces a clean U on each reference
+        // separately. 0.3 s shipped in 16.5 on six logs; the Kineret session
+        // (41 Surfr goldens at SECOND precision, 1.65-7.09 m) moved the weighted
+        // minimum to 0.5 s across all eight:
+        //
+        //     pre    0.3     0.4     0.5     0.6     0.8
+        //     MAE   0.458   0.444   0.442   0.447   0.458    (135 goldens)
+        //
+        // Adaptive pre-roll loses to the constant in BOTH directions: scaled by
+        // the shelf (0.595 vs 0.579), by the height (0.585), and inversely by the
+        // shelf (cross-validated 0.565 vs 0.566).
+        //
+        // HEIGHT WINDOW ONLY. Detection, airtime and distance still use t0, the
+        // same decoupled-anchor pattern as apexAnchorSec. Free fall is exempt:
+        // it bounds a thrown watch exactly.
+        //
+        // Feeding the raw rather than the pre-rolled height to the short-shelf
+        // gate was tried and is WORSE — it costs V142 a real jump (4/5 -> 3/5).
+        //
+        // Known cost, one jump: on smallLog two candidates 2.4 s apart sit inside
+        // dedupSec and the pre-roll flips which is "stronger" by 2 cm. The wrong
+        // one wins and its distance goes 19 -> 36 m against an 18.2 m golden,
+        // moving that log's distance MAE 4.50 -> 5.82 m. A dedup coin-flip
+        // amplified by one outlier: log 287's distance is unchanged at 3.77 m.
+        if !ballistic, winB != nil { winA = t0 - cfg.heightPreRollSec }
+        // LANDING POST-ROLL, 16.6. The mirror of the pre-roll, same argument: an
+        // endpoint anchor is only sound where the rider is PROVABLY at water
+        // level. A kite jump is not ballistic — the kite carries the rider, so
+        // the descent is long and shallow and the descent-arrest rule closes
+        // early on it (airtime bias -0.41 s on Kineret's jumps >= 4 m).
+        // Anchoring z(T)=0 while the rider is still descending drags the apex
+        // down by (t_apex/T) times the height still remaining, which is exactly
+        // the observed signature: bias -0.08 m at 3.5-4.5 m growing to -1.09 m
+        // at 6.5-8 m.
+        //
+        // Running PAST the landing is safe — after touchdown the trace is flat
+        // at water level and the chord absorbs it. Running SHORT is not: ending
+        // at the landing impact instead doubles the error (0.574 -> 1.332),
+        // which also rules out the impact spike corrupting W(T).
+        //
+        // TWO TRIGGERS, BECAUSE THE FAILURE MODE HAS TWO FACES (16.7). An
+        // early landing shows up either as a short airtime or as a low height,
+        // and which one you see depends on where in the descent the arrest rule
+        // fired. The two worst jumps at Kineret are exact mirror images:
+        //
+        //     Surfr 5.77 m / 5.15 s  ->  ours 2.69 m / 6.34 s  long air, LOW h
+        //     Surfr 7.09 m / 5.79 s  ->  ours 5.38 m / 3.90 s  big h, SHORT air
+        //
+        // 16.6 gated on airtime alone and caught the first, while the second —
+        // the second-highest jump of the session — missed the 4.0 s gate by
+        // 0.10 s and was left uncorrected. A height gate alone fails the other
+        // way. So the gate is a DISJUNCTION, and the window gets a FLOOR: a
+        // landing resolved before heightPostRollFloorSec on a jump this size is
+        // not believed.
+        //
+        //                                Surfr >=4 m  Kineret >=4 m HOOLAN jump
+        //     16.5 (pre 0.3, no post)       0.706        0.628      0.207  5.37
+        //     16.6 (airtime gate only)      0.588        0.528      0.226  5.44
+        //     16.7 (this)                   0.569        0.488      0.222  6.31
+        //     ungated, no gate at all       0.559        0.488      0.235  6.31
+        //
+        // The last column is that 7.09 m jump. The ungated rule reaches the same
+        // place but costs Gavri 34 % (0.522 -> 0.654), a session of 2.4-3.1 m
+        // jumps whose landings are already right. The disjunction buys the
+        // big-air gain for 0.023 m of Gavri and IMPROVES HOOLAN (0.226 -> 0.222).
+        //
+        // Cross-validated by holding out a whole Surfr session: 0.706 -> 0.586
+        // on jumps >= 4 m, with all three folds selecting a post-roll.
+        //
+        // The engine is STREAMING, so the samples the post-roll needs do not
+        // exist at the landing instant. Measured lookahead past the landing at
+        // this point: median 0.60 s on the candidates the gate selects, 0.00 s
+        // on smallLog. Applying the post-roll without waiting makes
+        // flightHeight() return nil on its gap guard, the height silently falls
+        // back to the matched filter, and the suite degrades badly (pooled
+        // 0.461 -> 0.629, Yaniv's extras 6 -> 13). So WAIT for the window,
+        // exactly as the code above waits for the landing — and at the
+        // evalDelaySec deadline take whatever has arrived rather than overrun.
+        if !ballistic, let land = winB, cfg.heightPostRollSec > 0 {
+            let air = land - t0
+            // First pass over the resolved flight. This is the number the
+            // airtime gate cannot see; it costs one extra integration over a
+            // window already held in the ring.
+            let h1 = cfg.heightFromFlight ? flightHeight(t0: winA, landingT: land) : nil
+            let trigger = air >= cfg.heightPostRollMinAirSec
+                || (h1 != nil && h1! >= cfg.heightPostRollMinM)
+            if trigger {
+                let want = t0 + max(air, cfg.heightPostRollFloorSec) + cfg.heightPostRollSec
                 if let last = ring.last {
-                    if last.t < requestedEnd, !forced { return false }
-                    winB = min(requestedEnd, last.t)
+                    if last.t < want, !forced { return false }
+                    winB = min(want, last.t)
                 } else {
-                    winB = requestedEnd
+                    winB = want
                 }
             }
         }
-        let flight = (cfg.heightFromFlight && winB != nil)
+        var flightH: Double? = (cfg.heightFromFlight && winB != nil)
             ? flightHeight(t0: winA, landingT: winB!) : nil
-        var flightH: Double? = flight?.heightM
-        // Deferred corroboration: when the fixed window found no usable apex,
-        // the measured flight must independently clear the reporting floor.
-        if needsCorroboration,
-           flightH == nil || flightH! < cfg.shortShelfFlightM {
-            let flightText = flightH.map(fmt) ?? "none"
-            onDebug(now, "REJECT t0=\(fmt(t0)) reason=shortShelfNoApex shelf=\(fmt(shelf))s apex=\(fmt(apex)) flight=\(flightText)")
-            return true
-        }
         // A ballistic event may be reported as peak-above-release (1.0) or as
+        // Deferred corroboration (see needsCorroboration). The fixed window found
+        // no apex; the flight window is the only remaining evidence and must
+        // clear shortShelfFlightM on its own.
+        if needsCorroboration {
+            if flightH == nil || flightH! < cfg.shortShelfFlightM {
+                onDebug(now, "REJECT t0=\(fmt(t0)) reason=shortShelfNoApex shelf=\(fmt(shelf))s apex=\(fmt(apex)) flight=\(flightH == nil ? "none" : fmt(flightH!))")
+                return true
+            }
+        }
+
         // total vertical path (2.0). See throwHeightScale.
         if let f = flightH, ballistic, cfg.throwHeightScale != 1 {
             flightH = f * cfg.throwHeightScale
         }
-        // One explicit reference-calibration stage. The shipped identity is a
-        // measured optimum for Surfr-as-displayed, not an unset default. The
-        // alternative videogrammetric mapping (0.8025 / +0.7309) remains a
-        // documented research target and must not ship without our own video.
-        let measuredHeightM = flightH ?? (cfg.heightScale * apex + cfg.heightOffsetM)
-        let heightM = cfg.heightCalSlope * measuredHeightM + cfg.heightCalOffsetM
+        // ── REFERENCE CALIBRATION (16.6). One explicit place where the
+        // measurement is mapped onto whatever we have decided counts as truth,
+        // so that decision is a pair of numbers and not scattered through the
+        // estimator.
+        //
+        //   reported = heightCalSlope * measured + heightCalOffsetM
+        //
+        // CURRENT TARGET: Surfr as displayed. The calibration is the IDENTITY,
+        // and that is a measured result, not a default left unset. Across 95
+        // paired jumps in three Surfr sessions our raw bias is already +0.006 m,
+        // so no offset remains to remove, and every slope tested made agreement
+        // WORSE — it amplifies our scatter faster than it corrects a bias that
+        // is already zero:
+        //
+        //     transform                         MAE     within 20 cm
+        //     identity                          0.546      24 %
+        //     published inverse 1.246h - 0.911  0.609      23 %
+        //     affine fitted, session held out   0.819      14 %
+        //     hinge fitted, session held out    0.593      27 %  (k < 0, shrinks
+        //                                                         big jumps —
+        //                                                         wrong way)
+        //
+        // THE OTHER TARGET, ready to switch to. Videogrammetry (Sensors 2021,
+        // 21(24):8353; four shore cameras, reference accuracy 0.03-0.09 m,
+        // 20 jumps 3.07-7.30 m, targets on the board) measured Surfr against
+        // ground truth:
+        //
+        //     truth = 0.8025 * surfr + 0.7309    R^2 0.961, residual 0.26 m rms
+        //
+        // Surfr overestimates 15 of 20 jumps there and the bias grows with
+        // height: +0.06 m at 3-4 m, +0.15 at 4-5, +0.19 at 5-6, +0.73 m
+        // (11.4 %) at 6-8 m. Our own numbers sit closer to that calibrated truth
+        // than to Surfr as displayed (Kineret MAE 0.527 -> 0.476), and against
+        // it V16.5 was almost unbiased (-0.076 m) while V16.6 overshoots
+        // (+0.144 m).
+        //
+        // That study used an iPhone SE BOLTED TO THE BOARD in 2021; the sessions
+        // we validate against are Surfr.AI on a wrist watch in 2026, and Surfr
+        // state they rebuilt the algorithm after moving to wrist and chest. The
+        // transform is recorded because it is the only independent ground truth
+        // that exists, NOT because it is known to apply to the current app.
+        // Switch to it only against our own video measurement.
+        let rawHeightM = flightH ?? (cfg.heightScale * apex + cfg.heightOffsetM)
+        let heightM = cfg.heightCalSlope * rawHeightM + cfg.heightCalOffsetM
         guard heightM >= cfg.minReportM else {
             // FINAL even when not forced: both windows have closed, so no later
             // sample can raise this height.
-            onDebug(now, "REJECT t0=\(fmt(t0)) reason=belowMinReport h=\(fmt(heightM))m "
-                + "src=\(flightH != nil ? "flight" : "matched")")
+            onDebug(now, "REJECT t0=\(fmt(t0)) reason=belowMinReport h=\(fmt(heightM))m src=\(flightH != nil ? "flight" : "matched")")
             return true
         }
 
         // 4. Flight statistics.
         let tEnd = landingT ?? (t0 + cfg.apexPostSec)
         var peakG = 0.0, maxGyro = 0.0, floatN = 0, n = 0
-        // The rotation index rides along on this same walk: |omega| integrated
-        // over the flight, rectangle rule at the sample spacing. Only published
-        // when a landing bounded the window.
-        var gyroRadians = 0.0
-        var prevT: TimeInterval?
         for i in ringHead..<ring.count {
             let s = ring[i]
             if s.t < t0 { continue }
@@ -922,32 +925,27 @@ public final class JumpEngineV16 {
             peakG = max(peakG, s.load)
             maxGyro = max(maxGyro, s.gyro)
             if s.load <= cfg.floatLoadG { floatN += 1 }
-            if let p = prevT, s.t - p <= cfg.maxAttitudeGapSec { gyroRadians += s.gyro * (s.t - p) }
-            prevT = s.t
         }
-        // 4b. PHANTOM FILTER (see cfg.phantomFilter). Here because it needs both
-        // the shelf and the FINISHED height, and it must run BEFORE the dedup
-        // hold so a rejected candidate never displaces a real jump sitting in
-        // `pending`. It reads the ARREST rule, not landingT — the settle
-        // fallback may well have supplied the window this height was measured
-        // over, and that is a separate question from whether it was a jump.
-        if cfg.phantomFilter && !land0.fromArrest {
-            let short = shelf < cfg.phantomShelfSec
-            let shortAndSmall = shelf < cfg.phantomShelfWideSec && heightM < cfg.phantomWideHeightM
-            if short || shortAndSmall {
-                onDebug(now, "REJECT t0=\(fmt(t0)) reason=incompleteFlight "
-                    + "shelf=\(fmt(shelf))s h=\(fmt(heightM))m noArrest")
-                return true
-            }
-        }
-
         // Two different questions, two different fixes. SPEED wants the entry
         // velocity a moment before the pop starts bleeding it off, so it samples
         // at t0-1.0. DISPLACEMENT must start where the rider actually left the
         // water: sampling it 1 s early folded a whole second of riding into every
         // jump (~8 m at 30 km/h). Measured on smallLog that alone was +12.8 m of
-        // bias; splitting them takes distance MAE 12.80 -> 6.19 m there and
-        // 4.94 -> 3.87 m on log 287.
+        // bias; splitting them takes distance MAE 12.80 -> 6.40 m there and leaves
+        // log 287 unchanged at 4.94 -> 5.00 m while re-centring bias +3.73 -> -2.14 m.
+        // ── 4b. PHANTOM FILTER (see phantomFilter). Placed here because it
+        // needs both the shelf and the finished height, and BEFORE the dedup
+        // hold so a rejected candidate never displaces a real jump in `pending`.
+        if cfg.phantomFilter && !land0.fromArrest {
+            let short = plateau < cfg.phantomShelfSec
+            let shortAndSmall = plateau < cfg.phantomShelfWideSec
+                && heightM < cfg.phantomWideHeightM
+            if short || shortAndSmall {
+                onDebug(now, "REJECT t0=\(f2(t0)) reason=incompleteFlight shelf=\(f2(plateau))s h=\(f2(heightM))m noArrest")
+                return true
+            }
+        }
+
         let launch = gpsPoint(near: t0 - 1.0)
         let launchPos = gpsPoint(near: t0)
         let land = gpsPoint(near: tEnd)
@@ -957,25 +955,29 @@ public final class JumpEngineV16 {
         } else if let launch, let landingT {
             distanceM = launch.spd * (landingT - t0)
         }
-        // An unresolved landing leaves tEnd at apexPostSec, which is not a
-        // measured flight window. Reporting that truncated chord as distance
-        // is worse than reporting the measurement as unavailable.
+        // NO FLIGHT WINDOW, NO DISTANCE. An unresolved landing makes tEnd fall
+        // back to apexPostSec, so the span above covers 2 s of a flight that
+        // lasted four or five. That is not a short measurement, it is the wrong
+        // one: on smallLog the single such jump reported 19.5 m against a 30.4 m
+        // golden and carried the session's second-largest error. Suppressing it
+        // takes distance MAE 4.96 -> 4.50 m and its correlation with the
+        // reference 0.456 -> 0.585, and leaves log 287 (no unresolved landing)
+        // untouched. "Not measured" beats "measured wrong".
+        //
+        // Rejected alongside it: interpolating the GPS endpoints between the
+        // fixes bracketing take-off and landing. Fixes arrive at 1.00 Hz, so
+        // snapping to the nearest carries up to 4 m of pure timing error at each
+        // end, and the correction is arithmetic rather than a filter — but
+        // measured it splits: log 287 improves (3.77 -> 3.64 m, r 0.885 ->
+        // 0.918) while smallLog worsens on both counts (4.96 -> 5.12 m, r 0.456
+        // -> 0.380). Pooled it is a wash. The real distance error is not the
+        // endpoints: distance is airtime x speed in disguise and inherits the
+        // airtime's failures — smallLog's three outliers are all landing
+        // failures, and across the other 11 jumps interpolation moves the error
+        // by 0.01 m.
         if landingT == nil { distanceM = nil }
 
-        // The drawing anchors and the post-flight diagnostics. Everything that
-        // needs a bounded flight is nil without one; edgeLoadG is measured
-        // entirely BEFORE the pop, so it survives an unresolved landing.
-        let apexFix = flight.flatMap { gpsPoint(near: $0.apexT) }
-        var riseFraction: Double?
-        if let apexT = flight?.apexT, let lt = landingT, lt > t0 {
-            riseFraction = min(max((apexT - t0) / (lt - t0), 0), 1)
-        }
-        let landingImpactG = landingT.flatMap { peakLoad(from: $0 - 0.3, to: $0 + 0.7) }
-        let rotationRevs = landingT == nil ? nil : gyroRadians / (2 * Double.pi)
-        let edgeLoadG = meanLoad(from: t0 - 1.5, to: t0)
-
         let jump = V16Jump(
-            heightSource: flightH == nil ? .matched : (ballistic ? .freefall : .flight),
             heightM: round2(heightM),
             apexRawM: round2(apex),
             airtimeSec: landingT.map { round2($0 - t0) },
@@ -987,15 +989,13 @@ public final class JumpEngineV16 {
             maxGyroRadS: round2(maxGyro),
             takeoffSpeedMS: launch.map { round2($0.spd) },
             distanceM: distanceM.map(round2),
-            confidence: shelf >= cfg.strongShelfSec ? 0.75 : 0.55,
-            landLat: landingT == nil ? nil : land?.lat,
-            landLng: landingT == nil ? nil : land?.lng,
-            apexLat: apexFix?.lat,
-            apexLng: apexFix?.lng,
-            riseFraction: riseFraction.map(round2),
-            landingImpactG: landingImpactG.map(round2),
-            rotationRevs: rotationRevs.map(round2),
-            edgeLoadG: edgeLoadG.map(round2)
+            // Pinned to an ABSOLUTE shelf, not minLiftPlateauSec * 1.5. The two
+            // were the same number while the gate sat at 0.70 s, but they answer
+            // different questions: the gate asks "is this a jump", this asks "is
+            // the evidence strong". Deriving it from the gate meant that lowering
+            // the gate to 0.60 also relabelled 0.90-1.05 s shelves as high
+            // confidence — the very band the phantom filter treats as suspect.
+            confidence: shelf >= cfg.strongShelfSec ? 0.75 : 0.55
         )
 
         // 5. Dedup: one takeoff raises several pops — hold, keep the strongest.
@@ -1009,8 +1009,7 @@ public final class JumpEngineV16 {
             // one to drop, stronger or not; a rider needs well over 5 s between
             // real jumps.
             if let le = lastEmit, t0 - le.t0 < cfg.dedupSec {
-                onDebug(now, "DROP t0=\(fmt(t0)) h=\(fmt(heightM))m duplicate of delivered "
-                    + "\(fmt(le.heightM))m at \(fmt(le.t0))")
+                onDebug(now, "DROP t0=\(fmt(t0)) h=\(fmt(heightM))m duplicate of delivered \(fmt(le.heightM))m at \(fmt(le.t0))")
                 return true
             }
             if let h = held, t0 - h.jump.takeoffT < cfg.dedupSec {
@@ -1019,8 +1018,7 @@ public final class JumpEngineV16 {
             }
             lastEmit = (t0, heightM)
             delegate?.jumpDetected(jump)
-            onDebug(now, "JUMP t0=\(fmt(t0)) h=\(fmt(heightM))m IMMEDIATE shelf=\(fmt(shelf))s "
-                + "air=\(landingT.map { fmt($0 - t0) } ?? "n/a")s src=\(jump.heightSource.rawValue)")
+            onDebug(now, "JUMP t0=\(fmt(t0)) h=\(fmt(heightM))m IMMEDIATE shelf=\(fmt(shelf))s")
             return true
         }
         // A straggler behind an already-delivered jump cannot be retracted, so
@@ -1077,8 +1075,7 @@ public final class JumpEngineV16 {
         delegate?.jumpDetected(h.jump)
         onDebug(now, "JUMP t0=\(fmt(h.jump.takeoffT)) h=\(fmt(h.jump.heightM))m "
             + "shelf=\(fmt(h.jump.liftPlateauSec))s "
-            + "air=\(h.jump.airtimeSec.map(fmt) ?? "n/a")s yank=\(fmt(h.jump.yankG))g "
-            + "src=\(h.jump.heightSource.rawValue)")
+            + "air=\(h.jump.airtimeSec.map(fmt) ?? "n/a")s yank=\(fmt(h.jump.yankG))g")
     }
 
     // MARK: Signal helpers
@@ -1086,10 +1083,6 @@ public final class JumpEngineV16 {
     private struct Bins {
         let t: [TimeInterval]
         let az: [Double]
-        /// Bins that actually carried an attitude sample. Diagnostics only —
-        /// zero means the window had no vertical channel at all, which is a
-        /// very different thing from a window with no lift in it.
-        let finiteCount: Int
     }
 
     /// 0.1 s bins of world-vertical acceleration, smoothed.
@@ -1119,22 +1112,17 @@ public final class JumpEngineV16 {
         //   when most samples had no attitude; and requiring every bin outright
         //   let one dropped 0.1 s of CMDeviceMotion silently kill a real jump.)
         var t = [TimeInterval](repeating: 0, count: nBins)
-        var finiteCount = 0
         for k in 0..<nBins {
             t[k] = from + Double(k) * step
-            if attCnt[k] > 0 {
-                azRaw[k] /= Double(attCnt[k])
-                finiteCount += 1
-            } else {
-                azRaw[k] = Double.nan
-            }
+            azRaw[k] = attCnt[k] > 0 ? azRaw[k] / Double(attCnt[k]) : Double.nan
         }
         let w = max(0, Int((cfg.liftSmoothSec / step).rounded()))
-        return Bins(t: t, az: Self.boxSmooth(azRaw, halfWidth: w), finiteCount: finiteCount)
+        return Bins(t: t, az: Self.boxSmooth(azRaw, halfWidth: w))
     }
 
-    /// Landing = the moment the DESCENT IS ARRESTED. LOW CONFIDENCE — see the
-    /// file header.
+    /// Landing: lift shelf opens and closes, then the first dip, confirmed by
+    /// sustained float after it. LOW CONFIDENCE — see the file header.
+    /// Landing = the moment the DESCENT IS ARRESTED.
     ///
     /// A kite flight is a sustained signed excursion: the canopy lifts, then
     /// the rider comes down. Water contact brakes that descent — and it is the
@@ -1158,10 +1146,6 @@ public final class JumpEngineV16 {
     /// MAE with landOffsetSec refitted out-of-sample, versus 0.75 s for a
     /// constant predictor. The old settle-based rule resolved only 17/19.
     /// airtimeSec still carries LOW CONFIDENCE: one session, one rider.
-    ///
-    /// V16.3 wraps this: `landing()` below tries the arrest rule first and falls
-    /// back to `settleLanding()` at the deadline. `fromArrest` carries which one
-    /// answered, which is what the phantom filter reads.
     private func landing(_ bins: Bins, t0: TimeInterval, forced: Bool)
         -> (t: TimeInterval?, fromArrest: Bool) {
         if let arrest = arrestLanding(bins, t0: t0) { return (arrest, true) }
@@ -1173,8 +1157,7 @@ public final class JumpEngineV16 {
         // May only ADD a window, never remove a jump: a settle landing shorter
         // than minAirtimeSec is discarded rather than used, because a
         // resolved-but-short flight is REJECTED downstream and these jumps are
-        // currently kept with airtime reported as "not measured". Turning that
-        // into a rejection would trade height accuracy for recall.
+        // currently kept with airtime reported as "not measured".
         guard let settle = settleLanding(t0: t0), settle - t0 >= cfg.minAirtimeSec else {
             return (nil, false)
         }
@@ -1184,18 +1167,10 @@ public final class JumpEngineV16 {
     /// The specific force returns to ~1 g and STAYS there: the rider is back on
     /// the water and tracking it. Fallback only — see `landSettleFallback`.
     ///
-    /// Runs on specific force, NOT on |userAcceleration|: sf is 1 at rest and 0
+    /// Runs on specific force, not on |userAcceleration|: sf is 1 at rest and 0
     /// in free fall regardless of attitude, so "back to 1 g" is a
-    /// frame-independent statement about being supported again. |ua| reads
-    /// ~1.0 g in free fall and would say the opposite.
-    ///
-    /// Reports the START of the settled run, which is where support resumes;
-    /// the end would be an arbitrary landSettleMinSec later.
-    ///
-    /// `prevT` advances on every sample including rejected ones, so a reset run
-    /// re-accumulates with the real sample spacing instead of assuming a fixed
-    /// rate. The watch runs at 50 Hz and the reference logs at 200 Hz — that is
-    /// the only reason the same constants hold on both.
+    /// frame-independent statement about being supported again. Reports the
+    /// START of the settled run, which is where support resumes.
     private func settleLanding(t0: TimeInterval) -> TimeInterval? {
         let need = cfg.landSettleMinSec
         let from = t0 + cfg.landSettleFromSec, to = t0 + cfg.landSettleToSec
@@ -1207,7 +1182,7 @@ public final class JumpEngineV16 {
             i += 1
             if s.t < from { continue }
             if s.t > to { break }
-            let sf = specificForce(s)
+            let sf = Self.specificForce(s)
             let dt = prevT.isFinite ? s.t - prevT : 0
             prevT = s.t
             if sf.isFinite, abs(sf - 1) < cfg.landSettleBandG {
@@ -1220,7 +1195,7 @@ public final class JumpEngineV16 {
         return nil
     }
 
-    /// The primary rule — the contract above describes this function.
+    /// The primary rule — see the contract above.
     private func arrestLanding(_ bins: Bins, t0: TimeInterval) -> TimeInterval? {
         var i0 = 0
         while i0 < bins.t.count, bins.t[i0] < t0 { i0 += 1 }
@@ -1254,30 +1229,45 @@ public final class JumpEngineV16 {
         return nil
     }
 
+    /// Bounded double integration over [from, from+span] with z(0)=z(T)=0.
+    ///
+    ///   a_meas = a_true + b          (b = constant bias: attitude error,
+    ///                                 sensor offset, gravity residual)
+    ///   W(t)   = II a_meas          = z_true(t) + v0*t + 0.5*b*t^2
+    ///   z(t)   = W(t) - (t/T)*W(T)  forces z(0)=z(T)=0
+    ///          = z_true(t) - (t/T)*z_true(T) + 0.5*b*t*(t-T)
+    ///
+    /// The unknown initial vertical velocity v0 cancels EXACTLY (it is linear
+    /// in t). The bias term becomes 0.5*b*t*(t-T): zero at both ends, extremum
+    /// -b*T^2/8 at midpoint. A bias that would otherwise diverge quadratically
+    /// is BOUNDED by b*T^2/8 — with T=4.5 s that is 2.5*b, so 0.1 m/s^2 of bias
+    /// costs 0.25 m. No bias estimation is needed.
+    /// Where the apex window should centre: the strongest load sample in
+    /// [t0, t0 + apexAnchorSec]. Returns t0 when nothing beats it, so
+    /// apexAnchorSec = 0 is an exact no-op.
+    /// V16.2 height: endpoint-anchored double integration of the TRUE vertical
+    /// acceleration (-az) over the flight, returning the apex in metres.
+    ///
+    /// z(t) = the double integral of -az with z(0) = z(T) = 0 enforced by removing
+    /// the linear trend. The anchoring is what makes it usable: the rider starts
+    /// and ends at the water, so any constant velocity or acceleration bias is
+    /// absorbed by the chord and only the CURVATURE — the actual arc — survives.
+    /// Unlike apex(), the support is the MEASURED flight, so the result is metres
+    /// and needs no calibration. nil when attitude does not cover the window.
     /// The specific force a sample actually felt, in g: 1.0 at rest, 0.0 in free
     /// fall. No extra state is needed — with `load` = |userAcceleration| and
-    /// wz = az/g0 the world-vertical component,
+    /// wz = az/G0 the world-vertical component,
     ///
     ///     sf^2 = |ua + gravity|^2 = (load^2 - wz^2) + (wz - 1)^2 = load^2 - 2*wz + 1
     ///
     /// (at rest load=0, wz=0 -> 1; in free fall load=1, wz=1 -> 0).
-    ///
-    /// NOTE: an INSTANCE method, unlike the handoff's copy — `g0` is an instance
-    /// property here, so the shipped `private static func` referencing `G0` does
-    /// not compile against this file.
-    private func specificForce(_ s: Sample) -> Double {
+    private static func specificForce(_ s: Sample) -> Double {
         guard s.az.isFinite else { return .nan }
-        let v = s.load * s.load - 2 * (s.az / g0) + 1
+        let v = s.load * s.load - 2 * (s.az / G0) + 1
         return v > 0 ? v.squareRoot() : 0
     }
 
     /// The longest sustained FREE FALL inside [from, to], or nil.
-    ///
-    /// This is the only integration window that is exactly right by definition,
-    /// and both its edges are sharp to a single sample. It cannot fire on a kite
-    /// jump — a rider hangs from the canopy and is never unloaded, measured as
-    /// ZERO runs across 187 minutes of riding and control logs — so it can only
-    /// ever replace the window on a genuinely ballistic event such as a throw.
     private func freeFallWindow(from: TimeInterval, to: TimeInterval) -> (TimeInterval, TimeInterval)? {
         var bestA = 0.0, bestB = -1.0, a = -1.0, prevT = Double.nan
         func close(_ endT: Double) {
@@ -1289,7 +1279,7 @@ public final class JumpEngineV16 {
             if s.t < from { continue }
             if s.t > to { break }
             if prevT.isFinite, s.t - prevT > cfg.maxAttitudeGapSec { close(prevT) }
-            let sf = specificForce(s)
+            let sf = Self.specificForce(s)
             if sf.isFinite && sf < cfg.freeFallG { if a < 0 { a = s.t } } else { close(prevT) }
             prevT = s.t
         }
@@ -1297,22 +1287,7 @@ public final class JumpEngineV16 {
         return bestB - bestA >= cfg.minFreeFallSec ? (bestA, bestB) : nil
     }
 
-    /// V16.2 height: endpoint-anchored double integration of the TRUE vertical
-    /// acceleration (-az) over the flight, returning the apex in metres.
-    ///
-    /// z(t) = the double integral of -az with z(0) = z(T) = 0 enforced by removing
-    /// the linear trend. The anchoring is what makes it usable: the rider starts
-    /// and ends at the water, so any constant velocity or acceleration bias is
-    /// absorbed by the chord and only the CURVATURE — the actual arc — survives.
-    /// Unlike apex(), the support is the MEASURED flight, so the result is metres
-    /// and needs no calibration. nil when attitude does not cover the window.
-    ///
-    /// Returns the apex TIME alongside the height. That instant is the only
-    /// place the reconstructed trajectory can be sampled from — the payload's
-    /// apex position and rise fraction both hang off it — and it is already in
-    /// hand at the point the maximum is found, so it costs nothing to report.
-    private func flightHeight(t0: TimeInterval,
-                              landingT: TimeInterval) -> (heightM: Double, apexT: TimeInterval)? {
+    private func flightHeight(t0: TimeInterval, landingT: TimeInterval) -> Double? {
         var ts: [TimeInterval] = [], az: [Double] = []
         for i in ringHead..<ring.count {
             let s = ring[i]
@@ -1338,46 +1313,13 @@ public final class JumpEngineV16 {
         guard T > 0 else { return nil }
         let zT = z[n - 1]
         var peak = -Double.infinity
-        var peakI = 0
         for i in 0..<n {
             let c = z[i] - (rel[i] / T) * zT
-            if c > peak { peak = c; peakI = i }
+            if c > peak { peak = c }
         }
-        return peak.isFinite ? (peak, ts[peakI]) : nil
+        return peak.isFinite ? peak : nil
     }
 
-    /// Peak |userAcceleration| in [from, to] (g), or nil when the ring holds
-    /// nothing there. The window is clipped by whatever has been SAMPLED — see
-    /// the truncation note on V16Jump.landingImpactG.
-    private func peakLoad(from: TimeInterval, to: TimeInterval) -> Double? {
-        var peak: Double?
-        for i in ringHead..<ring.count {
-            let s = ring[i]
-            if s.t < from { continue }
-            if s.t > to { break }
-            peak = max(peak ?? 0, s.load)
-        }
-        return peak
-    }
-
-    /// Mean |userAcceleration| in [from, to] (g), or nil when the ring holds
-    /// nothing there. historySec is 14.0 s, so the 1.5 s of pre-pop carve this
-    /// is asked for is always still resident — no buffer change was needed.
-    private func meanLoad(from: TimeInterval, to: TimeInterval) -> Double? {
-        var sum = 0.0, count = 0
-        for i in ringHead..<ring.count {
-            let s = ring[i]
-            if s.t < from { continue }
-            if s.t > to { break }
-            sum += s.load
-            count += 1
-        }
-        return count > 0 ? sum / Double(count) : nil
-    }
-
-    /// Where the apex window should centre: the strongest load sample in
-    /// [t0, t0 + apexAnchorSec]. Returns t0 when nothing beats it, so
-    /// apexAnchorSec = 0 is an exact no-op.
     private func apexAnchor(_ t0: TimeInterval) -> TimeInterval {
         guard cfg.apexAnchorSec > 0 else { return t0 }
         var bestT = t0, bestLoad = -1.0
@@ -1390,23 +1332,6 @@ public final class JumpEngineV16 {
         return bestT
     }
 
-    /// Bounded double integration over [from, from+span] with z(0)=z(T)=0.
-    ///
-    ///   a_meas = a_true + b          (b = constant bias: attitude error,
-    ///                                 sensor offset, gravity residual)
-    ///   W(t)   = II a_meas          = z_true(t) + v0*t + 0.5*b*t^2
-    ///   z(t)   = W(t) - (t/T)*W(T)  forces z(0)=z(T)=0
-    ///          = z_true(t) - (t/T)*z_true(T) + 0.5*b*t*(t-T)
-    ///
-    /// The unknown initial vertical velocity v0 cancels EXACTLY (it is linear
-    /// in t). The bias term becomes 0.5*b*t*(t-T): zero at both ends, extremum
-    /// -b*T^2/8 at midpoint. A bias that would otherwise diverge quadratically
-    /// is BOUNDED by b*T^2/8 — with T=4.5 s that is 2.5*b, so 0.1 m/s^2 of bias
-    /// costs 0.25 m. No bias estimation is needed.
-    ///
-    /// V16.2 note: the SAME anchoring argument applies to `flightHeight` below,
-    /// which is this integral run over the measured flight instead of a fixed
-    /// window — and therefore returns metres rather than a correlate.
     private func apex(from: TimeInterval, span: TimeInterval) -> Double? {
         let to = from + span
         // Collect the attitude-carrying samples in the window. Scattered

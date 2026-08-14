@@ -35,6 +35,20 @@ struct V16SettingsView: View {
                     L("settings.v16_height_window"),
                     String(format: "t0 − %.1f s", config.heightPreRollSec)
                 )
+                metric(
+                    L("settings.v16_post_roll"),
+                    String(
+                        format: "+%.1f s · air ≥ %.1f s ∨ h ≥ %.1f m · floor %.1f s",
+                        config.heightPostRollSec,
+                        config.heightPostRollMinAirSec,
+                        config.heightPostRollMinM,
+                        config.heightPostRollFloorSec
+                    )
+                )
+                metric(
+                    L("settings.v16_calibration"),
+                    String(format: "%.1f×h %+.1f m", config.heightCalSlope, config.heightCalOffsetM)
+                )
                 metric(L("settings.v16_min_height"), String(format: "%.1f m", config.minReportM))
 
                 Divider()

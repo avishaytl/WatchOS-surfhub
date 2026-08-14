@@ -1,7 +1,7 @@
 import XCTest
 @testable import V16Core
 
-/// Behavioural cover for JumpEngineV16 through the 16.5 operating point.
+/// Behavioural cover for JumpEngineV16 through the 16.7 operating point.
 ///
 /// These are RULE tests, not calibration tests. The height/airtime accuracy
 /// figures in the spec were measured on real 200 Hz logs against the HOOLAN
@@ -18,10 +18,10 @@ import XCTest
 /// every number here look upside down.
 final class V16CoreTests: XCTestCase {
 
-    // MARK: 16.5 identity
+    // MARK: 16.7 identity
 
-    func testEngineReportsVersion16_5() {
-        XCTAssertEqual(JumpEngineV16.version, "16.5")
+    func testEngineReportsVersion16_7() {
+        XCTAssertEqual(JumpEngineV16.version, "16.7")
     }
 
     /// The defaults 16.1 and 16.2 moved, plus the parameters 16.2 introduced.
@@ -29,8 +29,14 @@ final class V16CoreTests: XCTestCase {
     /// with nothing in the log to explain it.
     func testShippedCalibrationDefaults() {
         let cfg = V16Config()
-        // 16.5
-        XCTAssertEqual(cfg.heightPreRollSec, 0.3, accuracy: 1e-9)
+        // 16.7
+        XCTAssertEqual(cfg.heightPreRollSec, 0.5, accuracy: 1e-9)
+        XCTAssertEqual(cfg.heightPostRollSec, 0.8, accuracy: 1e-9)
+        XCTAssertEqual(cfg.heightPostRollMinAirSec, 4.0, accuracy: 1e-9)
+        XCTAssertEqual(cfg.heightPostRollMinM, 3.5, accuracy: 1e-9)
+        XCTAssertEqual(cfg.heightPostRollFloorSec, 5.0, accuracy: 1e-9)
+        XCTAssertEqual(cfg.heightCalSlope, 1.0, accuracy: 1e-9)
+        XCTAssertEqual(cfg.heightCalOffsetM, 0.0, accuracy: 1e-9)
         // 16.4
         XCTAssertEqual(cfg.minLiftPlateauSec, 0.6, accuracy: 1e-9)
         XCTAssertEqual(cfg.strongShelfSec, 1.05, accuracy: 1e-9)
@@ -322,10 +328,10 @@ final class V16CoreTests: XCTestCase {
         XCTAssertNotEqual(flight.jumps[0].heightM, matched.jumps[0].heightM, accuracy: 0.01)
     }
 
-    // MARK: 16.5 — height-only takeoff pre-roll
+    // MARK: 16.7 — height window and reference calibration
 
-    /// t0 is the strongest pop, after the ascent has already started. V16.5
-    /// includes the preceding 0.3 s only in the resolved-flight height window;
+    /// t0 is the strongest pop, after the ascent has already started. V16.7
+    /// includes the preceding 0.5 s only in the resolved-flight height window;
     /// detection, airtime and GPS distance must retain their original anchors.
     func testHeightPreRollChangesOnlyResolvedFlightHeight() {
         func run(_ cfg: V16Config) -> V16Jump? {
@@ -389,6 +395,175 @@ final class V16CoreTests: XCTestCase {
         XCTAssertEqual(shifted.heightSource, .matched)
         XCTAssertNil(shifted.airtimeSec)
         XCTAssertNil(shifted.distanceM)
+    }
+
+    /// The short-airtime face of an early landing is selected by first-pass
+    /// height. The engine must wait until max(airtime, 5 s) + 0.8 s is resident;
+    /// otherwise flightHeight() silently falls back because its endpoint has no
+    /// samples yet. Airtime and distance stay anchored to the resolved landing.
+    func testHeightTriggerWaitsForThePostRollAndWindowFloor() {
+        func run(_ cfg: V16Config) -> (jump: V16Jump?, deliveredAt: Double?) {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            var deliveredAt: Double?
+            engine.onDebug = { t, event in
+                if event.hasPrefix("JUMP"), deliveredAt == nil { deliveredAt = t }
+            }
+            feedSyntheticJump(into: engine, gpsSpeedMS: 10, cfg: cfg, flush: false)
+            return (delegate.jumps.first, deliveredAt)
+        }
+
+        var heightTriggered = V16Config()
+        heightTriggered.heightPostRollMinAirSec = .infinity
+        var disabled = heightTriggered
+        disabled.heightPostRollSec = 0
+
+        let baseline = run(disabled)
+        let extended = run(heightTriggered)
+        guard let baselineJump = baseline.jump,
+              let extendedJump = extended.jump,
+              let baselineTime = baseline.deliveredAt,
+              let extendedTime = extended.deliveredAt else {
+            return XCTFail("height-trigger post-roll fixture did not emit")
+        }
+
+        XCTAssertLessThan(baselineJump.airtimeSec ?? .infinity,
+                          heightTriggered.heightPostRollMinAirSec)
+        XCTAssertGreaterThanOrEqual(baselineJump.heightM, heightTriggered.heightPostRollMinM)
+        XCTAssertGreaterThanOrEqual(
+            extendedTime - extendedJump.takeoffT,
+            heightTriggered.heightPostRollFloorSec + heightTriggered.heightPostRollSec - 0.03
+        )
+        XCTAssertLessThan(baselineTime, extendedTime - 0.5)
+        XCTAssertEqual(extendedJump.airtimeSec ?? -1, baselineJump.airtimeSec ?? -2, accuracy: 1e-9)
+        // The later verdict can see the first 10 Hz GPS fix after landing while
+        // the baseline can only snap to the last fix before it; the endpoint is
+        // still the same landing time, with at most one sample of quantisation.
+        XCTAssertEqual(extendedJump.distanceM ?? -1, baselineJump.distanceM ?? -2, accuracy: 1.1)
+        XCTAssertEqual(extendedJump.heightSource, .flight)
+    }
+
+    /// The other face is a long-airtime jump whose height gate is disabled.
+    /// Any change from the no-tail baseline can therefore only come from the
+    /// airtime disjunct.
+    func testAirtimeTriggerAppliesPostRollWithoutTheHeightTrigger() {
+        func run(_ cfg: V16Config) -> V16Jump? {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedSyntheticJump(into: engine, flightSec: 4.2, cfg: cfg)
+            return delegate.jumps.first
+        }
+
+        var airtimeOnly = V16Config()
+        airtimeOnly.heightPostRollMinM = .infinity
+        var disabled = airtimeOnly
+        disabled.heightPostRollSec = 0
+
+        guard let baseline = run(disabled), let extended = run(airtimeOnly) else {
+            return XCTFail("airtime-trigger post-roll fixture did not emit")
+        }
+        XCTAssertGreaterThanOrEqual(baseline.airtimeSec ?? 0, airtimeOnly.heightPostRollMinAirSec)
+        XCTAssertNotEqual(extended.heightM, baseline.heightM, accuracy: 0.01)
+        XCTAssertEqual(extended.airtimeSec ?? -1, baseline.airtimeSec ?? -2, accuracy: 1e-9)
+    }
+
+    /// Small jumps below both gates must keep the original landing endpoint.
+    func testSmallJumpBelowBothTriggersDoesNotUsePostRoll() {
+        func run(_ cfg: V16Config) -> V16Jump? {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedSyntheticJump(into: engine, unloadG: 0.30, cfg: cfg)
+            return delegate.jumps.first
+        }
+
+        var disabled = V16Config()
+        disabled.heightPostRollSec = 0
+        guard let baseline = run(disabled), let shipped = run(V16Config()) else {
+            return XCTFail("small-jump post-roll fixture did not emit")
+        }
+        XCTAssertLessThan(baseline.airtimeSec ?? .infinity, V16Config().heightPostRollMinAirSec)
+        XCTAssertLessThan(baseline.heightM, V16Config().heightPostRollMinM)
+        XCTAssertEqual(shipped.heightM, baseline.heightM, accuracy: 1e-9)
+    }
+
+    /// evalDelaySec is the hard streaming deadline. A requested tail beyond it
+    /// must degrade to whatever samples have arrived rather than wait forever or
+    /// fall back to the matched filter.
+    func testPostRollUsesTheAvailableTailAtTheEvaluationDeadline() {
+        var cfg = V16Config()
+        cfg.heightPostRollMinAirSec = 0
+        cfg.heightPostRollMinM = 0
+        cfg.heightPostRollFloorSec = 20
+
+        let delegate = CaptureDelegate()
+        let engine = JumpEngineV16(cfg)
+        engine.delegate = delegate
+        var deliveredAt: Double?
+        engine.onDebug = { t, event in
+            if event.hasPrefix("JUMP"), deliveredAt == nil { deliveredAt = t }
+        }
+        feedSyntheticJump(into: engine, cfg: cfg, flush: false)
+
+        guard let jump = delegate.jumps.first, let deliveredAt else {
+            return XCTFail("forced post-roll fixture did not emit")
+        }
+        XCTAssertEqual(jump.heightSource, .flight)
+        XCTAssertGreaterThanOrEqual(deliveredAt - jump.takeoffT, cfg.evalDelaySec - 0.03)
+        XCTAssertLessThan(deliveredAt - jump.takeoffT, cfg.evalDelaySec + 0.05)
+    }
+
+    /// A directly measured free-fall interval has exact physical endpoints and
+    /// is exempt even when both post-roll gates are deliberately forced open.
+    func testPostRollDoesNotWidenAFreeFallWindow() {
+        func height(_ postRoll: Double) -> Double? {
+            var cfg = V16Config()
+            cfg.heightPostRollSec = postRoll
+            cfg.heightPostRollMinAirSec = 0
+            cfg.heightPostRollMinM = 0
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedThrow(into: engine, freeFallSec: 1.4)
+            XCTAssertEqual(delegate.jumps.first?.heightSource, .freefall)
+            return delegate.jumps.first?.heightM
+        }
+
+        XCTAssertEqual(height(0) ?? -1, height(3) ?? -2, accuracy: 1e-9)
+    }
+
+    /// The default identity preserves the raw report. A non-identity A/B config
+    /// must transform both the measured-flight path and the matched fallback in
+    /// the one explicit calibration stage.
+    func testReferenceCalibrationTransformsFlightAndMatchedFallback() {
+        func run(_ cfg: V16Config, unresolved: Bool) -> V16Jump? {
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            if unresolved {
+                feedUnresolvedLanding(into: engine)
+            } else {
+                feedSyntheticJump(into: engine, cfg: cfg)
+            }
+            return delegate.jumps.first
+        }
+
+        var identity = V16Config()
+        identity.heightPostRollSec = 0
+        var calibrated = identity
+        calibrated.heightCalSlope = 1.2
+        calibrated.heightCalOffsetM = 0.4
+
+        for unresolved in [false, true] {
+            guard let raw = run(identity, unresolved: unresolved),
+                  let mapped = run(calibrated, unresolved: unresolved) else {
+                return XCTFail("calibration fixture did not emit")
+            }
+            XCTAssertEqual(mapped.heightSource, raw.heightSource)
+            XCTAssertEqual(mapped.heightM, 1.2 * raw.heightM + 0.4, accuracy: 0.02)
+        }
     }
 
     /// A longer arc measures taller, quadratically — the height IS the arc, and
@@ -896,7 +1071,7 @@ final class V16CoreTests: XCTestCase {
             if t >= 0 && t < 0.02 { return 2.0 }
             if t >= 0 && t < flightSec { return unloadG }
             if t >= flightSec && t < flightSec + 0.8 { return -0.45 }
-            if let heightLeadInG, t >= -0.3 && t < 0 { return heightLeadInG }
+            if let heightLeadInG, t >= -0.5 && t < 0 { return heightLeadInG }
             if t >= -1.5 && t < 0 { return -carveG }
             return 0
         }

@@ -110,6 +110,11 @@ final class JumpDetectorV16: JumpDetecting {
                 + "shortShelfFlight=\(configuration.shortShelfFlightM)m "
                 + "strongShelf=\(configuration.strongShelfSec)s "
                 + "heightPreRoll=\(configuration.heightPreRollSec)s "
+                + "heightPostRoll=\(configuration.heightPostRollSec)s "
+                + "heightPostRollMinAir=\(configuration.heightPostRollMinAirSec)s "
+                + "heightPostRollMin=\(configuration.heightPostRollMinM)m "
+                + "heightPostRollFloor=\(configuration.heightPostRollFloorSec)s "
+                + "heightCal=\(configuration.heightCalSlope)x+\(configuration.heightCalOffsetM)m "
                 + "minReport=\(configuration.minReportM)m "
                 + "absoluteAltitude=diagnosticOnly gps=metricsOnly "
                 + readiness.logDetails
