@@ -61,7 +61,9 @@
 	<array>
 		<string>location</string>
 	</array>
-	<key>WKWatchOnly</key>
+	<key>WKCompanionAppBundleIdentifier</key>
+	<string>com.avishayportal.kiters</string>
+	<key>WKRunsIndependentlyOfCompanionApp</key>
 	<true/>
 	<key>CFBundleURLTypes</key>
 	<array>

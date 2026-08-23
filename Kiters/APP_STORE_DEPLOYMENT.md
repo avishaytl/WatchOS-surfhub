@@ -1,4 +1,4 @@
-# Kiters watchOS App — App Store Deployment Guide
+# SPOTEQ iOS + watchOS App — App Store Deployment Guide
 
 ## Pre-Submission Checklist
 
@@ -10,7 +10,8 @@
 - [x] Automatic code signing with Development Team
 - [x] Privacy Manifest (`PrivacyInfo.xcprivacy`) created
 - [x] `ITSAppUsesNonExemptEncryption = NO` added (no custom encryption)
-- [x] Version source aligned through `Config.xcconfig` (`1.3` / Build `167`)
+- [x] Version source aligned through `Config.xcconfig` (`1.3` / Build `168`)
+- [x] Launchable SPOTEQ iOS companion embeds the independent SPOTEQ watchOS app
 - [x] Deprecated API usage fixed (`onChange`)
 - [x] Localized `SessionDetailView` strings
 - [x] Implemented `deleteAllSessions()` properly
@@ -25,19 +26,20 @@
 - [ ] Ensure your **Apple Developer Program** membership ($99/year) is active at [developer.apple.com](https://developer.apple.com)
 - [ ] Your Team ID `2D7LFZS836` is already configured in the project
 
-### 2. App Store Connect — Create App Record
-1. Go to [App Store Connect](https://appstoreconnect.apple.com)
-2. Click **My Apps** → **+** → **New App**
-3. Fill in:
-   - **Platform**: iOS (watch-only container with an embedded watchOS app)
-   - **Name**: SPOTEQ
-   - **Primary Language**: English (U.S.)
-   - **Bundle ID**: `com.avishayportal.kiters` (embedded watch app: `com.avishayportal.kiters.watchapp`)
-   - **SKU**: `kiters-watchos-v1` (any unique string)
-4. Click **Create**
+### 2. App Store Connect — Open the Existing App Record
+1. Open the existing [SPOTEQ record (Apple ID 6760948988)](https://appstoreconnect.apple.com/apps/6760948988).
+2. Verify that its bundle ID is `com.avishayportal.kiters`. Do not create a
+   separate record for the watch app and do not use **Add Platform**.
+3. Under **General → App Information**, set the localized app name to **SPOTEQ**
+   if the existing record still displays its former name.
+4. Under **TestFlight → iOS**, open version `1.3` and select the newest build.
+
+The uploaded iOS bundle contains the companion app and embeds the independent
+watchOS bundle `com.avishayportal.kiters.watchapp`; Apple associates both with
+the same App Store Connect record.
 
 ### 3. App Icon
-Both the iOS container and the embedded watchOS app contain a referenced
+Both the iOS companion and the embedded watchOS app contain a referenced
 1024×1024 `AppIcon.png` without alpha. Validate the asset catalogs again before
 each release; no icon generation step is currently required.
 
@@ -46,7 +48,7 @@ Prepare the following:
 
 | Field | Notes |
 |-------|-------|
-| **App Name** | Kiters |
+| **App Name** | SPOTEQ |
 | **Subtitle** | Kitesurfing Jump Tracker |
 | **Description** | Full app description (see below) |
 | **Keywords** | kitesurfing,kitesurf,jump,tracker,airtime,watch,sport |
@@ -57,7 +59,7 @@ Prepare the following:
 
 #### Suggested App Description:
 ```
-Track your kitesurfing sessions with precision. Kiters uses Apple Watch sensors to automatically detect jumps, measure airtime, and calculate jump height in real-time.
+Track your kitesurfing sessions with precision. SPOTEQ uses Apple Watch sensors to automatically detect jumps, measure airtime, and calculate jump height in real-time.
 
 Features:
 • Real-time jump detection with height and airtime measurement
@@ -73,7 +75,8 @@ Built for riders who want accurate data on every jump.
 ```
 
 ### 5. Screenshots
-Apple requires watchOS screenshots. Capture from:
+The companion release requires both iPhone and Apple Watch screenshots. Capture:
+- iPhone screenshots showing the SPOTEQ companion screen
 - **38mm, 40mm, 41mm, 44mm, 45mm** (at minimum: one small + one large)
 - Recommended scenes:
   1. Home screen (Start Session button)
@@ -100,9 +103,9 @@ Host this as a simple webpage (GitHub Pages, Notion public page, etc.)
 
 In **Xcode**:
 1. Select the **Kiters** scheme (not "Kiters Watch App")
-2. Set destination to **Any iOS Device (arm64)**. The iOS container embeds the
-   watchOS app; archiving the watch target alone does not create an uploadable
-   App Store archive.
+2. Set destination to **Any iOS Device (arm64)**. The iOS companion embeds the
+   independent watchOS app; archiving the watch target alone does not create an
+   uploadable App Store archive.
 3. Menu → **Product** → **Archive**
 4. In the Organizer, click **Distribute App**
 5. Choose **App Store Connect** → **Upload**
@@ -117,14 +120,14 @@ xcodebuild \
   -scheme Kiters \
   -configuration Release \
   -destination 'generic/platform=iOS' \
-  -archivePath "$PWD/.release/SPOTEQ.xcarchive" \
+  -archivePath "$PWD/.release/SPOTEQ-1.3-168.xcarchive" \
   -allowProvisioningUpdates \
   archive
 
 xcodebuild \
   -exportArchive \
-  -archivePath "$PWD/.release/SPOTEQ.xcarchive" \
-  -exportPath "$PWD/.release/TestFlight" \
+  -archivePath "$PWD/.release/SPOTEQ-1.3-168.xcarchive" \
+  -exportPath "$PWD/.release/TestFlight-168" \
   -exportOptionsPlist "$PWD/Kiters/ExportOptions-TestFlight.plist" \
   -allowProvisioningUpdates
 ```
@@ -146,11 +149,11 @@ uploads the archive directly to App Store Connect.
 | 8 | App description & metadata | ⚠️ **YOU NEED TO FILL IN ASC** |
 | 9 | Code signing | ✅ Automatic |
 | 10 | Export compliance (`ITSAppUsesNonExemptEncryption`) | ✅ Set to NO |
-| 11 | Version/Build numbers | ✅ Sourced from `Config.xcconfig` (1.3 / 167) |
+| 11 | Version/Build numbers | ✅ Sourced from `Config.xcconfig` (1.3 / 168) |
 | 12 | Localization | ✅ English + Hebrew |
 | 13 | Deprecated APIs | ✅ Fixed |
 | 14 | Debug print statements | ⚠️ Consider replacing with `AppLogger` |
-| 15 | Test on physical Apple Watch | ⚠️ **CRITICAL before submission** |
+| 15 | Test on physical iPhone + Apple Watch | ⚠️ **CRITICAL before submission** |
 
 ### 9. Common Rejection Reasons to Avoid
 1. **Missing privacy policy** — must be a live URL
@@ -163,7 +166,8 @@ uploads the archive directly to App Store Connect.
 ### 10. App Review Notes
 When submitting, add review notes like:
 ```
-This app tracks kitesurfing sessions on Apple Watch. It requires:
+SPOTEQ includes a launchable iPhone companion and an independent Apple Watch app.
+The watch app tracks kitesurfing sessions and requires:
 
 - Location: To track GPS speed, distance, and route during sessions
 - HealthKit: To display real-time heart rate and save workouts
