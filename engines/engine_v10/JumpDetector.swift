@@ -1,6 +1,6 @@
 // //
 // //  JumpDetector.swift
-// //  iSurf-Watch
+// //  SPOTEQ
 // //
 // //  Barometer-first jump detection — simple & accurate.
 // //
@@ -768,7 +768,7 @@
 // }
 //
 //  JumpDetector.swift
-//  iSurf-Watch
+//  SPOTEQ
 //
 //  ═══════════════════════════════════════════════════════════════
 //  V7 ADAPTER — drop-in replacement for the v4 barometer-primary

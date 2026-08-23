@@ -15,7 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kiters.wear.session.SessionManager
 import com.kiters.wear.storage.SettingsStore
-import com.kiters.wear.ui.KitersApp
+import com.kiters.wear.ui.SPOTEQApp
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            KitersApp(vm)
+            SPOTEQApp(vm)
         }
     }
 

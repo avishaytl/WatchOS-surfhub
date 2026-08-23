@@ -1,6 +1,6 @@
 # KLOG — Server-Side Decoder Document
 
-How the server decodes the binary logs the Kiters watch now uploads.
+How the server decodes the binary logs the SPOTEQ watch now uploads.
 
 The watch stopped sending JSON/CSV. Every log that reaches the server is a
 **binary `KLOG` payload** (`Content-Type: application/octet-stream`). The schema
@@ -8,7 +8,7 @@ and field names are **unchanged** — only the serialization is binary, so the
 edge functions need a small decoder that turns the bytes back into the same
 object they used to get from `await req.json()`.
 
-- Encoder (watch): [`BinaryLogEnvelope.swift`](../../Kiters/Kiters%20Watch%20App/Services/BinaryLogEnvelope.swift)
+- Encoder (watch): [`BinaryLogEnvelope.swift`](../../SPOTEQ/SPOTEQ%20Watch%20App/Services/BinaryLogEnvelope.swift)
 - Decoder (server): [`klog_decoder.ts`](./klog_decoder.ts) — ready-to-use Deno/TS module
 - Live examples: every `*.klog` in [`new_format_logs/`](../) with a matching `*.decoded.json`
 
@@ -155,7 +155,7 @@ with this module (Swift encode → TS decode round-trip):
 
 ```bash
 # regenerate the binary examples from the production codec
-swiftc "Kiters/Kiters Watch App/Services/BinaryLogEnvelope.swift" \
+swiftc "SPOTEQ/SPOTEQ Watch App/Services/BinaryLogEnvelope.swift" \
        new_format_logs/make_new_format_logs.swift -o /tmp/gen && /tmp/gen
 
 # decode them back with this server module (Deno)

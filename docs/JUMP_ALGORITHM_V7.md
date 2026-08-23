@@ -5,7 +5,7 @@ and **distance**, and how those numbers were calibrated against a professional
 reference app (Surfr). This is the single source of truth for the V7 engine that
 runs both on the watch and in the admin WATCH CALIB dashboard.
 
-- Source engine: [`Kiters/Kiters Watch App/Services/KitesurfJumpEngine.swift`](Kiters/Kiters%20Watch%20App/Services/KitesurfJumpEngine.swift)
+- Source engine: [`SPOTEQ/SPOTEQ Watch App/Services/KitesurfJumpEngine.swift`](SPOTEQ/SPOTEQ%20Watch%20App/Services/KitesurfJumpEngine.swift)
 - Android parity: [`android/wear/src/main/java/com/kiters/wear/engine/KitesurfJumpEngineV7.kt`](android/wear/src/main/java/com/kiters/wear/engine/KitesurfJumpEngineV7.kt)
 - Session metrics wrapper: [`core/sessionAnalysis.ts`](core/sessionAnalysis.ts)
 - Dashboard: `surfhub-admin/src/app/(admin)/calib/CalibWorkbench.tsx` (imports this

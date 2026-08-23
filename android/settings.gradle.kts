@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "KitersWear"
+rootProject.name = "SPOTEQWear"
 include(":wear")

@@ -1,8 +1,8 @@
-# Kiters — Wear OS (Android Watch)
+# SPOTEQ — Wear OS (Android Watch)
 
-Standalone Wear OS port of the **Kiters Watch App** (watchOS), replicating the
+Standalone Wear OS port of the **SPOTEQ Watch App** (watchOS), replicating the
 same UI and jump-detection logic for Android-watch users. See the porting plan
-in `../` and the Swift source under `../Kiters/Kiters Watch App/`.
+in `../` and the Swift source under `../SPOTEQ/SPOTEQ Watch App/`.
 
 ## Stack
 - Kotlin + Jetpack **Compose for Wear OS**

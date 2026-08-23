@@ -1,14 +1,14 @@
 // make_all_logs.swift
 //
-// Generates ONE real example of every artifact the Kiters app produces / sends,
+// Generates ONE real example of every artifact the SPOTEQ app produces / sends,
 // using the EXACT field layout from the production code, with realistic mock data.
 //
-//   1. kiters_session.kslog            — binary session log (.kslog, the file itself)
-//   2. kiters_session.preview.txt      — decoded CSV preview (what "Share" emits)
-//   3. kiters_session.kslog.hex        — hex dump of the binary header + first records
-//   4. kiters_cloud_upload.json        — exact CloudLogPayload POST body (kslog as base64)
-//   5. kiters_cloud_upload.http        — the full HTTP request (URL + headers + body ref)
-//   6. kiters_jumpreplay_report.json   — JumpReplay analysis report (ReplayReport)
+//   1. spoteq_session.kslog            — binary session log (.kslog, the file itself)
+//   2. spoteq_session.preview.txt      — decoded CSV preview (what "Share" emits)
+//   3. spoteq_session.kslog.hex        — hex dump of the binary header + first records
+//   4. spoteq_cloud_upload.json        — exact CloudLogPayload POST body (kslog as base64)
+//   5. spoteq_cloud_upload.http        — the full HTTP request (URL + headers + body ref)
+//   6. spoteq_jumpreplay_report.json   — JumpReplay analysis report (ReplayReport)
 //
 // Run:  swift docs/examples/make_all_logs.swift
 //
@@ -25,12 +25,12 @@ let outDir = URL(fileURLWithPath: #filePath)
     .appendingPathComponent("generated", isDirectory: true)
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 
-let kslogURL    = outDir.appendingPathComponent("kiters_session.kslog")
-let previewURL  = outDir.appendingPathComponent("kiters_session.preview.txt")
-let hexURL      = outDir.appendingPathComponent("kiters_session.kslog.hex")
-let cloudURL    = outDir.appendingPathComponent("kiters_cloud_upload.json")
-let httpURL     = outDir.appendingPathComponent("kiters_cloud_upload.http")
-let replayURL   = outDir.appendingPathComponent("kiters_jumpreplay_report.json")
+let kslogURL    = outDir.appendingPathComponent("spoteq_session.kslog")
+let previewURL  = outDir.appendingPathComponent("spoteq_session.preview.txt")
+let hexURL      = outDir.appendingPathComponent("spoteq_session.kslog.hex")
+let cloudURL    = outDir.appendingPathComponent("spoteq_cloud_upload.json")
+let httpURL     = outDir.appendingPathComponent("spoteq_cloud_upload.http")
+let replayURL   = outDir.appendingPathComponent("spoteq_jumpreplay_report.json")
 
 // ──────────────────────────────────────────────────────────────────────────
 // MARK: Session identity (mock but realistically shaped)
@@ -91,7 +91,7 @@ struct Header: Codable {
 
 func makeHeader() -> Data {
     let h = Header(
-        app: "Kiters", format: "kslog", version: 1,
+        app: "SPOTEQ", format: "kslog", version: 1,
         session: sessionId, date: dateStr, mode: "Standard",
         devMode: false, sampleRateHz: 50,
         parameters: .init(minSpeed: pMinSpeed, takeoffG: pTakeoffG, landingG: pLandingG,
@@ -305,7 +305,7 @@ let sizeBytes = log.count
 // ──────────────────────────────────────────────────────────────────────────
 
 var preview = """
-Kiters Session Log
+SPOTEQ Session Log
 File: \(filename)
 Size: \(byteString(sizeBytes))
 Format: binary kslog v1
@@ -390,7 +390,7 @@ Content-Type: application/json
 Accept: */*
 X-Calib-Token: ywxC26KVA7WD-_HftsCiCBb6W5bxkFzGT-Xe1Z4FvC4
 
-<body = kiters_cloud_upload.json — the CloudLogPayload above>
+<body = spoteq_cloud_upload.json — the CloudLogPayload above>
 
 # Expected 2xx response shape (CloudLogUploadResponse):
 # { "id": "9f3...", "status": "uploaded", "ok": true, "path": "logs/watch/\(filename)" }

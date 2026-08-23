@@ -128,7 +128,7 @@ private fun shareLog(context: android.content.Context, file: File) {
     val content = try { SessionLogger.shared.buildShareText(file) } catch (e: Exception) { return }
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "Kiters Log — ${file.name}")
+        putExtra(Intent.EXTRA_SUBJECT, "SPOTEQ Log — ${file.name}")
         putExtra(Intent.EXTRA_TEXT, content)
     }
     context.startActivity(Intent.createChooser(intent, null).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })

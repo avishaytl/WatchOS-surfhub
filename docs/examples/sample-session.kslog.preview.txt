@@ -1,4 +1,4 @@
-Kiters Session Log
+SPOTEQ Session Log
 File: sample-session.kslog
 Size: 771 bytes
 Format: binary kslog v1

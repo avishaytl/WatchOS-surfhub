@@ -10,9 +10,9 @@
 
 Related: [`JUMP_ALGORITHM_V7.md`](../JUMP_ALGORITHM_V7.md) ·
 [`docs/session-algorithm-end-to-end-he.md`](session-algorithm-end-to-end-he.md) ·
-Swift engine `Kiters/Kiters Watch App/Services/KitesurfJumpEngine.swift` ·
-replay tool `Kiters/Tools/JumpReplay` · binary writer
-`Kiters/Kiters Watch App/Services/SessionLogger.swift`
+Swift engine `SPOTEQ/SPOTEQ Watch App/Services/KitesurfJumpEngine.swift` ·
+replay tool `SPOTEQ/Tools/JumpReplay` · binary writer
+`SPOTEQ/SPOTEQ Watch App/Services/SessionLogger.swift`
 
 ---
 
@@ -88,7 +88,7 @@ CSV text directly:
 
 ```json
 { "type":"session_log", "filename":"log_....csv", "contentType":"text/csv",
-  "content":"# Kiters Sensor Log\n..." }
+  "content":"# SPOTEQ Sensor Log\n..." }
 ```
 
 So the current pipeline is: **`content` → CSV parser → samples → jumps**.
@@ -180,7 +180,7 @@ def jumps(recs):
 ```
 
 > If the in-log `JUMP ACCEPTED` events are absent or stale, re-run the **current Swift V7
-> engine** through `Kiters/Tools/JumpReplay` over the parsed IMU/baro/speed stream to get
+> engine** through `SPOTEQ/Tools/JumpReplay` over the parsed IMU/baro/speed stream to get
 > our detected jumps — that is the engine we are actually calibrating.
 
 ---
@@ -268,7 +268,7 @@ Implemented in the watchOS Swift V7 engine and mirrored into the Android/Kotlin 
 Current replay command:
 
 ```bash
-swift run --package-path Kiters/Tools/JumpReplay JumpReplay --surfr --output /tmp/kiters-surfr log1.json log2.json
+swift run --package-path SPOTEQ/Tools/JumpReplay JumpReplay --surfr --output /tmp/spoteq-surfr log1.json log2.json
 ```
 
 Results after the calibrated defaults:
@@ -300,7 +300,7 @@ timestamp filter. That filter was deliberately not added.
 Command:
 
 ```bash
-cd "Kiters/Tools/JumpReplay"
+cd "SPOTEQ/Tools/JumpReplay"
 swift build
 .build/debug/JumpReplay --surfr -v ../../../docs/log2.json
 ```
@@ -405,7 +405,7 @@ time windows contain a real jump-like signal in the watch log.
 Current local check:
 
 ```bash
-cd "Kiters/Tools/JumpReplay"
+cd "SPOTEQ/Tools/JumpReplay"
 .build/debug/JumpReplay --require-surfr-windows ../../../docs/log2.json
 ./verify.sh
 ```
@@ -485,8 +485,8 @@ Recovered high-energy timeout:
 Regression after this pass:
 
 ```bash
-cd "Kiters/Tools/JumpReplay" && ./verify.sh
-cd "Kiters" && swift run WatchLiveSessionCoreChecks
+cd "SPOTEQ/Tools/JumpReplay" && ./verify.sh
+cd "SPOTEQ" && swift run WatchLiveSessionCoreChecks
 ```
 
 Both pass. `verify.sh` currently reports `9 passed, 0 failed, 0 skipped`: the standard
@@ -547,7 +547,7 @@ Rejected nearby candidates:
 >    files currently carry `text/csv` in `content`, while future/legacy envelopes may carry
 >    base64 binary `.kslog` content. Decode/parse the envelope, then extract our detected
 >    jumps (elapsed time, height, airtime, distance) by re-running the Swift V7 engine with
->    `Kiters/Tools/JumpReplay`.
+>    `SPOTEQ/Tools/JumpReplay`.
 > 3. `JUMP_ALGORITHM_V7.md` — the V7 spec and default params (§7).
 >
 > Do:
@@ -583,7 +583,7 @@ Rejected nearby candidates:
 > 2. `log2.json` ו-`log1.json` — הלוגים שלנו. כל קובץ הוא עוטפת ענן; קבצי שורש הרפו הנוכחיים
 >    מכילים `text/csv` בשדה `content`, ואילו עוטפות עתידיות/ישנות יכולות להכיל `.kslog`
 >    בינארי ב-base64. פענח/פרסר את העוטפת, ואז חלץ את הקפיצות שזיהינו (זמן elapsed, גובה,
->    airtime, מרחק) באמצעות הרצת מנוע Swift V7 דרך `Kiters/Tools/JumpReplay`.
+>    airtime, מרחק) באמצעות הרצת מנוע Swift V7 דרך `SPOTEQ/Tools/JumpReplay`.
 > 3. `JUMP_ALGORITHM_V7.md` — מפרט V7 ופרמטרי ברירת המחדל (§7).
 >
 > בצע:

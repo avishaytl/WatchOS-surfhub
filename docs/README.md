@@ -1,10 +1,10 @@
-# iSurf - Wind Sports Tracker Documentation
+# SPOTEQ - Wind Sports Tracker Documentation
 
 > **Complete technical architecture and implementation guide for building a Surfr-like wind sports tracking system with native watch apps (watchOS + Wear OS), React Native mobile app, and Node.js backend.**
 
 ## 📚 Documentation Index
 
-This repository contains comprehensive step-by-step documentation for building **iSurf**, an open-source, cross-platform wind sports tracker.
+This repository contains comprehensive step-by-step documentation for building **SPOTEQ**, an open-source, cross-platform wind sports tracker.
 
 ### Core Documentation
 
@@ -134,8 +134,8 @@ This repository contains comprehensive step-by-step documentation for building *
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/isurf.git
-cd isurf
+git clone https://github.com/your-org/spoteq.git
+cd spoteq
 
 # Install dependencies
 npm install
@@ -179,7 +179,7 @@ cd apps/watchos
 ./setup-xcode-project.sh
 
 # After creating Xcode project:
-open iSurf-Watch.xcodeproj
+open SPOTEQ.xcodeproj
 # Build and run on Apple Watch simulator or device
 ```
 
@@ -237,11 +237,11 @@ cd apps/wearos
 ## 🏗️ Project Structure
 
 ```
-isurf/
+spoteq/
 ├── apps/
 │   ├── mobile/           # React Native app (iOS/Android) [TODO]
 │   ├── watchos/          # Apple Watch app (Swift/SwiftUI) ✅ DONE
-│   │   ├── iSurf-Watch/  # All source files ready!
+│   │   ├── SPOTEQ/  # All source files ready!
 │   │   ├── OVERVIEW.md   # Implementation overview
 │   │   ├── README.md     # Project documentation
 │   │   └── CHECKLIST.md  # Development tasks
@@ -301,7 +301,7 @@ npm test
 
 # watchOS
 cd apps/watchos
-xcodebuild test -scheme iSurf-Watch
+xcodebuild test -scheme SPOTEQ
 ```
 
 ### Integration Tests
@@ -320,7 +320,7 @@ npm start -- --recording=real-jump-2.8s.json
 
 ## 🔒 Security & Privacy
 
-iSurf is built with **privacy-first** principles:
+SPOTEQ is built with **privacy-first** principles:
 
 - ✅ **Minimal data collection**: Only GPS during active sessions
 - ✅ **Local-first**: All data stored on device before cloud
@@ -385,8 +385,8 @@ Built with ❤️ for the wind sports community.
 ## 📧 Contact
 
 - **Website**: (coming soon)
-- **Email**: hello@isurf.app
-- **GitHub**: https://github.com/your-org/isurf
+- **Email**: hello@spoteq.app
+- **GitHub**: https://github.com/your-org/spoteq
 - **Discord**: (coming soon)
 
 ---
@@ -406,12 +406,12 @@ Built with ❤️ for the wind sports community.
 
 
 **Last Summary**
-🏄 iSurf / Kiters — Deep Product Analysis
+🏄 SPOTEQ / SPOTEQ — Deep Product Analysis
 By an AI acting as product architect, senior mobile developer, and startup strategist
 
 1. PROJECT UNDERSTANDING
 What This Is
-Kiters (branded as iSurf in docs) is an Apple Watch-native kiteboarding session tracker that detects jumps, measures speed, tracks routes, and records performance metrics — all running independently on the wrist, without requiring a phone during the session.
+SPOTEQ (branded as SPOTEQ in docs) is an Apple Watch-native kiteboarding session tracker that detects jumps, measures speed, tracks routes, and records performance metrics — all running independently on the wrist, without requiring a phone during the session.
 
 Target Users
 Kiteboarding enthusiasts (primary, sole sport currently enabled)
@@ -421,7 +421,7 @@ The reality vs. the docs is important to understand:
 
 Layer	Documented	Actually Built
 watchOS App	✅ Full spec	✅ Fully built — this is the product
-iOS Companion App	✅ Stub views	⚠️ Shell only (ContentView.swift + KitersApp.swift) — no real logic
+iOS Companion App	✅ Stub views	⚠️ Shell only (ContentView.swift + SPOTEQApp.swift) — no real logic
 React Native Mobile	✅ Full spec	❌ Not started
 Backend API	✅ Full spec	❌ Not started
 Wear OS	✅ Full spec	❌ Not started
@@ -487,7 +487,7 @@ Customizability	⭐⭐⭐⭐⭐	4 detection modes + full custom tuning with slid
 Permission Handling	⭐⭐⭐⭐	Handles the tricky watchOS fake-denial bug. Clean async permission flow.
 Localization	⭐⭐⭐	Full EN/HE with RTL support — shows international ambition.
 What Differentiates You from WOO / Surfr
-Feature	WOO	Surfr	Kiters
+Feature	WOO	Surfr	SPOTEQ
 Dedicated hardware sensor	✅ $99 device	❌	❌
 Apple Watch standalone	❌ (needs WOO sensor)	✅	✅
 Tunable detection params	❌	Limited	✅ 9 params + 4 presets
@@ -679,7 +679,7 @@ GPS altitude anomaly filtering — GPS altitude on Apple Watch can spike by 10-2
 Machine Learning jump classifier — Export labeled jump IMU data (the imuSamples you're already storing per jump). Train a Core ML model to classify: real jump vs. false positive, and later trick type. This could push precision above 95%.
 
 7. PRODUCT VISION — ONE YEAR FROM NOW
-If executed correctly, here's what Kiters becomes in 12 months:
+If executed correctly, here's what SPOTEQ becomes in 12 months:
 "The Strava of Kiteboarding" — but more addictive, because it has the jump detection that Strava can't do, the real-time watch experience that Surfr does but with better accuracy, and the social/progression layer that WOO's clunky dedicated sensor can never match.
 
 The Platform Play

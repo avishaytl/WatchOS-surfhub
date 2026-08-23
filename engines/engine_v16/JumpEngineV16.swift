@@ -1,6 +1,6 @@
 //
 //  JumpEngineV16.swift
-//  Kiters Watch App
+//  SPOTEQ Watch App
 //
 //  V16.7 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
 //  two must stay behaviourally identical (same replay, same numbers).

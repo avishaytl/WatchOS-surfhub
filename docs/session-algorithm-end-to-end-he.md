@@ -4,11 +4,11 @@
 
 המסמך מתאר את המימוש הנוכחי ב-Swift, בעיקר בקבצים:
 
-- `Kiters/Kiters Watch App/Services/SessionManager.swift`
-- `Kiters/Kiters Watch App/Services/JumpDetector.swift`
-- `Kiters/Kiters Watch App/Services/KitesurfJumpEngine.swift`
-- `Kiters/Kiters Watch App/Services/SessionLogger.swift`
-- `Kiters/Kiters Watch App/Models/Session.swift`
+- `SPOTEQ/SPOTEQ Watch App/Services/SessionManager.swift`
+- `SPOTEQ/SPOTEQ Watch App/Services/JumpDetector.swift`
+- `SPOTEQ/SPOTEQ Watch App/Services/KitesurfJumpEngine.swift`
+- `SPOTEQ/SPOTEQ Watch App/Services/SessionLogger.swift`
+- `SPOTEQ/SPOTEQ Watch App/Models/Session.swift`
 
 ## תמונת על
 
@@ -854,7 +854,7 @@ K  S  L  G  v1  0  headerLength=398
 
 ```json
 {
-  "app": "Kiters",
+  "app": "SPOTEQ",
   "format": "kslog",
   "version": 1,
   "session": "sample-session-0001",
@@ -973,7 +973,7 @@ Event record מתחיל ב-byte מסוג `2`.
 דוגמת preview:
 
 ```text
-Kiters Session Log
+SPOTEQ Session Log
 File: sample-session.kslog
 Format: binary kslog v1
 session: sample-session-0001

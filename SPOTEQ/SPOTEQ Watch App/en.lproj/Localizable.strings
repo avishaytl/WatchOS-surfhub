@@ -1,0 +1,368 @@
+/* 
+  Localizable.strings (English)
+  SPOTEQ
+*/
+
+// MARK: - Home View
+"home.start_session" = "Start Session";
+"home.record_sensors" = "Record Sensors";
+"home.settings" = "Settings";
+"home.recent_sessions" = "Recent Sessions";
+"home.no_sessions" = "No sessions yet";
+
+// MARK: - Sport Selection
+"sport.kitesurfing" = "Kitesurfing";
+"sport.windsurfing" = "Windsurfing";
+"sport.wingfoiling" = "Wingfoiling";
+"sport.surfing" = "Surfing";
+"sport.select_sport" = "Select Sport";
+
+// MARK: - Active Session
+"session.jumps" = "JUMPS";
+"session.last" = "LAST";
+"session.bpm" = "BPM";
+"session.hr_no_data" = "No heart-rate data yet. Make sure Health permission is enabled and the watch is worn snugly.";
+"session.hr_unavailable" = "Heart rate is unavailable on this device.";
+"session.max" = "MAX";
+"session.distance" = "DIST";
+"session.airtime" = "AIR";
+"session.speed" = "SPEED";
+"session.pause" = "Pause";
+"session.resume" = "Resume";
+"session.end" = "End";
+"session.end_confirm" = "End Session?";
+"session.end_message" = "Are you sure you want to end this session?";
+"session.upload_prompt_title" = "Upload Session?";
+"session.upload_prompt_message" = "This session is saved on your watch. Upload it to SurfHub cloud too?";
+"session.upload_offline_message" = "No internet connection right now. Upload it to the cloud (it will send when you're back online), keep it on your watch, or discard it.";
+"session.upload_now" = "Upload";
+"session.keep_local" = "Keep Local";
+"session.discard" = "Discard";
+"session.queued_title" = "Queued for Upload";
+"session.queued_message" = "This session will upload to SurfHub cloud automatically when a connection is available.";
+"session.signin_required_title" = "Sign In Required";
+"session.signin_required_message" = "Sign in to your SurfHub account (Settings → Account) to upload sessions to the cloud. It's saved on your watch for now.";
+"session.too_short_title" = "Session Not Saved";
+"session.too_short_message" = "Sessions shorter than 1 minute are discarded.";
+"session.upload_failed_title" = "Could Not Upload";
+"session.upload_no_gps_message" = "No GPS point was recorded, so SurfHub used a fallback start point for upload.";
+"session.upload_failed_message" = "The session stayed on your watch. Check sign-in and network connection, then try again later.";
+"session.upload_success_title" = "Session Uploaded";
+"session.upload_success_message" = "Your session was uploaded to SurfHub cloud successfully.";
+"session.v12_unavailable_title" = "V12 Not Ready";
+"session.v12_unavailable_message" = "V12 Sensor Fusion is selected, but this watch needs Series 8+ sensor support plus motion and barometer access. This session will use V11.";
+"session.cancel" = "Cancel";
+"session.water_lock_active" = "Water Lock active";
+"session.water_lock_unlock_hint" = "Hold Digital Crown to unlock";
+"session.water_lock_unsupported" = "Water Lock not supported on this watch";
+"session.water_lock_eject_hint" = "Water Lock is still active. Press and hold the Digital Crown to unlock and eject water.";
+"session.best_jump" = "🏆 Best Jump";
+"session.airtime_value" = "%.2f sec airtime";
+"session.rotation_single" = "%d rotation";
+"session.rotation_plural" = "%d rotations";
+"session.total_jumps" = "%d total jumps";
+"session.no_jumps" = "No jumps yet";
+"session.get_air" = "Get some air!";
+
+// MARK: - Session Detail
+"detail.session_complete" = "Session Complete!";
+"detail.duration" = "Duration";
+"detail.total_jumps" = "Total Jumps";
+"detail.max_height" = "Max Height";
+"detail.total_distance" = "Total Distance";
+"detail.max_speed" = "Max Speed";
+"detail.total_airtime" = "Total Airtime";
+"detail.avg_speed" = "Avg Speed";
+"detail.save" = "Save";
+"detail.discard" = "Discard";
+
+// MARK: - Settings
+"settings.title" = "Settings";
+"settings.app_theme" = "App Theme";
+"settings.theme.blue" = "Blue";
+"settings.theme.cyan" = "Cyan";
+"settings.theme.yellow" = "Yellow";
+"settings.theme.green" = "Green";
+"settings.theme.orange" = "Orange";
+"settings.theme.red" = "Red";
+"settings.theme.pink" = "Pink";
+"settings.language" = "Language";
+"settings.language.english" = "English";
+"settings.language.hebrew" = "עברית";
+"settings.units" = "Units";
+"settings.units.metric" = "Metric (km/h, m)";
+"settings.units.imperial" = "Imperial (mph, ft)";
+"settings.jump_detection" = "Jump Detection";
+"settings.sensitivity" = "Sensitivity";
+"settings.sensitivity.low" = "Low";
+"settings.sensitivity.medium" = "Medium";
+"settings.sensitivity.high" = "High";
+"settings.sensitivity.very_high" = "Very High";
+"settings.display_feedback" = "Display & Feedback";
+"settings.top_padding" = "Top Padding";
+"settings.top_padding_auto" = "Auto";
+"settings.top_padding_help" = "Adjust vertical offset of the session metrics screen. Use Auto for device default.";
+"settings.water_lock" = "Water Lock";
+"settings.haptic_feedback" = "Haptic Feedback";
+"settings.voice_announcements" = "Voice Announcements";
+"settings.data" = "Data";
+"settings.manage_sessions" = "Manage Sessions";
+"settings.absolute_altitude" = "Altimeter Sensors";
+"settings.absolute_altitude_hint" = "Live altitude and pressure";
+"settings.absolute_altitude_title" = "Altimeter Sensors";
+"settings.absolute_altitude_value" = "Absolute Altitude";
+"settings.absolute_altitude_source_absolute" = "CMAbsoluteAltitudeData.altitude";
+"settings.relative_altitude_value" = "Relative Altitude";
+"settings.absolute_altitude_source_relative" = "CMAltitudeData.relativeAltitude";
+"settings.pressure_value" = "Pressure";
+"settings.absolute_altitude_source_pressure" = "CMAltitudeData.pressure";
+"settings.absolute_altitude_accuracy" = "Accuracy";
+"settings.absolute_altitude_precision" = "Precision";
+"settings.absolute_altitude_pressure_hpa" = "Pressure (hPa)";
+"settings.absolute_altitude_absolute_samples" = "Absolute samples";
+"settings.absolute_altitude_relative_samples" = "Relative samples";
+"settings.absolute_altitude_absolute_updated" = "Absolute updated";
+"settings.absolute_altitude_relative_updated" = "Relative updated";
+"settings.absolute_altitude_idle" = "Stopped";
+"settings.absolute_altitude_waiting" = "Waiting for samples";
+"settings.absolute_altitude_live" = "Live sampling";
+"settings.absolute_altitude_error" = "Sensor error";
+"settings.absolute_altitude_unavailable" = "Absolute altitude unavailable";
+"settings.engine.section" = "Jump Engine";
+"settings.v13_min_counted_height" = "Count Jumps From";
+"settings.v13_min_counted_height_hint" = "Final count only · detection remains fully sensitive · applies next session";
+"settings.v13_absolute_interval" = "Absolute Sample Interval";
+"settings.v13_absolute_interval_hint" = "0.25–1.0 s processing cadence · Core Motion may deliver the sensor more slowly · applies next session";
+"settings.v16_details" = "V16.7 Engine Details";
+"settings.v16_details_hint" = "IMU flight measurement · sensors, gates and confidence";
+"settings.v16_title" = "V16.7 Big Air";
+"settings.v16_scope" = "An isolated IMU-only engine. Height starts 0.5 s before the pop; selected big-air jumps wait for a 0.8 s post-landing tail and use an explicit identity calibration to Surfr as displayed. Recall is unchanged, pooled height MAE is 0.454 m, and the waves-only control remains silent.";
+"settings.v16_trigger" = "Pop trigger";
+"settings.v16_lift_shelf" = "Lift shelf";
+"settings.v16_strong_shelf" = "Strong-confidence shelf";
+"settings.v16_flight_corroboration" = "Short-shelf flight check";
+"settings.v16_height_window" = "Height takeoff pre-roll";
+"settings.v16_post_roll" = "Big-air landing post-roll";
+"settings.v16_calibration" = "Reference calibration";
+"settings.v16_min_height" = "Minimum report";
+"settings.v16_sensor_imu" = "User acceleration + gyroscope";
+"settings.v16_sensor_attitude" = "Attitude quaternion is mandatory";
+"settings.v16_sensor_gps" = "GPS is metrics-only, never a gate";
+"settings.v16_sensor_no_baro" = "Absolute altitude is diagnostics-only";
+"settings.v16_airtime_warning" = "Airtime and distance never decide whether a jump is accepted. When the landing is unresolved, both show —: not measured, not zero or a short flight.";
+"settings.v12_disable_speed_gate" = "Test: V12 no speed gate";
+"settings.v12_debug" = "V12 Debug Lab";
+"settings.v12_debug_hint" = "Tune or bypass only V12 gates";
+"settings.v12_debug_title" = "V12 Debug Lab";
+"settings.v12_debug_applies_next_session" = "These controls affect only V12 Sensor Fusion and take effect on the next session start.";
+"settings.v12_gates" = "Gate Bypasses";
+"settings.v12_thresholds" = "Thresholds";
+"settings.v12_baro_timing" = "Baro & Timing";
+"settings.v12_refinement" = "Refinement";
+"settings.v12_reset" = "Reset V12 Defaults";
+"settings.v12_reset_confirm" = "Reset all V12 debug controls to defaults?";
+"settings.v12_force_engine" = "Force V12 if not ready";
+"settings.v12_force_engine_help" = "Skip the readiness fallback to V11 for diagnostics.";
+"settings.v12_disable_speed_gate_help" = "Allow takeoff without recent planing speed.";
+"settings.v12_disable_baro_anchor" = "No baro anchor gate";
+"settings.v12_disable_baro_anchor_help" = "Allow a candidate even without enough pre-takeoff altitude samples.";
+"settings.v12_disable_crash_cooldown" = "No crash cooldown";
+"settings.v12_disable_crash_cooldown_help" = "Ignore the 30s block after a crash-level impact.";
+"settings.v12_disable_mid_arc_crash" = "No mid-air crash abort";
+"settings.v12_disable_mid_arc_crash_help" = "Do not abort a candidate on crash-g before a strong altitude arc.";
+"settings.v12_disable_landing_baro" = "No landing baro confirm";
+"settings.v12_disable_landing_baro_help" = "Trust IMU/chop landing evidence without waiting for water-level baro.";
+"settings.v12_disable_min_height" = "No min height gate";
+"settings.v12_disable_min_height_help" = "Show candidates below the 1 m absolute jump floor for diagnostics.";
+"settings.v12_disable_refine_retraction" = "No refined retraction";
+"settings.v12_disable_refine_retraction_help" = "Keep an instant jump even if refinement later marks it weak.";
+"settings.v12_yank_g" = "Takeoff yank";
+"settings.v12_crash_g" = "Crash threshold";
+"settings.v12_land_g" = "Landing impact";
+"settings.v12_absolute_rise" = "Absolute takeoff rise";
+"settings.v12_min_air" = "Min airtime";
+"settings.v12_max_air" = "Max airtime";
+"settings.v12_min_height" = "Min height";
+"settings.v12_max_height" = "Max height cap";
+"settings.v12_planing_speed" = "Planing speed";
+"settings.v12_planing_window" = "Planing window";
+"settings.v12_anchor_age" = "Anchor max age";
+"settings.v12_anchor_samples" = "Anchor samples";
+"settings.v12_landing_return" = "Landing return tolerance";
+"settings.v12_crash_cooldown" = "Crash cooldown";
+"settings.v12_chop_window" = "Chop window";
+"settings.v12_chop_resume_frac" = "Chop resume";
+"settings.v12_chop_hold" = "Chop hold";
+"settings.v12_refine_delay" = "Refine delay";
+"settings.v12_rtz" = "RTZ tolerance";
+"settings.about" = "About";
+"settings.version" = "Version";
+"settings.build" = "Build";
+"settings.tune_parameters" = "Custom Tuning";
+
+// MARK: - Jump Tuning (6 Parameters)
+"tuning.title" = "Custom Tuning";
+"tuning.subtitle" = "Adjust the 6 core parameters.\nBarometer handles height automatically.";
+
+"tuning.min_speed" = "Min Speed";
+"tuning.min_speed_help" = "GPS speed to arm detection";
+"tuning.takeoff_g" = "Takeoff Force";
+"tuning.takeoff_g_help" = "Accel spike to trigger takeoff";
+"tuning.landing_g" = "Landing Impact";
+"tuning.landing_g_help" = "Impact force to confirm landing";
+"tuning.min_airtime" = "Min Airtime";
+"tuning.min_airtime_help" = "Shortest valid jump";
+"tuning.max_airtime" = "Max Airtime";
+"tuning.max_airtime_help" = "Discard if longer";
+"tuning.cooldown" = "Cooldown";
+"tuning.cooldown_help" = "Pause between jumps";
+"tuning.kinematic_calibration" = "Height Calibration";
+"tuning.kinematic_calibration_help" = "Multiplies kinematic height (no baro)";
+"tuning.baro_info" = "Height is measured by barometer (8.3 m/hPa). No tuning needed.";
+
+"tuning.reset" = "Reset to Defaults";
+"tuning.reset_confirm" = "Reset all parameters to defaults?";
+
+// MARK: - Data Management
+"data.title" = "Data Management";
+"data.sessions_count" = "Sessions: %d";
+"data.total_jumps" = "Total Jumps: %d";
+"data.delete_all" = "Delete All Sessions";
+"data.delete_confirm" = "Delete All Sessions?";
+"data.delete_message" = "This action cannot be undone. All your session data will be permanently deleted.";
+"data.delete" = "Delete";
+
+// MARK: - Session Logs
+"settings.session_logs" = "Session Logs";
+"settings.replay_lab" = "Replay Lab";
+"settings.replay_lab_hint" = "Replay a real sensor log with its original timing.";
+"replay.title" = "Real-Time Replay";
+"replay.no_logs" = "No KSLG v2 logs are stored on this watch.";
+"replay.session" = "Session";
+"replay.engine" = "Engine";
+"replay.speed" = "Speed";
+"replay.loading" = "Reading log…";
+"replay.play" = "Play";
+"replay.pause" = "Pause";
+"replay.stop" = "Stop";
+"replay.restart" = "Restart";
+"replay.seek_back" = "Back 5 seconds";
+"replay.seek_forward" = "Forward 5 seconds";
+"replay.stopped" = "Stopped";
+"replay.playing" = "Playing";
+"replay.paused" = "Paused";
+"replay.finished" = "Finished";
+"replay.failed" = "Failed";
+"replay.imu_samples" = "IMU";
+"replay.alt_samples" = "Altitude";
+"replay.out_of_order" = "Out of order";
+"replay.debug_overlay" = "Debug overlay";
+"replay.fsm_state" = "FSM state";
+"replay.candidate" = "Candidate";
+"replay.jump_height" = "Jump height";
+"replay.no_baseline" = "No baseline";
+"replay.match" = "Matches";
+"replay.differs" = "Changed";
+"replay.save_baseline" = "Save regression baseline";
+"replay.telemetry_file" = "Telemetry: %@";
+"replay.offline_local" = "Local offline replay · original sensor timing";
+"logs.run_in_lab" = "Run in Replay Lab";
+"logs.replay_legacy_unavailable" = "Legacy CSV logs do not contain all sensor channels required by the lab.";
+"common.yes" = "Yes";
+"common.no" = "No";
+"logs.title" = "Session Logs";
+"logs.empty" = "No logs yet";
+"logs.empty_hint" = "Start a session to create a diagnostic log file.";
+"logs.share" = "Share CSV";
+"logs.share_messages" = "Share via Messages";
+"logs.send_to_phone" = "Send to iPhone";
+"logs.fetch_cloud_response" = "Fetch Cloud Response";
+"logs.upload_cloud" = "Upload Logs to Cloud";
+"logs.fetch_cloud_response_success" = "✅ %@";
+"logs.upload_cloud_success" = "✅ Uploaded %d logs";
+"logs.cloud_failed" = "⚠️ %@";
+"logs.delete_all" = "Delete All Logs";
+"logs.delete_confirm" = "Delete all log files?";
+
+// MARK: - Common
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.done" = "Done";
+"common.error_title" = "Error";
+
+// MARK: - Permissions
+"permissions.required" = "Permissions Required";
+"permissions.location_motion" = "Please enable Location permissions in Watch Settings:\n\nSettings → Privacy → Location Services → SPOTEQ → While Using App";
+"permissions.denied.title" = "Location Permission Required";
+"permissions.denied.message" = "To track your session, please enable Location permission:\n\niPhone Settings → Privacy & Security → Location Services → SPOTEQ → While Using App or Always";
+"permissions.waiting" = "Requesting permission...";
+
+// MARK: - Time Units
+"time.hours_short" = "h";
+"time.minutes_short" = "m";
+"time.seconds_short" = "s";
+
+// MARK: - Distance Units
+"units.meters" = "m";
+"units.feet" = "ft";
+"units.kilometers" = "km";
+"units.miles" = "mi";
+"units.kmh" = "km/h";
+"units.mph" = "mph";
+
+// MARK: - GPS Tracking
+"gps.tracking" = "GPS Tracking";
+"gps.signal_none" = "No Signal";
+"gps.signal_weak" = "Weak";
+"gps.signal_fair" = "Fair";
+"gps.signal_good" = "Good";
+"gps.signal_strong" = "Strong";
+"gps.route_distance" = "Route";
+"gps.current_speed" = "Speed";
+"gps.max_speed" = "Max Spd";
+"gps.avg_speed" = "Avg Spd";
+"gps.points" = "Points";
+"gps.pts" = "pts";
+"gps.accuracy" = "Accuracy";
+
+// MARK: - Session Detail GPS
+"detail.gps_route" = "GPS Route";
+"detail.gps_points" = "GPS Points";
+"detail.route_distance" = "Route Distance";
+"detail.avg_accuracy" = "Avg Accuracy";
+"detail.gps_coverage" = "GPS Coverage";
+
+// MARK: - Account / Sign In
+"account.section_title" = "Account";
+"account.sign_in" = "Connect Watch";
+"account.connected_title" = "Connected";
+"account.connected_message" = "Signed in as %@";
+"account.connect_failed_title" = "Sign-In Expired";
+"account.connect_failed_message" = "Your watch pairing expired. Reconnect from Settings → Account.";
+"account.email_placeholder" = "Email address";
+"account.send_code" = "Send Code";
+"account.code_sent" = "Code sent to";
+"account.code_placeholder" = "6-digit code";
+"account.verify" = "Verify";
+"account.resend" = "Resend code";
+"account.signed_in_as" = "Signed in as";
+"account.sign_out" = "Sign Out";
+"account.error_invalid_code" = "Invalid code — check your email and try again";
+"account.error_invalid_credentials" = "Wrong email or password";
+"account.error_email_not_confirmed" = "Email not confirmed. Check your inbox and confirm your account first.";
+"account.error_configuration" = "App configuration error. Please reinstall or contact support.";
+"account.password_placeholder" = "Password";
+"account.no_account_hint" = "No account? Sign up in the SurfHub phone app.";
+"account.try_again" = "Try Again";
+"account.or" = "or";
+"account.sign_in_google" = "Continue with Google";
+"account.error_google_failed" = "Google sign-in failed. Please try again.";
+"account.error_google_cancelled" = "Google sign-in was cancelled.";
+"account.pair_preparing" = "Preparing code...";
+"account.pair_scan_title" = "Scan with your phone";
+"account.pair_scan_hint" = "Open SurfHub on your iPhone, choose Connect Watch, then scan this QR code.";
+"account.pair_waiting" = "Waiting for approval...";
+"account.pair_expired" = "Code expired";
+"account.pair_new_code" = "Show New Code";
+"account.pair_start_failed" = "Could not start pairing. Check your connection.";

@@ -1,6 +1,6 @@
 // klog_decoder.ts
 //
-// Deno / TypeScript decoder for the Kiters "KLOG" binary log format.
+// Deno / TypeScript decoder for the SPOTEQ "KLOG" binary log format.
 // Mirrors BinaryLogEnvelope.swift on the watch — same magic, tags, and
 // little-endian framing. Use it in the Supabase edge functions that the watch
 // uploads to (`watch-ingest`, `calib-log`).

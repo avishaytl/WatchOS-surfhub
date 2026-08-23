@@ -17,7 +17,7 @@ the schema round-trips) and a `*.hex` dump.
 
 Regenerate:
 ```
-swiftc "Kiters/Kiters Watch App/Services/BinaryLogEnvelope.swift" \
+swiftc "SPOTEQ/SPOTEQ Watch App/Services/BinaryLogEnvelope.swift" \
        new_format_logs/make_new_format_logs.swift -o /tmp/gen && /tmp/gen
 ```
 

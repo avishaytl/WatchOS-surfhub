@@ -38,7 +38,7 @@ let previewURL = outDir.appendingPathComponent("sample-session.kslog.preview.txt
 
 private func makeHeader() -> Data {
     let header = Header(
-        app: "Kiters",
+        app: "SPOTEQ",
         format: "kslog",
         version: 1,
         session: "sample-session-0001",
@@ -219,7 +219,7 @@ private func makeHexDump(_ data: Data) -> String {
 
 private func makePreviewText() -> String {
     """
-    Kiters Session Log
+    SPOTEQ Session Log
     File: sample-session.kslog
     Size: \(log.count) bytes
     Format: binary kslog v1

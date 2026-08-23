@@ -42,9 +42,9 @@ The current codebase pieces are:
 
 | Area | File | Role |
 |---|---|---|
-| Main algorithm | `Kiters Watch App/Services/JumpDetector.swift` | State machine, takeoff, airborne tracking, landing, height, confidence |
-| Session models | `Kiters Watch App/Models/Session.swift` | `Session`, `Jump`, `GPSPoint`, `IMUSample`, `DetectionMode`, `JumpDetectionConfig` |
-| Debug logging | `Kiters Watch App/Services/SessionLogger.swift` | Per-sample CSV logging, event logging, mode/config header |
+| Main algorithm | `SPOTEQ Watch App/Services/JumpDetector.swift` | State machine, takeoff, airborne tracking, landing, height, confidence |
+| Session models | `SPOTEQ Watch App/Models/Session.swift` | `Session`, `Jump`, `GPSPoint`, `IMUSample`, `DetectionMode`, `JumpDetectionConfig` |
+| Debug logging | `SPOTEQ Watch App/Services/SessionLogger.swift` | Per-sample CSV logging, event logging, mode/config header |
 | Replay tooling | `Tools/JumpReplay/` | Offline replay/regression against logs |
 | Test logs | `logs/` or uploaded JSON/CSV logs | Normal sessions, short realistic sessions, failure cases |
 
@@ -1112,8 +1112,8 @@ Use this prompt first:
 Implement Phase 1 and Phase 2 only.
 
 Files:
-- Kiters Watch App/Services/SessionLogger.swift
-- Kiters Watch App/Services/JumpDetector.swift
+- SPOTEQ Watch App/Services/SessionLogger.swift
+- SPOTEQ Watch App/Services/JumpDetector.swift
 
 Goals:
 1. Make SessionLogger event/state CSV-safe.
@@ -1192,7 +1192,7 @@ Do extraction only after replay confirms no regression.
 
 ## 15. Product-level outcome
 
-The goal is an iSurf-style watchOS kitesurf analytics engine that can say:
+The goal is an SPOTEQ-style watchOS kitesurf analytics engine that can say:
 
 ```text
 Accepted jump because:

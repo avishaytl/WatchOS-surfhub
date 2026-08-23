@@ -1,6 +1,6 @@
 //
 //  V16SettingsView.swift
-//  Kiters Watch App
+//  SPOTEQ Watch App
 //
 //  Read-only description of the calibrated V16 operating point. Thresholds
 //  are intentionally not shared with, or inherited from, previous engines.

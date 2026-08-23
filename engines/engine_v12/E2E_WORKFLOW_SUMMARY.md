@@ -24,28 +24,28 @@ The key design is split responsibility:
 ## 2. Main Code Map
 
 - Watch settings engine picker:
-  `Kiters/Kiters Watch App/Views/SettingsView.swift`
+  `SPOTEQ/SPOTEQ Watch App/Views/SettingsView.swift`
 
 - Engine enum and IMU sample model:
-  `Kiters/Kiters Watch App/Models/Session.swift`
+  `SPOTEQ/SPOTEQ Watch App/Models/Session.swift`
 
 - Session engine factory and callback wiring:
-  `Kiters/Kiters Watch App/Services/SessionManager.swift`
+  `SPOTEQ/SPOTEQ Watch App/Services/SessionManager.swift`
 
 - V12 pure algorithm:
-  `Kiters/Kiters Watch App/Services/JumpEngineV12.swift`
+  `SPOTEQ/SPOTEQ Watch App/Services/JumpEngineV12.swift`
 
 - V12 app adapter:
-  `Kiters/Kiters Watch App/Services/JumpDetectorV12.swift`
+  `SPOTEQ/SPOTEQ Watch App/Services/JumpDetectorV12.swift`
 
 - Sensor producer:
-  `Kiters/Kiters Watch App/Services/MotionManager.swift`
+  `SPOTEQ/SPOTEQ Watch App/Services/MotionManager.swift`
 
 - Diagnostic log metadata:
-  `Kiters/Kiters Watch App/Services/SessionLogger.swift`
+  `SPOTEQ/SPOTEQ Watch App/Services/SessionLogger.swift`
 
 - SwiftPM synthetic pipeline check:
-  `Kiters/Tests/WatchLiveSessionCoreChecks/main.swift`
+  `SPOTEQ/Tests/WatchLiveSessionCoreChecks/main.swift`
 
 Reference source material:
 
@@ -314,7 +314,7 @@ The SwiftPM core check includes a synthetic V12 pipeline test:
 Command:
 
 ```bash
-cd Kiters
+cd SPOTEQ
 swift run WatchLiveSessionCoreChecks
 ```
 
@@ -341,7 +341,7 @@ JumpReplay now also includes an exact watch-adapter E2E self-test:
 Command:
 
 ```bash
-cd Kiters/Tools/JumpReplay
+cd SPOTEQ/Tools/JumpReplay
 swift run JumpReplay --engine-e2e-selftest
 ```
 

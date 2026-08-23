@@ -27,7 +27,7 @@
 
 - **`session/SessionManager.kt`** — ל-`SessionUserNotice` נוסף שדה אופציונלי `messageArg: String?`.
   פונקציה `emitLaunchAuthNotice()` נקראת ב-`init`: אם הטוקנים קיימים → `_sessionNotice` של הצלחה עם תווית החשבון.
-- **`ui/KitersApp.kt`** — ה-`SessionNoticePrompt` משתמש ב-`context.getString(messageRes, messageArg)` כשיש arg.
+- **`ui/SPOTEQApp.kt`** — ה-`SessionNoticePrompt` משתמש ב-`context.getString(messageRes, messageArg)` כשיש arg.
 - **מחרוזות** (`values`/`values-iw`): `account_connected_*`, `account_connect_failed_*` (עם `%s`).
 
 ## הבדל בין-פלטפורמי (מתועד במכוון)

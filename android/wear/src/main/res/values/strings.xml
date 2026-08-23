@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Kiters</string>
+    <string name="app_name">SPOTEQ</string>
 
     <!-- Home -->
     <string name="home_start_session">Start Session</string>
@@ -117,7 +117,7 @@
 
     <!-- Permissions -->
     <string name="permissions_denied_title">Location Permission Required</string>
-    <string name="permissions_denied_message">To track your session, please enable Location permission for Kiters in system Settings.</string>
+    <string name="permissions_denied_message">To track your session, please enable Location permission for SPOTEQ in system Settings.</string>
     <string name="permissions_waiting">Requesting permission…</string>
 
     <!-- Distance Units -->
@@ -148,7 +148,7 @@
     <string name="detail_gps_coverage">GPS Coverage</string>
 
     <!-- Recording service -->
-    <string name="recording_notification_title">Kiters — recording</string>
+    <string name="recording_notification_title">SPOTEQ — recording</string>
     <string name="recording_notification_text">Tracking your session</string>
     <string name="recording_channel_name">Session recording</string>
 

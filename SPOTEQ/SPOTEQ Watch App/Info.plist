@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>SPOTEQ</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>he</string>
+	</array>
+	<!-- Explicit so the public app name remains stable across build settings. -->
+	<key>CFBundleName</key>
+	<string>SPOTEQ</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>SPOTEQ_CLOUD_BASE_URL</key>
+	<string>$(SPOTEQ_CLOUD_BASE_URL)</string>
+	<key>SPOTEQ_CLOUD_AUTH_TOKEN</key>
+	<string>$(SPOTEQ_CLOUD_AUTH_TOKEN)</string>
+	<key>SPOTEQ_CLOUD_LOG_PATH</key>
+	<string>$(SPOTEQ_CLOUD_LOG_PATH)</string>
+	<key>SPOTEQ_SUPABASE_ANON_KEY</key>
+	<string>$(SPOTEQ_SUPABASE_ANON_KEY)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>SPOTEQ reads your heart rate during sessions to display live BPM on screen.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>SPOTEQ saves your workout sessions to Apple Health so you can track your activity over time.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SPOTEQ tracks your location while using the app to record speed, distance, and jump locations during your session.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>SPOTEQ tracks your location in the background to keep recording your session even when the screen is off.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>SPOTEQ uses motion, depth, and pressure sensors to detect jumps and improve water-session measurements.</string>
+	<key>WKApplication</key>
+	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
+		<string>underwater-depth</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+	<key>WKCompanionAppBundleIdentifier</key>
+	<string>com.avishayportal.kiters</string>
+	<key>WKRunsIndependentlyOfCompanionApp</key>
+	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.504073436614-9qec94thlrslcbvqfnot83ovrg2uoctu</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

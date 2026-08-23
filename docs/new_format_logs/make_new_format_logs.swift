@@ -14,7 +14,7 @@
 //   5. watch_ingest_end            → WatchSessionUploader.end
 //
 // Build & run:
-//   swiftc "Kiters/Kiters Watch App/Services/BinaryLogEnvelope.swift" \
+//   swiftc "SPOTEQ/SPOTEQ Watch App/Services/BinaryLogEnvelope.swift" \
 //          new_format_logs/make_new_format_logs.swift -o /tmp/gen && /tmp/gen
 
 import Foundation
@@ -27,7 +27,7 @@ struct Generator {
         // Reuse the realistic .kslog produced earlier as the diagnostic payload.
         // Fall back to a tiny synthetic kslog if it isn't present.
         let kslogPath = root.deletingLastPathComponent()
-            .appendingPathComponent("examples/generated/kiters_session.kslog")
+            .appendingPathComponent("examples/generated/spoteq_session.kslog")
         let kslogData = (try? Data(contentsOf: kslogPath))
             ?? Data([0x4B, 0x53, 0x4C, 0x47, 0x01, 0x00] + [UInt8](repeating: 0xAB, count: 32))
 
@@ -124,7 +124,7 @@ struct Generator {
 
         Regenerate:
         ```
-        swiftc "Kiters/Kiters Watch App/Services/BinaryLogEnvelope.swift" \\
+        swiftc "SPOTEQ/SPOTEQ Watch App/Services/BinaryLogEnvelope.swift" \\
                new_format_logs/make_new_format_logs.swift -o /tmp/gen && /tmp/gen
         ```
 

@@ -1,6 +1,6 @@
 //
 //  JumpDetectorV16.swift
-//  Kiters Watch App
+//  SPOTEQ Watch App
 //
 //  The only bridge between the app sensor contract and JumpEngineV16.
 //  V16 deliberately consumes only user acceleration, attitude, gyro and GPS
@@ -28,7 +28,7 @@ final class JumpDetectorV16: JumpDetecting {
 
     private var configuration = V16Config()
     private var engine: JumpEngineV16
-    private let engineQueue = DispatchQueue(label: "com.kiters.jumpV16.engine", qos: .userInitiated)
+    private let engineQueue = DispatchQueue(label: "com.spoteq.jumpV16.engine", qos: .userInitiated)
     private let stateLock = NSLock()
     private let speedLock = NSLock()
 

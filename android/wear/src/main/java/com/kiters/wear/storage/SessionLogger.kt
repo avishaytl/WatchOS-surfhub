@@ -208,7 +208,7 @@ class SessionLogger private constructor() {
         private fun makeHeaderData(sessionId: String, dateStr: String, mode: DetectionMode, devMode: Boolean): ByteArray {
             val json = buildString {
                 append('{')
-                appendJson("app", "Kiters"); append(',')
+                appendJson("app", "SPOTEQ"); append(',')
                 appendJson("format", "kslog"); append(',')
                 append("\"version\":$VERSION,")
                 appendJson("session", sessionId); append(',')
@@ -308,9 +308,9 @@ class SessionLogger private constructor() {
 
         private fun buildBinaryShareText(file: File, maxChars: Int): String {
             BufferedInputStream(FileInputStream(file)).use { input ->
-                val header = readHeader(input) ?: return "Kiters Session Log\nFile: ${file.name}\nSize: ${file.length()} bytes\nFormat: binary kslog\n"
+                val header = readHeader(input) ?: return "SPOTEQ Session Log\nFile: ${file.name}\nSize: ${file.length()} bytes\nFormat: binary kslog\n"
                 val text = StringBuilder()
-                text.append("Kiters Session Log\n")
+                text.append("SPOTEQ Session Log\n")
                 text.append("File: ${file.name}\n")
                 text.append("Size: ${file.length()} bytes\n")
                 text.append("Format: binary kslog\n")
@@ -338,7 +338,7 @@ class SessionLogger private constructor() {
 
         private fun buildCsvShareText(file: File, maxChars: Int): String =
             try {
-                val prefix = "Kiters Session Log\nFile: ${file.name}\nSize: ${file.length()} bytes\n\n"
+                val prefix = "SPOTEQ Session Log\nFile: ${file.name}\nSize: ${file.length()} bytes\n\n"
                 prefix + file.readText().take(maxChars - prefix.length)
             } catch (_: Exception) {
                 ""

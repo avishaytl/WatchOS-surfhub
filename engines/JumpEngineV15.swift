@@ -1,6 +1,6 @@
 //
 //  JumpEngineV15.swift
-//  Kiters Watch App
+//  SPOTEQ Watch App
 //
 //  V15-FIX APPLIED (research/fabel5/V15_FIX_SPEC_HE.pdf, 20.7.2026):
 //    F1 rescue over local-maxima pop clusters, capped attempts (792-event spam

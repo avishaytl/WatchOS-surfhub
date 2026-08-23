@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Kiters</string>
+    <string name="app_name">SPOTEQ</string>
 
     <!-- Home -->
     <string name="home_start_session">התחל אימון</string>
@@ -117,7 +117,7 @@
 
     <!-- Permissions -->
     <string name="permissions_denied_title">נדרשת הרשאת מיקום</string>
-    <string name="permissions_denied_message">כדי לעקוב אחר האימון, אנא אפשר הרשאת מיקום עבור Kiters בהגדרות המערכת.</string>
+    <string name="permissions_denied_message">כדי לעקוב אחר האימון, אנא אפשר הרשאת מיקום עבור SPOTEQ בהגדרות המערכת.</string>
     <string name="permissions_waiting">מבקש הרשאה…</string>
 
     <!-- Distance Units -->
@@ -148,7 +148,7 @@
     <string name="detail_gps_coverage">כיסוי GPS</string>
 
     <!-- Recording service -->
-    <string name="recording_notification_title">Kiters — מקליט</string>
+    <string name="recording_notification_title">SPOTEQ — מקליט</string>
     <string name="recording_notification_text">עוקב אחר האימון שלך</string>
     <string name="recording_channel_name">הקלטת אימון</string>
 
