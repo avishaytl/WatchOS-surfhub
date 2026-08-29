@@ -1,7 +1,7 @@
 import XCTest
 @testable import V16Core
 
-/// Behavioural cover for JumpEngineV16 through the 16.7 operating point.
+/// Behavioural cover for JumpEngineV16 through the 16.8 operating point.
 ///
 /// These are RULE tests, not calibration tests. The height/airtime accuracy
 /// figures in the spec were measured on real 200 Hz logs against the HOOLAN
@@ -18,10 +18,10 @@ import XCTest
 /// every number here look upside down.
 final class V16CoreTests: XCTestCase {
 
-    // MARK: 16.7 identity
+    // MARK: 16.8 identity
 
-    func testEngineReportsVersion16_7() {
-        XCTAssertEqual(JumpEngineV16.version, "16.7")
+    func testEngineReportsVersion16_8() {
+        XCTAssertEqual(JumpEngineV16.version, "16.8")
     }
 
     /// The defaults 16.1 and 16.2 moved, plus the parameters 16.2 introduced.
@@ -29,6 +29,10 @@ final class V16CoreTests: XCTestCase {
     /// with nothing in the log to explain it.
     func testShippedCalibrationDefaults() {
         let cfg = V16Config()
+        // 16.8
+        XCTAssertEqual(cfg.minReportM, 1.5, accuracy: 1e-9)
+        XCTAssertEqual(cfg.airtimeGuardRatio, 4.0, accuracy: 1e-9)
+        XCTAssertEqual(cfg.airtimeGuardClipRatio, 3.2, accuracy: 1e-9)
         // 16.7
         XCTAssertEqual(cfg.heightPreRollSec, 0.5, accuracy: 1e-9)
         XCTAssertEqual(cfg.heightPostRollSec, 0.8, accuracy: 1e-9)
@@ -42,7 +46,6 @@ final class V16CoreTests: XCTestCase {
         XCTAssertEqual(cfg.strongShelfSec, 1.05, accuracy: 1e-9)
         XCTAssertTrue(cfg.flightCorroboration)
         XCTAssertEqual(cfg.shortShelfFlightM, 1.2, accuracy: 1e-9)
-        XCTAssertEqual(cfg.shortShelfFlightM, cfg.minReportM, accuracy: 1e-9)
         // 16.3
         XCTAssertTrue(cfg.landSettleFallback)
         XCTAssertEqual(cfg.landSettleBandG, 0.30, accuracy: 1e-9)
@@ -68,7 +71,6 @@ final class V16CoreTests: XCTestCase {
         XCTAssertEqual(cfg.freeFallG, 0.25, accuracy: 1e-9)
         XCTAssertEqual(cfg.minFreeFallSec, 0.45, accuracy: 1e-9)
         XCTAssertEqual(cfg.minAirtimeSec, 1.5, accuracy: 1e-9)
-        XCTAssertEqual(cfg.minReportM, 1.2, accuracy: 1e-9)
         XCTAssertEqual(cfg.throwHeightScale, 1.0, accuracy: 1e-9)
         // Kept from 16.1 — the matched filter is still the fallback path.
         XCTAssertEqual(cfg.heightOffsetM, 1.43, accuracy: 1e-9)
@@ -84,6 +86,96 @@ final class V16CoreTests: XCTestCase {
         XCTAssertLessThan(cfg.fastEvalSec, cfg.evalDelaySec)
         // Ring must outlive the widest window any evaluation reads.
         XCTAssertGreaterThan(cfg.historySec, cfg.apexPreSec + cfg.evalDelaySec)
+    }
+
+    func testV16_8ReportFloorRejectsTheFormerLowBand() {
+        let shippedDelegate = CaptureDelegate()
+        let shipped = JumpEngineV16()
+        shipped.delegate = shippedDelegate
+        var shippedEvents: [String] = []
+        shipped.onDebug = { _, event in shippedEvents.append(event) }
+
+        var relaxedConfig = V16Config()
+        relaxedConfig.minReportM = 1.2
+        let relaxedDelegate = CaptureDelegate()
+        let relaxed = JumpEngineV16(relaxedConfig)
+        relaxed.delegate = relaxedDelegate
+
+        feedUnresolvedLanding(into: shipped)
+        feedUnresolvedLanding(into: relaxed)
+
+        XCTAssertTrue(shippedDelegate.jumps.isEmpty)
+        XCTAssertEqual(relaxedDelegate.jumps.count, 1)
+        XCTAssertGreaterThanOrEqual(relaxedDelegate.jumps[0].heightM, 1.2)
+        XCTAssertLessThan(relaxedDelegate.jumps[0].heightM, V16Config().minReportM)
+        XCTAssertTrue(shippedEvents.contains { $0.contains("reason=belowMinReport") })
+    }
+
+    func testV16_8AirtimeGuardClipsAResolvedOutlierAndRecomputesDistance() {
+        func run(guardRatio: Double) -> V16Jump? {
+            var cfg = V16Config()
+            cfg.liftThreshMS2 = 0.10
+            cfg.shortShelfApexM = 0
+            cfg.shortShelfFlightM = 0
+            cfg.phantomFilter = false
+            cfg.plateauScanSec = 9.0
+            cfg.heightPostRollSec = 0
+            // Pin final height so this rule test isolates an overlong landing
+            // from the independent height integration.
+            cfg.heightCalSlope = 0
+            cfg.heightCalOffsetM = 1.6
+            cfg.airtimeGuardRatio = guardRatio
+
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedSyntheticJump(
+                into: engine,
+                unloadG: 0.20,
+                flightSec: 6.0,
+                gpsSpeedMS: 10,
+                cfg: cfg
+            )
+            return delegate.jumps.first
+        }
+
+        guard let unguarded = run(guardRatio: 0),
+              let guarded = run(guardRatio: V16Config().airtimeGuardRatio),
+              let rawAirtime = unguarded.airtimeSec,
+              let clippedAirtime = guarded.airtimeSec else {
+            return XCTFail("airtime-guard fixture did not emit a resolved jump")
+        }
+
+        let ballistic = (8 * guarded.heightM / 9.80665).squareRoot()
+        XCTAssertGreaterThan(rawAirtime, V16Config().airtimeGuardRatio * ballistic)
+        XCTAssertEqual(
+            clippedAirtime,
+            V16Config().airtimeGuardClipRatio * ballistic,
+            accuracy: 0.02
+        )
+        XCTAssertEqual(guarded.heightM, unguarded.heightM, accuracy: 1e-9)
+        XCTAssertLessThan(guarded.distanceM ?? .infinity, unguarded.distanceM ?? 0)
+        XCTAssertEqual(guarded.distanceM ?? -1, 10 * clippedAirtime, accuracy: 1.1)
+    }
+
+    func testV16_8AirtimeGuardLeavesPhysicalAirtimeUnchanged() {
+        func run(guardRatio: Double) -> V16Jump? {
+            var cfg = V16Config()
+            cfg.airtimeGuardRatio = guardRatio
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(cfg)
+            engine.delegate = delegate
+            feedSyntheticJump(into: engine, gpsSpeedMS: 10, cfg: cfg)
+            return delegate.jumps.first
+        }
+
+        guard let unguarded = run(guardRatio: 0),
+              let guarded = run(guardRatio: V16Config().airtimeGuardRatio) else {
+            return XCTFail("physical-airtime fixture did not emit")
+        }
+        XCTAssertEqual(guarded.heightM, unguarded.heightM, accuracy: 1e-9)
+        XCTAssertEqual(guarded.airtimeSec ?? -1, unguarded.airtimeSec ?? -2, accuracy: 1e-9)
+        XCTAssertEqual(guarded.distanceM ?? -1, unguarded.distanceM ?? -2, accuracy: 0.01)
     }
 
     // MARK: Detection
@@ -288,14 +380,17 @@ final class V16CoreTests: XCTestCase {
     /// because the flight integral has no window to run over.
     func testAirtimeIsNilRatherThanZeroWhenDescentNeverEnds() {
         let delegate = CaptureDelegate()
-        let engine = JumpEngineV16()
+        var cfg = V16Config()
+        // This fixture deliberately exercises the matched-filter fallback at
+        // its old low edge; lower the display-only floor for this rule test.
+        cfg.minReportM = 1.2
+        let engine = JumpEngineV16(cfg)
         engine.delegate = delegate
 
         feedUnresolvedLanding(into: engine)
 
         XCTAssertEqual(delegate.jumps.count, 1)
         XCTAssertNil(delegate.jumps[0].airtimeSec)
-        let cfg = V16Config()
         XCTAssertEqual(delegate.jumps[0].heightM,
                        cfg.heightScale * delegate.jumps[0].apexRawM + cfg.heightOffsetM,
                        accuracy: 0.01,
@@ -309,7 +404,8 @@ final class V16CoreTests: XCTestCase {
     /// with heightFromFlight off, and that fallback number is exactly
     /// heightScale * apex + heightOffsetM while the flight number is not.
     func testHeightComesFromTheFlightIntegralNotTheMatchedFilter() {
-        let cfg = V16Config()
+        var cfg = V16Config()
+        cfg.minReportM = 1.2
         var v161 = cfg
         v161.heightFromFlight = false
 
@@ -381,6 +477,7 @@ final class V16CoreTests: XCTestCase {
         func jump(_ preRoll: Double) -> V16Jump? {
             var cfg = V16Config()
             cfg.heightPreRollSec = preRoll
+            cfg.minReportM = 1.2
             let delegate = CaptureDelegate()
             let engine = JumpEngineV16(cfg)
             engine.delegate = delegate
@@ -552,6 +649,7 @@ final class V16CoreTests: XCTestCase {
 
         var identity = V16Config()
         identity.heightPostRollSec = 0
+        identity.minReportM = 1.2
         var calibrated = identity
         calibrated.heightCalSlope = 1.2
         calibrated.heightCalOffsetM = 0.4
@@ -594,9 +692,10 @@ final class V16CoreTests: XCTestCase {
     /// measurement and a calibrated correlate are not interchangeable, and a
     /// session log that cannot tell them apart cannot be re-analysed.
     func testHeightSourceIsStampedPerJump() {
-        func source(_ feed: (JumpEngineV16) -> Void) -> V16Jump.HeightSource? {
+        func source(_ cfg: V16Config = V16Config(),
+                    _ feed: (JumpEngineV16) -> Void) -> V16Jump.HeightSource? {
             let delegate = CaptureDelegate()
-            let engine = JumpEngineV16()
+            let engine = JumpEngineV16(cfg)
             engine.delegate = delegate
             feed(engine)
             return delegate.jumps.first?.heightSource
@@ -605,7 +704,9 @@ final class V16CoreTests: XCTestCase {
         XCTAssertEqual(source { feedSyntheticJump(into: $0) }, .flight)
         XCTAssertEqual(source { feedThrow(into: $0, freeFallSec: 1.4) }, .freefall)
         // No landing ever resolves -> no window -> the matched-filter fallback.
-        XCTAssertEqual(source { feedUnresolvedLanding(into: $0) }, .matched)
+        var fallbackCfg = V16Config()
+        fallbackCfg.minReportM = 1.2
+        XCTAssertEqual(source(fallbackCfg) { feedUnresolvedLanding(into: $0) }, .matched)
     }
 
     // MARK: 16.2 change A2 — the free-fall integration window
@@ -716,7 +817,9 @@ final class V16CoreTests: XCTestCase {
     /// which is exactly what 16.2 set the window to.
     func testMultiplePopsOfOneTakeoffProduceOneJump() {
         let delegate = CaptureDelegate()
-        let engine = JumpEngineV16()
+        var cfg = V16Config()
+        cfg.minReportM = 1.2
+        let engine = JumpEngineV16(cfg)
         engine.delegate = delegate
 
         feed(into: engine) { t in
@@ -843,7 +946,9 @@ final class V16CoreTests: XCTestCase {
     /// send nil, never a default.
     func testFlightAnchorsAreNilWhenTheLandingIsUnresolved() {
         let delegate = CaptureDelegate()
-        let engine = JumpEngineV16()
+        var cfg = V16Config()
+        cfg.minReportM = 1.2
+        let engine = JumpEngineV16(cfg)
         engine.delegate = delegate
 
         feedUnresolvedLanding(into: engine, gpsSpeedMS: 10)
@@ -943,10 +1048,12 @@ final class V16CoreTests: XCTestCase {
             return delegate.jumps.first
         }
 
-        var off = V16Config()
+        var shippedForRuleTest = V16Config()
+        shippedForRuleTest.minReportM = 1.2
+        var off = shippedForRuleTest
         off.landSettleFallback = false
 
-        guard let withFallback = run(V16Config()), let without = run(off) else {
+        guard let withFallback = run(shippedForRuleTest), let without = run(off) else {
             return XCTFail("fixture stopped emitting")
         }
         XCTAssertNotNil(withFallback.airtimeSec)
@@ -987,11 +1094,13 @@ final class V16CoreTests: XCTestCase {
             return (delegate.jumps.count, events)
         }
 
-        let on = run(V16Config())
+        var onConfig = V16Config()
+        onConfig.minReportM = 1.2
+        let on = run(onConfig)
         XCTAssertEqual(on.jumps, 0)
         XCTAssertTrue(on.events.contains { $0.contains("reason=incompleteFlight") })
 
-        var off = V16Config()
+        var off = onConfig
         off.phantomFilter = false
         XCTAssertEqual(run(off).jumps, 1, "the filter, not some other gate, is what removed it")
     }

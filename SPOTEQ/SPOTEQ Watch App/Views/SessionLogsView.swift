@@ -39,26 +39,28 @@ struct SessionLogsView: View {
                     .font(.headline)
 
                 VStack(spacing: 8) {
-                    Button(action: fetchCloudResponse) {
-                        HStack {
-                            if isFetchingCloudResponse {
-                                ProgressView()
-                                    .scaleEffect(0.7)
-                            } else {
-                                Image(systemName: "icloud.and.arrow.down.fill")
-                                    .font(.system(size: 12))
+                    if CloudSyncService.shared.isAdminConfigured {
+                        Button(action: fetchCloudResponse) {
+                            HStack {
+                                if isFetchingCloudResponse {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                } else {
+                                    Image(systemName: "icloud.and.arrow.down.fill")
+                                        .font(.system(size: 12))
+                                }
+                                Text(L("logs.fetch_cloud_response"))
+                                    .font(.system(size: 12, weight: .semibold))
                             }
-                            Text(L("logs.fetch_cloud_response"))
-                                .font(.system(size: 12, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background(Color.cyan.opacity(0.18))
+                            .foregroundColor(.cyan)
+                            .cornerRadius(8)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 9)
-                        .background(Color.cyan.opacity(0.18))
-                        .foregroundColor(.cyan)
-                        .cornerRadius(8)
+                        .buttonStyle(.plain)
+                        .disabled(isFetchingCloudResponse)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(isFetchingCloudResponse)
 
                     Button(action: uploadAllLogsToCloud) {
                         HStack {

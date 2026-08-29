@@ -29,7 +29,7 @@
 "session.speed" = "SPEED";
 "session.pause" = "Pause";
 "session.resume" = "Resume";
-"session.end" = "End";
+"session.end" = "Stop";
 "session.end_confirm" = "End Session?";
 "session.end_message" = "Are you sure you want to end this session?";
 "session.upload_prompt_title" = "Upload Session?";
@@ -52,9 +52,11 @@
 "session.v12_unavailable_title" = "V12 Not Ready";
 "session.v12_unavailable_message" = "V12 Sensor Fusion is selected, but this watch needs Series 8+ sensor support plus motion and barometer access. This session will use V11.";
 "session.cancel" = "Cancel";
+"session.water_lock" = "Water Lock";
 "session.water_lock_active" = "Water Lock active";
 "session.water_lock_unlock_hint" = "Hold Digital Crown to unlock";
 "session.water_lock_unsupported" = "Water Lock not supported on this watch";
+"session.water_lock_unsupported_message" = "This watch cannot enable Water Lock.";
 "session.water_lock_eject_hint" = "Water Lock is still active. Press and hold the Digital Crown to unlock and eject water.";
 "session.best_jump" = "🏆 Best Jump";
 "session.airtime_value" = "%.2f sec airtime";
@@ -133,10 +135,10 @@
 "settings.v13_min_counted_height_hint" = "Final count only · detection remains fully sensitive · applies next session";
 "settings.v13_absolute_interval" = "Absolute Sample Interval";
 "settings.v13_absolute_interval_hint" = "0.25–1.0 s processing cadence · Core Motion may deliver the sensor more slowly · applies next session";
-"settings.v16_details" = "V16.7 Engine Details";
+"settings.v16_details" = "V16.8 Engine Details";
 "settings.v16_details_hint" = "IMU flight measurement · sensors, gates and confidence";
-"settings.v16_title" = "V16.7 Big Air";
-"settings.v16_scope" = "An isolated IMU-only engine. Height starts 0.5 s before the pop; selected big-air jumps wait for a 0.8 s post-landing tail and use an explicit identity calibration to Surfr as displayed. Recall is unchanged, pooled height MAE is 0.454 m, and the waves-only control remains silent.";
+"settings.v16_title" = "V16.8 Big Air";
+"settings.v16_scope" = "The only active jump engine. It reports from 1.5 m, measures height from IMU, and guards only extreme airtime outliers above 4× ballistic time; the height itself is never clipped.";
 "settings.v16_trigger" = "Pop trigger";
 "settings.v16_lift_shelf" = "Lift shelf";
 "settings.v16_strong_shelf" = "Strong-confidence shelf";

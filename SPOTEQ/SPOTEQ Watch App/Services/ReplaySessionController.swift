@@ -737,7 +737,10 @@ final class ReplaySessionController: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var isLoading = false
     @Published private(set) var isSeeking = false
-    @Published var selectedEngine: DetectionEngine
+    /// Replay is user-facing in the shipped Watch app, so it follows the same
+    /// V16.8-only policy as live sessions. Legacy factories remain below for
+    /// source-level regression work.
+    @Published private(set) var selectedEngine: DetectionEngine = .v16BigAir
     @Published var replaySpeed = 1.0
 
     private let processingQueue = DispatchQueue(
@@ -750,12 +753,7 @@ final class ReplaySessionController: ObservableObject {
     private var autoStartSessionID: String?
 
     init() {
-        // Same fallback as SessionManager.detectionEngine, so a fresh install
-        // replays with the engine it would have recorded with.
-        let raw = UserDefaults.standard.string(forKey: "detectionEngine")
-            ?? DetectionEngine.v16BigAir.rawValue
-        let stored = DetectionEngine(rawValue: raw) ?? .v16BigAir
-        selectedEngine = stored == .sensorRecorder ? .v16BigAir : stored
+        selectedEngine = .v16BigAir
     }
 
     var progress: Double {
@@ -831,14 +829,6 @@ final class ReplaySessionController: ObservableObject {
                 }
             }
         }
-    }
-
-    func selectEngine(_ engine: DetectionEngine) {
-        guard engine != .sensorRecorder, engine != selectedEngine else { return }
-        selectedEngine = engine
-        guard let log else { return }
-        shutdownRun()
-        install(log: log)
     }
 
     func setSpeed(_ speed: Double) {

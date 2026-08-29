@@ -31,10 +31,6 @@ struct ReplayLabView: View {
         }
     }
 
-    private var selectableEngines: [DetectionEngine] {
-        DetectionEngine.allCases.filter { $0 != .sensorRecorder }
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
@@ -120,19 +116,16 @@ struct ReplayLabView: View {
 
     private var engineAndSpeedPickers: some View {
         HStack(spacing: 6) {
-            Picker(
-                L("replay.engine"),
-                selection: Binding(
-                    get: { controller.selectedEngine },
-                    set: { controller.selectEngine($0) }
-                )
-            ) {
-                ForEach(selectableEngines, id: \.self) { engine in
-                    Text(engine.displayName).tag(engine)
-                }
+            Label {
+                Text(DetectionEngine.v16BigAir.displayName)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            } icon: {
+                Image(systemName: DetectionEngine.v16BigAir.icon)
             }
-            .pickerStyle(.navigationLink)
-            .labelsHidden()
+            .font(.caption2)
+            .foregroundColor(.cyan)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Picker(
                 L("replay.speed"),

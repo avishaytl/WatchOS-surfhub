@@ -11,7 +11,7 @@ import Foundation
 import os.log
 
 enum AppLogger {
-    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.avishayportal.kiters.watchapp"
+    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.avishayportal.spoteq.watchkitapp"
 
     static let general   = Logger(subsystem: subsystem, category: "general")
     static let location  = Logger(subsystem: subsystem, category: "location")

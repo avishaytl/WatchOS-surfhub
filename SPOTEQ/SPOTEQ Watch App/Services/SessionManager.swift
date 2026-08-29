@@ -83,8 +83,9 @@ class SessionManager: ObservableObject {
         locationManager: locationManager,
         waterSubmersionManager: waterSubmersionManager
     )
-    /// Selected at each session start based on the "detectionEngine" setting.
-    private var jumpDetector: JumpDetecting = JumpDetector()
+    /// V16.8 is the production detector. Other implementations remain compiled
+    /// for offline replay and regression diagnostics.
+    private var jumpDetector: JumpDetecting = JumpDetectorV16()
     private let sessionLogger = SessionLogger.shared
     
     // Published state
@@ -166,7 +167,7 @@ class SessionManager: ObservableObject {
     /// log upload across the live-finalize handler, the workout callback and the
     /// reconnect flush (all of which may fire for the same session).
     private var logUploadInFlightOrDone = Set<String>()
-    private var activeDetectionEngine: DetectionEngine = .v11Buffered
+    private var activeDetectionEngine: DetectionEngine = .v16BigAir
     private var recordingPipelineStarted = false
     private var motionPipelineStarted = false
     private var lastPipelineWarningSignature = ""
@@ -180,15 +181,15 @@ class SessionManager: ObservableObject {
         let raw = UserDefaults.standard.string(forKey: "detectionMode") ?? DetectionMode.standard.rawValue
         return DetectionMode(rawValue: raw) ?? .standard
     }
-
-    /// Selected jump-detection engine. Read at session start so the user's
-    /// Settings choice takes effect on the next session (no app restart).
-    private var detectionEngine: DetectionEngine {
-        let raw = UserDefaults.standard.string(forKey: "detectionEngine") ?? DetectionEngine.v16BigAir.rawValue
-        return DetectionEngine(rawValue: raw) ?? .v16BigAir
-    }
     
     init() {
+        // Migrate legacy persisted selections before any user action. Normal
+        // sessions are also hard-pinned at start, so V16.8 is authoritative
+        // even if Settings has never been opened after an upgrade.
+        UserDefaults.standard.set(
+            DetectionEngine.v16BigAir.rawValue,
+            forKey: "detectionEngine"
+        )
         setupCallbacks()
         observeManagers()
         startNetworkMonitoring()
@@ -234,7 +235,7 @@ class SessionManager: ObservableObject {
     }
 
     /// Wires the jump-detector callbacks. Called again after the detector is
-    /// (re)created at session start, since the engine can change between sessions.
+    /// (re)created at session start so each recording starts with clean engine state.
     private func wireJumpDetectorCallbacks() {
         jumpDetector.onJumpDetected = { [weak self] jump in
             self?.handleJumpDetected(jump)
@@ -363,9 +364,8 @@ class SessionManager: ObservableObject {
 
     // MARK: - Session Control
     
-    /// `engineOverride` bypasses the Settings engine for this session only —
-    /// the Home "sensor recording" button passes `.sensorRecorder` so a pure
-    /// capture session never depends on (or changes) the user's engine choice.
+    /// The Home "sensor recording" button passes `.sensorRecorder`. Every normal
+    /// live session is pinned to V16.8; other engine overrides are ignored.
     func startSession(sport: Sport, engineOverride: DetectionEngine? = nil) {
         guard currentSession == nil else {
             print("⚠️ Session already active")
@@ -409,10 +409,12 @@ class SessionManager: ObservableObject {
         lastPipelineWarningT = -Double.infinity
         
         // Reset jump detector before sensors start streaming so the first IMU
-        // samples belong to the new live session. The engine is (re)selected
-        // here from the user's Settings choice and its callbacks re-wired.
+        // samples belong to the new live session. Normal sessions always use
+        // V16.8; the explicit sensor-recorder flow remains available for capture.
         let mode = detectionMode
-        let requestedEngine = engineOverride ?? detectionEngine
+        let requestedEngine: DetectionEngine = engineOverride == .sensorRecorder
+            ? .sensorRecorder
+            : .v16BigAir
         let selection = makeJumpDetector(for: requestedEngine)
         activeDetectionEngine = selection.engine
         jumpDetector = selection.detector
@@ -636,6 +638,31 @@ class SessionManager: ObservableObject {
         
         print("▶️ Session resumed")
     }
+
+    /// Enables the system Water Lock while a foreground workout/location session
+    /// is active. The user unlocks and ejects water with the Digital Crown.
+    func enableWaterLock() {
+        guard currentSession != nil, isRecording, !isPaused else { return }
+
+        let device = WKInterfaceDevice.current()
+        switch device.waterResistanceRating {
+        case .wr50, .wr100:
+            device.play(.click)
+            device.enableWaterLock()
+        case .ipx7:
+            device.play(.failure)
+            sessionNotice = SessionUserNotice(
+                titleKey: "session.water_lock_unsupported",
+                messageKey: "session.water_lock_unsupported_message"
+            )
+        @unknown default:
+            device.play(.failure)
+            sessionNotice = SessionUserNotice(
+                titleKey: "session.water_lock_unsupported",
+                messageKey: "session.water_lock_unsupported_message"
+            )
+        }
+    }
     
     func endSession() {
         // Batch engines (v8) may detect a jump in the closing seconds. Flush them
@@ -702,7 +729,7 @@ class SessionManager: ObservableObject {
             )
             self.finishLiveSessionOnServer(
                 session: completedSession,
-                showPendingPrompt: completedSession.duration >= 60
+                showPendingPrompt: false
             )
 
             if completedSession.duration < 60 {
@@ -720,14 +747,12 @@ class SessionManager: ObservableObject {
             
             // Save session locally
             self.storageManager.saveSession(completedSession)
-            self.storageManager.markPendingCloudUpload(sessionId: completedSession.id)
             print("✅ Session saved: \(completedSession.jumps.count) jumps, \(String(format: "%.2f", completedSession.distance/1000))km")
             
-            // Always present the end-of-session prompt and keep it open until the
-            // user explicitly chooses (upload / keep local / discard). The session
-            // is the user's decision point for cloud upload of the diagnostic log;
-            // live metadata may already be on the cloud, but nothing here may
-            // dismiss the prompt on the user's behalf.
+            // Always present the end-of-session prompt. Do not add the session to
+            // the reconnect queue until the user explicitly chooses Upload;
+            // otherwise a network callback could race this main-thread assignment
+            // and upload the diagnostic log without consent.
             DispatchQueue.main.async {
                 self.pendingCloudUpload = PendingSessionCloudUpload(session: completedSession, logURL: completedLogURL)
             }
@@ -754,7 +779,7 @@ class SessionManager: ObservableObject {
             pendingUploadLogURLs[pending.session.id] = logURL
         }
 
-        finishLiveSessionOnServer(session: pending.session)
+        finishLiveSessionOnServer(session: pending.session, showPendingPrompt: false)
         uploadSessionLog(sessionId: pending.session.id, logURL: pending.logURL)
     }
 
@@ -774,12 +799,20 @@ class SessionManager: ObservableObject {
         )
     }
 
+    /// Retry uploads the user already approved as soon as authentication becomes
+    /// available. Without this, an already-online watch would wait for the next
+    /// network path change before flushing the consented queue.
+    func retryPendingCloudUploadsAfterSignIn() {
+        flushPendingCloudUploads()
+    }
+
     /// Discard the just-finished local copy. The live server session is still
     /// finalized automatically by `endSession`; this only removes local storage
     /// and the diagnostic log.
     func discardPendingSession() {
         guard let pending = pendingCloudUpload else { return }
         pendingCloudUpload = nil
+        storageManager.clearPendingCloudUpload(sessionId: pending.session.id)
         storageManager.deleteSession(id: pending.session.id)
         deleteLogFile(pending.logURL)
         print("🗑️ Local session copy discarded: \(pending.session.id)")

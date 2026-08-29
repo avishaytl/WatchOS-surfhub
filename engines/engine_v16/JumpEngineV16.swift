@@ -2,7 +2,7 @@
 //  JumpEngineV16.swift
 //  SPOTEQ Watch App
 //
-//  V16.7 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
+//  V16.8 — big-air-first jump engine. Swift twin of core/jumpEngineV16.ts; the
 //  two must stay behaviourally identical (same replay, same numbers).
 //
 //  V16 abandons the barometer as a height source and reconstructs the vertical
@@ -79,6 +79,12 @@
 //  advantage is a 0.75-weight shrink toward a 3.4 s prior, i.e. a constant,
 //  not a measurement.
 //
+//
+//  ── V16.8 ───────────────────────────────────────────────────────────────
+//  Raises the reporting floor to 1.5 m and guards impossible airtime outliers.
+//  Reported airtime above 4.0 times the ballistic time for the final height is
+//  clipped to 3.2 times that time; GPS distance is then recomputed at the
+//  clipped endpoint. Height and all detection windows remain untouched.
 //
 //  ── V16.7 ───────────────────────────────────────────────────────────────
 //  The height window starts 0.5 s before the pop. On big-air candidates it also
@@ -305,14 +311,9 @@ public struct V16Config {
     /// NOTHING on the pops-and-waves control. Lower does nothing: 1.43 m is
     /// the smallest height the calibration can produce.
     ///
-    /// V16.2: 1.2. That 1.4 existed because the MATCHED FILTER could not output
-    /// below heightOffsetM = 1.43 m, so anything lower was structurally
-    /// unreachable. The flight integral has no such floor — it returns what it
-    /// measures — so this is now a pure DISPLAY threshold. Swept on all six
-    /// logs: 1.2 recovers two real goldens the 1.4 floor censored (287 @282 s
-    /// measures 1.39 m against a 2.3 m reference) at no extra phantom. Below
-    /// 1.1 the phantoms climb.
-    public var minReportM = 1.2
+    /// V16.8 product floor. Lower measured events remain available in raw logs
+    /// and replay diagnostics, but are not reported as user-facing jumps.
+    public var minReportM = 1.5
     /// Emissions closer than this are the same jump; the higher wins.
     /// Window in which a later, stronger candidate may still supersede an
     /// earlier one.
@@ -457,6 +458,12 @@ public struct V16Config {
     public var heightPostRollMinM: Double = 3.5
     /// Minimum flight span used before adding the post-roll on a triggered jump.
     public var heightPostRollFloorSec: TimeInterval = 5.0
+    /// Reported airtime is clipped when it exceeds this multiple of the
+    /// ballistic time sqrt(8h/g). This is an outlier guard, not a general cap.
+    public var airtimeGuardRatio: Double = 4.0
+    /// Multiple of ballistic time to which an outlier is clipped. It stays
+    /// below the trigger so the corrected value lands inside the physical band.
+    public var airtimeGuardClipRatio: Double = 3.2
     /// Reference calibration: reported = slope * measured + offset.
     /// Identity is the measured optimum for matching Surfr as displayed.
     public var heightCalSlope: Double = 1.0
@@ -464,8 +471,9 @@ public struct V16Config {
     /// Let the measured flight window corroborate a short shelf when the fixed
     /// matched-filter window found no apex evidence.
     public var flightCorroboration = true
-    /// Minimum measured flight height for deferred corroboration (m). This is
-    /// intentionally equal to the reporting floor.
+    /// Minimum measured flight height for deferred corroboration (m). V16.8
+    /// keeps this detection threshold at 1.2 m; the 1.5 m report floor is
+    /// applied later, after the candidate has been fully measured.
     public var shortShelfFlightM = 1.2
     /// A longer shelf still rejects, but only for a small jump.
     public var phantomShelfWideSec: TimeInterval = 1.20
@@ -586,7 +594,7 @@ public protocol JumpEngineV16Delegate: AnyObject {
 public final class JumpEngineV16 {
     /// Engine version. Bump whenever a default or a rule changes, so a replay
     /// can be attributed to the exact engine that produced it.
-    public static let version = "16.7"
+    public static let version = "16.8"
 
 
     public weak var delegate: JumpEngineV16Delegate?
@@ -962,6 +970,38 @@ public final class JumpEngineV16 {
         // is worse than reporting the measurement as unavailable.
         if landingT == nil { distanceM = nil }
 
+        // ── AIRTIME OUTLIER GUARD (16.8). A kite carries the rider, so airtime
+        // normally exceeds the ballistic time sqrt(8h/g), but the measured
+        // reference population stays inside a bounded ratio. Values beyond the
+        // 4.0 trigger are landing-resolution outliers, not longer jumps.
+        //
+        // This changes only reported airtime and its derived GPS distance. The
+        // final height, detection decision, and integration window stay exactly
+        // as measured above.
+        var airtimeSec = landingT.map { $0 - t0 }
+        if var airtime = airtimeSec, cfg.airtimeGuardRatio > 0, heightM > 0 {
+            let ballistic = (8 * heightM / g0).squareRoot()
+            if airtime > cfg.airtimeGuardRatio * ballistic {
+                let clipped = cfg.airtimeGuardClipRatio * ballistic
+                onDebug(now, "AIRTIME GUARD t0=\(fmt(t0)) h=\(fmt(heightM))m "
+                    + "air=\(fmt(airtime))s ratio=\(fmt(airtime / ballistic)) "
+                    + "-> \(fmt(clipped))s")
+                airtime = clipped
+                airtimeSec = clipped
+                if distanceM != nil,
+                   let launchPos,
+                   let clippedLanding = gpsPoint(near: t0 + airtime),
+                   clippedLanding.lat != 0 || clippedLanding.lng != 0 {
+                    distanceM = Self.haversineM(
+                        launchPos.lat,
+                        launchPos.lng,
+                        clippedLanding.lat,
+                        clippedLanding.lng
+                    )
+                }
+            }
+        }
+
         // The drawing anchors and the post-flight diagnostics. Everything that
         // needs a bounded flight is nil without one; edgeLoadG is measured
         // entirely BEFORE the pop, so it survives an unresolved landing.
@@ -978,7 +1018,7 @@ public final class JumpEngineV16 {
             heightSource: flightH == nil ? .matched : (ballistic ? .freefall : .flight),
             heightM: round2(heightM),
             apexRawM: round2(apex),
-            airtimeSec: landingT.map { round2($0 - t0) },
+            airtimeSec: airtimeSec.map(round2),
             takeoffT: t0,
             liftPlateauSec: round2(shelf),
             yankG: round2(c.yankG),
@@ -1020,7 +1060,7 @@ public final class JumpEngineV16 {
             lastEmit = (t0, heightM)
             delegate?.jumpDetected(jump)
             onDebug(now, "JUMP t0=\(fmt(t0)) h=\(fmt(heightM))m IMMEDIATE shelf=\(fmt(shelf))s "
-                + "air=\(landingT.map { fmt($0 - t0) } ?? "n/a")s src=\(jump.heightSource.rawValue)")
+                + "air=\(jump.airtimeSec.map(fmt) ?? "n/a")s src=\(jump.heightSource.rawValue)")
             return true
         }
         // A straggler behind an already-delivered jump cannot be retracted, so

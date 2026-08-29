@@ -25,6 +25,11 @@ struct ContentView: View {
         .sheet(isPresented: $showingSportSelection) {
             SportSelectionView(isPresented: $showingSportSelection)
         }
+        .onChange(of: authService.isSignedIn) { _, isSignedIn in
+            if isSignedIn {
+                sessionManager.retryPendingCloudUploadsAfterSignIn()
+            }
+        }
         .alert(
             L("session.upload_prompt_title"),
             isPresented: Binding(

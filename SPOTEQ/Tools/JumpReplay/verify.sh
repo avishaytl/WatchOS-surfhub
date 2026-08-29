@@ -25,7 +25,11 @@ done
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 echo "=== Building JumpReplay ==="
-swift build 2>&1 | grep -E "error:|warning:|Build complete" || true
+if ! BUILD_OUTPUT="$(swift build 2>&1)"; then
+    printf '%s\n' "$BUILD_OUTPUT" | grep -E "error:|warning:|Build complete" || printf '%s\n' "$BUILD_OUTPUT"
+    exit 1
+fi
+printf '%s\n' "$BUILD_OUTPUT" | grep -E "error:|warning:|Build complete" || true
 echo ""
 
 BINARY="$SCRIPT_DIR/.build/debug/JumpReplay"

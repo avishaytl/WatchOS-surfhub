@@ -60,6 +60,8 @@ private enum Gzip {
 }
 
 enum CloudSyncError: LocalizedError {
+    case notAuthenticated
+    case diagnosticAdminUnavailable
     case missingBaseURL
     case invalidURL
     case invalidResponse
@@ -70,6 +72,10 @@ enum CloudSyncError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
+        case .notAuthenticated:
+            return "Sign in to upload this session."
+        case .diagnosticAdminUnavailable:
+            return "Diagnostic cloud access is not configured."
         case .missingBaseURL:
             return "Cloud URL is not configured."
         case .invalidURL:
@@ -96,22 +102,11 @@ struct CloudLogUploadResponse: Decodable {
     let path: String?
 }
 
-struct CloudCalibrationSchema: Codable {
-    let version: String?
-    let minSpeed: Double
-    let takeoffG: Double
-    let landingG: Double
-    let minAirtime: Double
-    let maxAirtime: Double
-    let cooldown: Double
-    let kinematicCalibration: Double
-}
-
 final class CloudSyncService {
     static let shared = CloudSyncService()
 
     private static let defaultBaseURL = "https://vvowvcdylztsqpzifdqc.supabase.co"
-    private static let defaultAuthToken = "ywxC26KVA7WD-_HftsCiCBb6W5bxkFzGT-Xe1Z4FvC4"
+    private static let defaultUploadPath = "/functions/v1/watch-log-upload"
     private static let defaultLogPath = "/functions/v1/calib-log"
 
     private let session: URLSession
@@ -140,8 +135,7 @@ final class CloudSyncService {
 
     func uploadLog(_ fileURL: URL) async throws -> CloudLogUploadResponse {
         let sessionName = fileURL.deletingPathExtension().lastPathComponent
-        var request = try makeRequest(
-            method: "POST",
+        var request = try await makeUploadRequest(
             queryItems: [
                 URLQueryItem(name: "device", value: deviceId),
                 URLQueryItem(name: "session", value: sessionName)
@@ -234,7 +228,7 @@ final class CloudSyncService {
             throw CloudSyncError.missingCloudPath
         }
 
-        let request = try makeRequest(
+        let request = try makeAdminRequest(
             method: "GET",
             queryItems: [URLQueryItem(name: "path", value: path)]
         )
@@ -261,11 +255,15 @@ final class CloudSyncService {
     private var authToken: String? {
         let userValue = defaults.string(forKey: "cloudAuthToken")?.trimmingCharacters(in: .whitespacesAndNewlines)
         let plistValue = Bundle.main.object(forInfoDictionaryKey: "SPOTEQ_CLOUD_AUTH_TOKEN") as? String
-        return userValue?.isEmpty == false
-            ? userValue
-            : plistValue?.isEmpty == false
-                ? plistValue
-                : Self.defaultAuthToken
+        if let userValue, !userValue.isEmpty { return userValue }
+        if let plistValue, !plistValue.isEmpty { return plistValue }
+        return nil
+    }
+
+    /// Admin-only calibration access remains available for internal builds that
+    /// inject a token at runtime. Production session uploads never use it.
+    var isAdminConfigured: Bool {
+        baseURL != nil && authToken != nil
     }
 
     private var logPath: String {
@@ -286,9 +284,13 @@ final class CloudSyncService {
         return userValue?.isEmpty == false ? userValue! : "watch"
     }
 
-    private func makeRequest(method: String, queryItems: [URLQueryItem]) throws -> URLRequest {
+    private func makeBaseRequest(
+        method: String,
+        path: String,
+        queryItems: [URLQueryItem]
+    ) throws -> URLRequest {
         guard let baseURL else { throw CloudSyncError.missingBaseURL }
-        guard let endpointURL = URL(string: logPath, relativeTo: baseURL)?.absoluteURL,
+        guard let endpointURL = URL(string: path, relativeTo: baseURL)?.absoluteURL,
               var components = URLComponents(url: endpointURL, resolvingAgainstBaseURL: true) else {
             throw CloudSyncError.invalidURL
         }
@@ -304,11 +306,33 @@ final class CloudSyncService {
         // cap the transfer — timeoutIntervalForResource does that.
         request.timeoutInterval = 60
         request.setValue("*/*", forHTTPHeaderField: "Accept")
+        return request
+    }
 
-        if let authToken, !authToken.isEmpty {
-            request.setValue(authToken, forHTTPHeaderField: "X-Calib-Token")
+    private func makeUploadRequest(queryItems: [URLQueryItem]) async throws -> URLRequest {
+        let pairing: WatchPairing
+        do {
+            pairing = try await WatchPairingStore.shared.validPairing()
+        } catch {
+            throw CloudSyncError.notAuthenticated
         }
 
+        var request = try makeBaseRequest(
+            method: "POST",
+            path: Self.defaultUploadPath,
+            queryItems: queryItems
+        )
+        request.setValue(WatchAuth.anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(pairing.accessToken)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+
+    private func makeAdminRequest(method: String, queryItems: [URLQueryItem]) throws -> URLRequest {
+        guard let authToken, !authToken.isEmpty else {
+            throw CloudSyncError.diagnosticAdminUnavailable
+        }
+        var request = try makeBaseRequest(method: method, path: logPath, queryItems: queryItems)
+        request.setValue(authToken, forHTTPHeaderField: "X-Calib-Token")
         return request
     }
 

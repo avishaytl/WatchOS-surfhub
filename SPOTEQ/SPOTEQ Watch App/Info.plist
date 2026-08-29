@@ -30,8 +30,6 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>SPOTEQ_CLOUD_BASE_URL</key>
 	<string>$(SPOTEQ_CLOUD_BASE_URL)</string>
-	<key>SPOTEQ_CLOUD_AUTH_TOKEN</key>
-	<string>$(SPOTEQ_CLOUD_AUTH_TOKEN)</string>
 	<key>SPOTEQ_CLOUD_LOG_PATH</key>
 	<string>$(SPOTEQ_CLOUD_LOG_PATH)</string>
 	<key>SPOTEQ_SUPABASE_ANON_KEY</key>

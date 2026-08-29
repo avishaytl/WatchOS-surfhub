@@ -501,8 +501,8 @@ enum DetectionMode: String, Codable, CaseIterable {
 }
 
 // MARK: - Jump Detection Engine
-/// User-selectable jump-detection ENGINE (independent of DetectionMode presets).
-/// Stored in UserDefaults as "detectionEngine". Takes effect at next session start.
+/// Jump-detection engines retained for replay and diagnostics.
+/// Shipped live and replay sessions always use V16.8; legacy cases remain for source-level diagnostics.
 enum DetectionEngine: String, Codable, CaseIterable {
     case v11Buffered = "v11-buffered"  // offline buffered engine (3–5 s delayed, fewer false positives)
     case v16BigAir = "v16-big-air"      // isolated quaternion/world-Z IMU engine; height integrated over the measured flight
@@ -519,7 +519,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .v11Buffered: return "V11 Buffered"
-        case .v16BigAir: return "V16.7 Big Air (Default)"
+        case .v16BigAir: return "V16.8 Big Air"
         case .v15Clean: return "V15 Clean (Beta)"
         case .v14Hybrid: return "V14 Hybrid (Beta)"
         case .sensorRecorder: return "Sensor Recorder"
@@ -534,7 +534,7 @@ enum DetectionEngine: String, Codable, CaseIterable {
     var description: String {
         switch self {
         case .v11Buffered: return "Offline buffered: analyses full jump segments on a 3–5 s background pass. Slightly delayed, fewer false positives."
-        case .v16BigAir: return "Big-air first, IMU only — absolute altitude is recorded for diagnostics but never used as a height source. V16.7 integrates height from 0.5 s before the pop and, for a jump with at least 4.0 s airtime or a 3.5 m first-pass height, waits for up to 0.8 s of post-landing samples with a 5.0 s window floor. The explicit identity calibration targets Surfr as displayed. Across the reference suite recall is unchanged, pooled height MAE is 0.454 m, big-air MAE is 0.502 m, the waves-only control stays silent, and the tallest guarded phantom remains 1.56 m. Hand throws remain exempt from the extended window. Airtime and distance never gate detection; distance is omitted when no landing window was measured."
+        case .v16BigAir: return "Big-air first, IMU only — absolute altitude is recorded for diagnostics but never used as a height source. V16.8 reports jumps from 1.5 m, integrates height from 0.5 s before the pop and, for a jump with at least 4.0 s airtime or a 3.5 m first-pass height, waits for up to 0.8 s of post-landing samples with a 5.0 s window floor. Airtime above 4× the ballistic time is treated as a landing outlier, clipped to 3.2×, and GPS distance is recalculated; height is never changed by this guard. The explicit identity calibration targets Surfr as displayed. Airtime and distance never gate detection; distance is omitted when no landing window was measured."
         case .sensorRecorder: return "Recording only: no jump detection, no formulas. Every sensor (IMU 200Hz, relative + absolute altimeter, GPS, submersion) streams continuously into the session log for offline analysis."
         case .v15Clean: return "IMU-led second generation: a yank spike opens, flight-quiet sustains, a physical impact (or baro return-to-base) closes. The absolute barometer streams continuously for the whole session as the single consumer and measures height via a parabolic apex fit, with relative-pressure and ballistic fallbacks. No GPS or turbulence gates."
         case .v14Hybrid: return "Hybrid: IMU unweight + pressure-baseline formula opens a jump; the absolute altimeter runs only from takeoff to a stable landing baseline and cross-checks the peak height. Works fully without GPS."
@@ -561,6 +561,20 @@ enum DetectionEngine: String, Codable, CaseIterable {
         case .v7: return "clock.arrow.circlepath"
         }
     }
+}
+
+/// Cloud-delivered calibration payload consumed by `JumpDetectionConfig`.
+/// The model lives with the configuration it updates so offline engine tools do
+/// not need to compile the Watch app's upload/authentication service.
+struct CloudCalibrationSchema: Codable {
+    let version: String?
+    let minSpeed: Double
+    let takeoffG: Double
+    let landingG: Double
+    let minAirtime: Double
+    let maxAirtime: Double
+    let cooldown: Double
+    let kinematicCalibration: Double
 }
 
 // MARK: - Jump Detection Configuration (6 parameters)

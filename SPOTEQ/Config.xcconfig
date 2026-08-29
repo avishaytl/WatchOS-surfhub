@@ -7,10 +7,10 @@
 MARKETING_VERSION = 1.3
 CURRENT_PROJECT_VERSION = 168
 
-// Supabase diagnostic log endpoint defaults.
+// Supabase diagnostic endpoint defaults. Production session uploads use the
+// signed-in user's JWT and never embed an administrative upload credential.
 // `$()` expands to an empty string and keeps `https://` from being parsed as a comment.
 SPOTEQ_CLOUD_BASE_URL = https:/$()/vvowvcdylztsqpzifdqc.supabase.co
-SPOTEQ_CLOUD_AUTH_TOKEN = ywxC26KVA7WD-_HftsCiCBb6W5bxkFzGT-Xe1Z4FvC4
 SPOTEQ_CLOUD_LOG_PATH = /functions/v1/calib-log
 
 // Supabase Auth — anon (public) key.

@@ -12,6 +12,9 @@
 
 import Foundation
 import CoreMotion
+#if canImport(V16Core)
+import V16Core
+#endif
 #if canImport(WatchKit)
 import WatchKit
 #endif
@@ -73,6 +76,8 @@ final class SessionLogger {
         let mode: String
         let schemaVersion: Int?
         let engineVersion: String?
+        /// Exact algorithm revision within the persisted engine family.
+        let algorithmVersion: String?
         let sensorOnly: Bool?
         let sampleRateHz: Int
         let parameters: BinaryLogParameters
@@ -643,6 +648,7 @@ final class SessionLogger {
             mode: mode.displayName,
             schemaVersion: 2,
             engineVersion: engine?.rawValue,
+            algorithmVersion: engine == .v16BigAir ? JumpEngineV16.version : nil,
             sensorOnly: sensorOnly,
             sampleRateHz: 200,
             parameters: BinaryLogParameters(
@@ -1013,6 +1019,9 @@ final class SessionLogger {
         }
         if let engineVersion = header.engineVersion {
             text += "engineVersion: \(engineVersion)\n"
+        }
+        if let algorithmVersion = header.algorithmVersion {
+            text += "algorithmVersion: \(algorithmVersion)\n"
         }
         text += "sensorOnly: \(header.sensorOnly ?? true)\n"
         text += "sampleRate: \(header.sampleRateHz) Hz\n"

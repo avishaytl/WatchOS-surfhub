@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WatchKit
 
 struct ActiveSessionView: View {
     @State private var selectedTab = 1  // Start at middle tab (metrics)
@@ -13,7 +14,7 @@ struct ActiveSessionView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Tab 0 (Left): Controls - Stop/Pause
+            // Tab 0 (Left): Stop / Pause / Water Lock
             ControlsView()
                 .tag(0)
 
@@ -704,52 +705,70 @@ struct ControlsView: View {
     @AppStorage("appLanguage") private var languageCode: String = "en"
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Text("Session Controls")
-            //     .font(.headline)
-            
-            // Pause/Resume button
-            Button(action: {
-                if sessionManager.isPaused {
-                    sessionManager.resumeSession()
-                } else {
-                    sessionManager.pauseSession()
+        VStack {
+            Spacer(minLength: 4)
+
+            HStack(spacing: 6) {
+                SessionControlButton(
+                    title: L("session.end"),
+                    systemImage: "stop.fill",
+                    color: .red,
+                    action: sessionManager.endSession
+                )
+
+                SessionControlButton(
+                    title: sessionManager.isPaused ? L("session.resume") : L("session.pause"),
+                    systemImage: sessionManager.isPaused ? "play.fill" : "pause.fill",
+                    color: sessionManager.isPaused ? .green : .orange
+                ) {
+                    if sessionManager.isPaused {
+                        sessionManager.resumeSession()
+                    } else {
+                        sessionManager.pauseSession()
+                    }
                 }
-            }) {
-                VStack(spacing: 8) {
-                    Image(systemName: sessionManager.isPaused ? "play.circle.fill" : "pause.circle.fill")
-                        .font(.system(size: 40))
-                    Text(sessionManager.isPaused ? L("session.resume") : L("session.pause"))
-                        .font(.headline)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(sessionManager.isPaused ? Color.green : Color.orange)
-                .foregroundColor(.white)
-                .cornerRadius(12)
+
+                SessionControlButton(
+                    title: L("session.water_lock"),
+                    systemImage: "drop.fill",
+                    color: .cyan,
+                    action: sessionManager.enableWaterLock
+                )
+                .disabled(sessionManager.isPaused)
+                .opacity(sessionManager.isPaused ? 0.45 : 1)
             }
-            .buttonStyle(.plain)
-            
-            // End button
-            Button(action: {
-                sessionManager.endSession()
-            }) {
-                VStack(spacing: 8) {
-                    Image(systemName: "stop.circle.fill")
-                        .font(.system(size: 40))
-                    Text(L("session.end"))
-                        .font(.headline)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.red)
-                .foregroundColor(.white)
-                .cornerRadius(12)
-            }
-            .buttonStyle(.plain)
+
+            Spacer(minLength: 4)
         }
-        .padding()
+        .padding(.horizontal, 6)
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+    }
+}
+
+private struct SessionControlButton: View {
+    let title: String
+    let systemImage: String
+    let color: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 25, weight: .semibold))
+                Text(title)
+                    .font(.system(size: 10, weight: .semibold))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.75)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, minHeight: 82)
+            .background(color)
+            .foregroundColor(.white)
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(title))
     }
 }
 
