@@ -17,6 +17,7 @@ struct SettingsView: View {
     @AppStorage("detectionEngine") private var detectionEngineRaw: String = DetectionEngine.v16BigAir.rawValue
     @AppStorage("hapticFeedback") private var hapticFeedback: Bool = true
     @AppStorage("metricsTopPadding") private var metricsTopPadding: Double = -1  // -1 = auto
+    @AppStorage("sessionTimerSide") private var sessionTimerSideRaw: String = ""
 
     private var themeColor: Color {
         switch appTheme {
@@ -28,6 +29,13 @@ struct SettingsView: View {
         case "pink":   return .pink
         default:       return .orange
         }
+    }
+
+    private var sessionTimerSide: SessionTimerSide {
+        if let storedSide = SessionTimerSide(rawValue: sessionTimerSideRaw) {
+            return storedSide
+        }
+        return languageCode == "he" ? .right : .left
     }
 
     var body: some View {
@@ -207,6 +215,39 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundColor(.gray)
                         .textCase(.uppercase)
+
+                    // Physical timer position. Keep these buttons LTR so left
+                    // and right always refer to the actual sides of the screen.
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Image(systemName: "timer")
+                                .foregroundColor(.cyan)
+                                .frame(width: 20)
+                            Text(L("settings.session_timer_position"))
+                                .font(.caption)
+                        }
+
+                        HStack(spacing: 8) {
+                            sessionTimerSideButton(
+                                .left,
+                                labelKey: "settings.session_timer_left",
+                                icon: "arrow.left.to.line"
+                            )
+                            sessionTimerSideButton(
+                                .right,
+                                labelKey: "settings.session_timer_right",
+                                icon: "arrow.right.to.line"
+                            )
+                        }
+                        .environment(\.layoutDirection, .leftToRight)
+
+                        Text(L("settings.session_timer_position_help"))
+                            .font(.system(size: 8))
+                            .foregroundColor(.gray.opacity(0.7))
+                    }
+                    .padding(8)
+                    .background(Color.white.opacity(0.05))
+                    .cornerRadius(8)
                     
                     // Top Padding adjustment
                     VStack(alignment: .leading, spacing: 6) {
@@ -488,6 +529,31 @@ struct SettingsView: View {
             // also hard-pinned in SessionManager so this does not depend on Settings opening.
             detectionEngineRaw = DetectionEngine.v16BigAir.rawValue
         }
+    }
+
+    private func sessionTimerSideButton(
+        _ side: SessionTimerSide,
+        labelKey: String,
+        icon: String
+    ) -> some View {
+        let isSelected = sessionTimerSide == side
+        return Button {
+            sessionTimerSideRaw = side.rawValue
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                Text(L(labelKey))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .font(.system(size: 10, weight: .semibold))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 7)
+            .background(isSelected ? themeColor.opacity(0.3) : Color.white.opacity(0.08))
+            .foregroundColor(isSelected ? themeColor : .gray)
+            .cornerRadius(7)
+        }
+        .buttonStyle(.plain)
     }
     
 }

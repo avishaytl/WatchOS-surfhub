@@ -24,6 +24,7 @@
 "session.hr_no_data" = "No heart-rate data yet. Make sure Health permission is enabled and the watch is worn snugly.";
 "session.hr_unavailable" = "Heart rate is unavailable on this device.";
 "session.max" = "MAX";
+"session.max_jump" = "MAX";
 "session.distance" = "DIST";
 "session.airtime" = "AIR";
 "session.speed" = "SPEED";
@@ -101,6 +102,10 @@
 "settings.sensitivity.high" = "High";
 "settings.sensitivity.very_high" = "Very High";
 "settings.display_feedback" = "Display & Feedback";
+"settings.session_timer_position" = "Session Timer Position";
+"settings.session_timer_left" = "Left";
+"settings.session_timer_right" = "Right";
+"settings.session_timer_position_help" = "Choose the physical side of the active-session screen.";
 "settings.top_padding" = "Top Padding";
 "settings.top_padding_auto" = "Auto";
 "settings.top_padding_help" = "Adjust vertical offset of the session metrics screen. Use Auto for device default.";
@@ -275,11 +280,14 @@
 "logs.title" = "Session Logs";
 "logs.empty" = "No logs yet";
 "logs.empty_hint" = "Start a session to create a diagnostic log file.";
-"logs.share" = "Share CSV";
-"logs.share_messages" = "Share via Messages";
-"logs.send_to_phone" = "Send to iPhone";
 "logs.fetch_cloud_response" = "Fetch Cloud Response";
-"logs.upload_cloud" = "Upload Logs to Cloud";
+"logs.upload_cloud" = "Upload All to Cloud";
+"logs.upload_this" = "Upload to Cloud";
+"logs.upload_this_success" = "✅ Uploaded to cloud";
+"logs.upload_selected" = "Upload Selected (%d)";
+"logs.select" = "Select Sessions";
+"logs.select_all" = "Select All";
+"logs.deselect_all" = "Deselect All";
 "logs.fetch_cloud_response_success" = "✅ %@";
 "logs.upload_cloud_success" = "✅ Uploaded %d logs";
 "logs.cloud_failed" = "⚠️ %@";

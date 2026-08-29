@@ -24,6 +24,7 @@
 "session.hr_no_data" = "עדין אין נתוני דופק. ודאו שהרשאת Health מופעלת ושהשעון ענוד היטב.";
 "session.hr_unavailable" = "מדידת דופק אינה זמינה במכשיר זה.";
 "session.max" = "מקסימום";
+"session.max_jump" = "שיא";
 "session.distance" = "מרחק";
 "session.airtime" = "אוויר";
 "session.speed" = "מהירות";
@@ -101,6 +102,10 @@
 "settings.sensitivity.high" = "גבוהה";
 "settings.sensitivity.very_high" = "גבוהה מאוד";
 "settings.display_feedback" = "תצוגה ומשוב";
+"settings.session_timer_position" = "מיקום טיימר האימון";
+"settings.session_timer_left" = "שמאל";
+"settings.session_timer_right" = "ימין";
+"settings.session_timer_position_help" = "בחרו באיזה צד פיזי של מסך האימון יוצג הטיימר.";
 "settings.top_padding" = "ריווח עליון";
 "settings.top_padding_auto" = "אוטומטי";
 "settings.top_padding_help" = "כוונן את המרחק מהחלק העליון של מסך האימון. השתמש באוטומטי לברירת המחדל.";
@@ -275,11 +280,14 @@
 "logs.title" = "לוגים של אימונים";
 "logs.empty" = "אין לוגים עדיין";
 "logs.empty_hint" = "התחל אימון כדי ליצור קובץ לוג דיאגנוסטי.";
-"logs.share" = "שתף CSV";
-"logs.share_messages" = "שתף בהודעות";
-"logs.send_to_phone" = "שלח לאייפון";
 "logs.fetch_cloud_response" = "הבא תגובת ענן";
-"logs.upload_cloud" = "העלה לוגים לענן";
+"logs.upload_cloud" = "העלה הכל לענן";
+"logs.upload_this" = "העלה לענן";
+"logs.upload_this_success" = "✅ הועלה לענן";
+"logs.upload_selected" = "העלה נבחרים (%d)";
+"logs.select" = "בחר אימונים";
+"logs.select_all" = "בחר הכל";
+"logs.deselect_all" = "בטל בחירה";
 "logs.fetch_cloud_response_success" = "✅ %@";
 "logs.upload_cloud_success" = "✅ הועלו %d לוגים";
 "logs.cloud_failed" = "⚠️ %@";

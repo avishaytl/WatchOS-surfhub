@@ -8,6 +8,11 @@
 import SwiftUI
 import WatchKit
 
+enum SessionTimerSide: String {
+    case left
+    case right
+}
+
 struct ActiveSessionView: View {
     @State private var selectedTab = 1  // Start at middle tab (metrics)
     @AppStorage("appLanguage") private var languageCode: String = "en"
@@ -41,6 +46,7 @@ struct MetricsView: View {
     @AppStorage("appTheme") private var appTheme: String = "orange"
     @AppStorage("appLanguage") private var languageCode: String = "en"
     @AppStorage("metricsTopPadding") private var metricsTopPaddingStored: Double = -1  // -1 = auto
+    @AppStorage("sessionTimerSide") private var sessionTimerSideRaw: String = ""
     @Environment(\.isLuminanceReduced) var isLuminanceReduced
     @State private var gpsPulse = false
     
@@ -64,6 +70,20 @@ struct MetricsView: View {
             return CGFloat(metricsTopPaddingStored)
         }
         return autoTopPadding
+    }
+
+    /// This is a physical screen-side preference, so it deliberately does not
+    /// mirror with the surrounding RTL layout. New installs default away from
+    /// the watchOS clock for the app's selected language.
+    private var sessionTimerSide: SessionTimerSide {
+        if let storedSide = SessionTimerSide(rawValue: sessionTimerSideRaw) {
+            return storedSide
+        }
+        return languageCode == "he" ? .right : .left
+    }
+
+    private var maxJumpHeight: Double? {
+        sessionManager.currentSession?.jumps.map(\.height).max()
     }
 
     private var autoTopPadding: CGFloat {
@@ -134,28 +154,36 @@ struct MetricsView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Top row: Timer and GPS status aligned with watch clock
-            HStack(alignment: .center, spacing: 0) {
-                // Timer + GPS indicator - left side (always LTR)
-                HStack(spacing: 4) {
-                    Text(formatDuration(sessionManager.duration))
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
-                        .monospacedDigit()
-
-                    // GPS tracker indicator - inline with timer
+            HStack(spacing: 4) {
+                if sessionTimerSide == .right {
+                    JumpStateIndicator(state: sessionManager.jumpDetectionState)
                     GPSTrackerIndicator(
                         signalQuality: sessionManager.gpsSignalQuality,
                         pointCount: sessionManager.gpsPointCount,
                         isActive: sessionManager.isGPSActive,
                         gpsPulse: $gpsPulse
                     )
+                }
 
-                    // Jump state indicator
+                Text(formatDuration(sessionManager.duration))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white)
+                    .monospacedDigit()
+
+                if sessionTimerSide == .left {
+                    GPSTrackerIndicator(
+                        signalQuality: sessionManager.gpsSignalQuality,
+                        pointCount: sessionManager.gpsPointCount,
+                        isActive: sessionManager.isGPSActive,
+                        gpsPulse: $gpsPulse
+                    )
                     JumpStateIndicator(state: sessionManager.jumpDetectionState)
                 }
-                .environment(\.layoutDirection, .leftToRight)
-                Spacer()
             }
+            .frame(
+                maxWidth: .infinity,
+                alignment: sessionTimerSide == .right ? .trailing : .leading
+            )
             .padding(.horizontal, 8)
             .padding(.top, topPadding)
             .environment(\.layoutDirection, .leftToRight)
@@ -177,10 +205,10 @@ struct MetricsView: View {
                 )
                 
                 CompactMetric(
-                    icon: "arrow.up",
-                    value: formatHeight(sessionManager.currentSession?.jumps.max(by: { $0.height < $1.height })?.height ?? 0),
-                    label: L("session.max"),
-                    iconColor: .white
+                    icon: "trophy.fill",
+                    value: maxJumpHeight.map(formatHeight) ?? "—",
+                    label: L("session.max_jump"),
+                    iconColor: maxJumpHeight == nil ? .white : themeColor
                 )
             }
             .padding(.horizontal, 4)
@@ -352,6 +380,8 @@ struct CompactMetric: View {
                     Text(label)
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.gray)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
                 }
                 
                 if let unit = unit {
