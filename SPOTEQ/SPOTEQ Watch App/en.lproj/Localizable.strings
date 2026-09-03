@@ -250,6 +250,8 @@
 "settings.session_logs" = "Session Logs";
 "settings.replay_lab" = "Replay Lab";
 "settings.replay_lab_hint" = "Replay a real sensor log with its original timing.";
+"settings.developer_mode" = "Developer Mode";
+"settings.developer_mode_hint" = "Shows the raw sensor capture button on the Home screen.";
 "replay.title" = "Real-Time Replay";
 "replay.no_logs" = "No KSLG v2 logs are stored on this watch.";
 "replay.session" = "Session";

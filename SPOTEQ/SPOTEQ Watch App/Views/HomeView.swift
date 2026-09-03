@@ -18,6 +18,9 @@ struct HomeView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appTheme") private var appTheme: String = "orange"
     @AppStorage("appLanguage") private var languageCode: String = "en"
+    /// Sensor capture is a ground-truth tool, not a rider feature. Settings →
+    /// Data → Developer Mode reveals it; riders never see it on Home.
+    @AppStorage("developerMode") private var developerMode: Bool = false
 
     private let storageManager = StorageManager()
 
@@ -99,24 +102,26 @@ struct HomeView: View {
                 // Sensor recording — a session that runs the full acquisition
                 // pipeline with NO detection engine: every sensor streams into
                 // the .kslog for ground-truth analysis, upload prompt at the end.
-                Button(action: {
-                    handleRecordSensorsTapped()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "record.circle")
-                            .font(.system(size: 18))
-                            .foregroundColor(.red)
-                        Text(L("home.record_sensors"))
-                            .font(.headline)
+                if developerMode {
+                    Button(action: {
+                        handleRecordSensorsTapped()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "record.circle")
+                                .font(.system(size: 18))
+                                .foregroundColor(.red)
+                            Text(L("home.record_sensors"))
+                                .font(.headline)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.3))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.gray.opacity(0.3))
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+                    .buttonStyle(.plain)
+                    .disabled(waitingForPermission)
                 }
-                .buttonStyle(.plain)
-                .disabled(waitingForPermission)
 
                 // Settings button
                 NavigationLink(destination: SettingsView()) {
@@ -200,7 +205,7 @@ struct HomeView: View {
     }
 
     private func handleRecordSensorsTapped() {
-        guard !waitingForPermission else { return }
+        guard developerMode, !waitingForPermission else { return }
         if sessionManager.isLocationNotDetermined {
             sessionManager.requestLocationPermission()
         }

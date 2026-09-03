@@ -18,6 +18,7 @@ struct SettingsView: View {
     @AppStorage("hapticFeedback") private var hapticFeedback: Bool = true
     @AppStorage("metricsTopPadding") private var metricsTopPadding: Double = -1  // -1 = auto
     @AppStorage("sessionTimerSide") private var sessionTimerSideRaw: String = ""
+    @AppStorage("developerMode") private var developerMode: Bool = false
     @AppStorage(V16Settings.minimumJumpHeightM) private var minimumJumpHeightM = V16MinimumJumpHeight.defaultMeters
 
     private var themeColor: Color {
@@ -441,6 +442,30 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.plain)
                     }
+                    .overlay(
+                        Rectangle()
+                            .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                    )
+
+                    // Developer Mode gates the raw sensor-capture entry point on
+                    // Home. It is a ground-truth tool and must stay off for riders.
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle(isOn: $developerMode) {
+                            HStack {
+                                Image(systemName: "hammer.fill")
+                                    .foregroundColor(.orange)
+                                    .frame(width: 20)
+                                Text(L("settings.developer_mode"))
+                                    .font(.caption)
+                            }
+                        }
+                        Text(L("settings.developer_mode_hint"))
+                            .font(.system(size: 8))
+                            .foregroundColor(.gray)
+                            .lineLimit(2)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
                     .overlay(
                         Rectangle()
                             .stroke(themeColor.opacity(0.3), lineWidth: 1)

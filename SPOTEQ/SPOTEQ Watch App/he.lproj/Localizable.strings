@@ -250,6 +250,8 @@
 "settings.session_logs" = "לוגים של אימונים";
 "settings.replay_lab" = "מעבדת Replay";
 "settings.replay_lab_hint" = "הרצת לוג חיישנים אמיתי בתזמון המקורי שלו.";
+"settings.developer_mode" = "מצב מפתח";
+"settings.developer_mode_hint" = "מציג את כפתור הקלטת החיישנים הגולמית במסך הבית.";
 "replay.title" = "Replay בזמן אמת";
 "replay.no_logs" = "אין בשעון לוגים בפורמט KSLG v2.";
 "replay.session" = "אימון";
