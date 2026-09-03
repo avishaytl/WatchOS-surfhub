@@ -733,45 +733,79 @@ struct GPSStatCard: View {
 struct ControlsView: View {
     @EnvironmentObject var sessionManager: SessionManager
     @AppStorage("appLanguage") private var languageCode: String = "en"
+    @State private var showingEndConfirmation = false
     
     var body: some View {
-        VStack {
-            Spacer(minLength: 4)
+        GeometryReader { geometry in
+            // Two rows must still fit the compact 38/40 mm watch screens while
+            // keeping every control comfortably above the 44 pt tap target.
+            let buttonHeight = min(
+                CGFloat(72),
+                max(CGFloat(52), (geometry.size.height - 20) / 2)
+            )
 
-            HStack(spacing: 6) {
-                SessionControlButton(
-                    title: L("session.end"),
-                    systemImage: "stop.fill",
-                    color: .red,
-                    action: sessionManager.endSession
-                )
+            VStack(spacing: 0) {
+                Spacer(minLength: 4)
 
-                SessionControlButton(
-                    title: sessionManager.isPaused ? L("session.resume") : L("session.pause"),
-                    systemImage: sessionManager.isPaused ? "play.fill" : "pause.fill",
-                    color: sessionManager.isPaused ? .green : .orange
-                ) {
-                    if sessionManager.isPaused {
-                        sessionManager.resumeSession()
-                    } else {
-                        sessionManager.pauseSession()
+                Grid(horizontalSpacing: 8, verticalSpacing: 8) {
+                    GridRow {
+                        SessionControlButton(
+                            title: sessionManager.isPaused ? L("session.resume") : L("session.pause"),
+                            systemImage: sessionManager.isPaused ? "play.fill" : "pause.fill",
+                            color: sessionManager.isPaused ? .green : .orange,
+                            height: buttonHeight,
+                            accessibilityHint: sessionManager.isPaused
+                                ? L("session.resume")
+                                : L("session.pause")
+                        ) {
+                            if sessionManager.isPaused {
+                                sessionManager.resumeSession()
+                            } else {
+                                sessionManager.pauseSession()
+                            }
+                        }
+
+                        SessionControlButton(
+                            title: L("session.water_lock"),
+                            systemImage: "drop.fill",
+                            color: .cyan,
+                            height: buttonHeight,
+                            accessibilityHint: L("session.water_lock_unlock_hint"),
+                            action: sessionManager.enableWaterLock
+                        )
+                        .disabled(sessionManager.isPaused)
+                        .opacity(sessionManager.isPaused ? 0.45 : 1)
+                    }
+
+                    GridRow {
+                        SessionControlButton(
+                            title: L("session.end"),
+                            systemImage: "stop.fill",
+                            color: .red,
+                            height: buttonHeight,
+                            accessibilityHint: L("session.end_message")
+                        ) {
+                            showingEndConfirmation = true
+                        }
+                        .gridCellColumns(2)
                     }
                 }
+                .frame(maxWidth: .infinity)
 
-                SessionControlButton(
-                    title: L("session.water_lock"),
-                    systemImage: "drop.fill",
-                    color: .cyan,
-                    action: sessionManager.enableWaterLock
-                )
-                .disabled(sessionManager.isPaused)
-                .opacity(sessionManager.isPaused ? 0.45 : 1)
+                Spacer(minLength: 4)
             }
-
-            Spacer(minLength: 4)
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 8)
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
+        .alert(L("session.end_confirm"), isPresented: $showingEndConfirmation) {
+            Button(L("session.end"), role: .destructive) {
+                sessionManager.endSession()
+            }
+            Button(L("session.cancel"), role: .cancel) { }
+        } message: {
+            Text(L("session.end_message"))
+        }
     }
 }
 
@@ -779,26 +813,30 @@ private struct SessionControlButton: View {
     let title: String
     let systemImage: String
     let color: Color
+    let height: CGFloat
+    let accessibilityHint: String
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 25, weight: .semibold))
+                    .font(.system(size: height < 60 ? 20 : 23, weight: .semibold))
                 Text(title)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.caption2.weight(.semibold))
                     .lineLimit(2)
-                    .minimumScaleFactor(0.75)
+                    .minimumScaleFactor(0.85)
                     .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity, minHeight: 82)
+            .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
+            .contentShape(Rectangle())
             .background(color)
             .foregroundColor(.white)
             .cornerRadius(12)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(title))
+        .accessibilityHint(Text(accessibilityHint))
     }
 }
 

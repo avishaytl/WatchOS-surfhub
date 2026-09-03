@@ -1107,10 +1107,10 @@ struct V12DebugSettingsView: View {
 }
 
 struct DataManagementView: View {
+    @EnvironmentObject private var sessionManager: SessionManager
     @State private var sessions: [Session] = []
     @State private var showingDeleteAlert = false
     @AppStorage("appLanguage") private var languageCode: String = "en"
-    private let storageManager = StorageManager()
     
     var body: some View {
         ScrollView {
@@ -1131,6 +1131,19 @@ struct DataManagementView: View {
                 .padding()
                 .background(Color(.darkGray).opacity(0.3))
                 .cornerRadius(8)
+
+                if sessions.isEmpty {
+                    Text(L("data.no_sessions"))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .padding(.vertical, 10)
+                } else {
+                    LazyVStack(spacing: 8) {
+                        ForEach(sessions) { session in
+                            storedSessionRow(session)
+                        }
+                    }
+                }
                 
                 // Delete all button
                 Button(action: {
@@ -1154,7 +1167,7 @@ struct DataManagementView: View {
         .watchScrollTopShadow()
         .environment(\.layoutDirection, languageCode == "he" ? .rightToLeft : .leftToRight)
         .onAppear {
-            sessions = storageManager.loadAllSessions()
+            sessions = sessionManager.loadStoredSessions()
         }
         .alert(L("data.delete_confirm"), isPresented: $showingDeleteAlert) {
             Button(L("session.cancel"), role: .cancel) { }
@@ -1167,8 +1180,93 @@ struct DataManagementView: View {
     }
     
     private func deleteAllSessions() {
-        storageManager.clearAllSessions()
+        sessionManager.clearAllStoredSessions()
         sessions = []
+    }
+
+    @ViewBuilder
+    private func storedSessionRow(_ session: Session) -> some View {
+        let status = sessionManager.uploadStatus(for: session)
+
+        VStack(alignment: .leading, spacing: 7) {
+            NavigationLink(destination: SessionDetailView(session: session)) {
+                HStack(spacing: 6) {
+                    Image(systemName: "figure.surfing")
+                        .foregroundColor(.cyan)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(session.sport.displayName)
+                            .font(.caption.weight(.semibold))
+                        Text(session.startTime.formatted(date: .abbreviated, time: .shortened))
+                            .font(.system(size: 9))
+                            .foregroundColor(.gray)
+                    }
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
+
+            HStack(spacing: 4) {
+                Image(systemName: uploadStatusIcon(status))
+                Text(L(uploadStatusTextKey(status)))
+            }
+            .font(.system(size: 9, weight: .semibold))
+            .foregroundColor(uploadStatusColor(status))
+
+            if status != .uploaded {
+                Button {
+                    sessionManager.uploadStoredSessionToCloud(session)
+                } label: {
+                    HStack {
+                        if status == .uploading {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "icloud.and.arrow.up.fill")
+                        }
+                        Text(L(sessionManager.canUploadPendingSession
+                               ? "data.upload_session"
+                               : "data.waiting_for_network"))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                    }
+                    .font(.system(size: 10, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 7)
+                    .background(Color.blue.opacity(0.2))
+                    .foregroundColor(.blue)
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .disabled(status == .uploading || !sessionManager.canUploadPendingSession)
+            }
+        }
+        .padding(9)
+        .background(Color.white.opacity(0.05))
+        .cornerRadius(9)
+    }
+
+    private func uploadStatusTextKey(_ status: StoredSessionUploadStatus) -> String {
+        switch status {
+        case .pending: return "data.pending_upload"
+        case .uploading: return "data.uploading"
+        case .uploaded: return "data.uploaded"
+        }
+    }
+
+    private func uploadStatusIcon(_ status: StoredSessionUploadStatus) -> String {
+        switch status {
+        case .pending: return "icloud.and.arrow.up"
+        case .uploading: return "arrow.triangle.2.circlepath.icloud"
+        case .uploaded: return "checkmark.icloud.fill"
+        }
+    }
+
+    private func uploadStatusColor(_ status: StoredSessionUploadStatus) -> Color {
+        switch status {
+        case .pending: return .orange
+        case .uploading: return .blue
+        case .uploaded: return .green
+        }
     }
 }
 

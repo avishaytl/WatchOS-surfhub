@@ -35,19 +35,19 @@
 "session.end_message" = "האם אתה בטוח שברצונך לסיים את האימון?";
 "session.upload_prompt_title" = "להעלות לענן?";
 "session.upload_prompt_message" = "האימון נשמר בשעון. להעלות אותו גם לענן SPOTEQ?";
-"session.upload_offline_message" = "אין כרגע חיבור לאינטרנט. אפשר להעלות לענן (יישלח כשהחיבור יחזור), לשמור בשעון, או למחוק.";
+"session.upload_offline_message" = "האימון שמור בשעון. התחבר לאינטרנט כדי להעלות אותו; SPOTEQ תזכיר לך כשהחיבור יחזור.";
 "session.upload_now" = "העלה לענן";
-"session.keep_local" = "השאר מקומי";
-"session.discard" = "מחק סשן";
+"session.keep_local" = "לא עכשיו";
 "session.queued_title" = "ממתין להעלאה";
 "session.queued_message" = "האימון יועלה לענן SPOTEQ אוטומטית כשיהיה חיבור לאינטרנט.";
 "session.signin_required_title" = "נדרשת התחברות";
 "session.signin_required_message" = "התחבר לחשבון SPOTEQ (הגדרות ← חשבון) כדי להעלות אימונים לענן. בינתיים האימון שמור בשעון.";
-"session.too_short_title" = "האימון לא נשמר";
-"session.too_short_message" = "אימונים קצרים מדקה נמחקים ולא נשמרים.";
+"session.save_failed_title" = "השמירה נכשלה";
+"session.save_failed_message" = "SPOTEQ לא הצליחה לשמור את האימון בשעון. בדוק שיש מקום פנוי לפני הקלטת האימון הבא.";
 "session.upload_failed_title" = "לא ניתן להעלות";
 "session.upload_no_gps_message" = "לא נרשמה נקודת GPS, לכן SPOTEQ השתמש בנקודת התחלה חלופית להעלאה.";
 "session.upload_failed_message" = "האימון נשאר בשעון. בדוק התחברות ורשת, ונסה שוב מאוחר יותר.";
+"session.upload_offline_retry_message" = "האימון שמור בבטחה בשעון. התחבר לאינטרנט ואז העלה אותו דרך הגדרות ← ניהול אימונים.";
 "session.upload_success_title" = "האימון הועלה";
 "session.upload_success_message" = "האימון הועלה בהצלחה לענן SPOTEQ.";
 "session.v12_unavailable_title" = "V12 עדיין לא מוכן";
@@ -239,6 +239,12 @@
 "data.delete_confirm" = "למחוק את כל האימונים?";
 "data.delete_message" = "לא ניתן לבטל פעולה זו. כל נתוני האימונים שלך יימחקו לצמיתות.";
 "data.delete" = "מחק";
+"data.no_sessions" = "עדיין אין אימונים שמורים";
+"data.pending_upload" = "שמור מקומית · טרם הועלה";
+"data.uploading" = "מעלה…";
+"data.uploaded" = "הועלה · העותק המקומי נשמר";
+"data.upload_session" = "העלה אימון";
+"data.waiting_for_network" = "ממתין לאינטרנט";
 
 // MARK: - Session Logs
 "settings.session_logs" = "לוגים של אימונים";
@@ -284,6 +290,9 @@
 "logs.fetch_cloud_response" = "הבא תגובת ענן";
 "logs.upload_cloud" = "העלה הכל לענן";
 "logs.upload_this" = "העלה לענן";
+"logs.upload_again" = "העלה שוב";
+"logs.pending_upload" = "טרם הועלה";
+"logs.uploaded" = "הועלה לענן";
 "logs.upload_this_success" = "✅ הועלה לענן";
 "logs.upload_selected" = "העלה נבחרים (%d)";
 "logs.select" = "בחר אימונים";

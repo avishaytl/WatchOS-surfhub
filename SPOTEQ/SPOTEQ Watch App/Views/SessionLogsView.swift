@@ -22,6 +22,7 @@ import WatchKit
 // MARK: - Log List View
 
 struct SessionLogsView: View {
+    @EnvironmentObject private var sessionManager: SessionManager
     @State private var logFiles: [URL] = []
     @State private var showDeleteConfirm = false
     @State private var isUploadingLogs = false
@@ -285,7 +286,7 @@ struct SessionLogsView: View {
 
         Task {
             do {
-                let count = try await CloudSyncService.shared.uploadLogs(files)
+                let count = try await sessionManager.uploadStoredLogs(files)
                 await MainActor.run {
                     isUploadingLogs = false
                     cloudStatus = String(format: L("logs.upload_cloud_success"), count)
@@ -333,6 +334,7 @@ struct SessionLogsView: View {
 // MARK: - Single Log File Row
 
 struct LogFileRow: View {
+    @EnvironmentObject private var sessionManager: SessionManager
     let url: URL
     var isSelecting: Bool = false
     var isSelected: Bool = false
@@ -370,6 +372,10 @@ struct LogFileRow: View {
         url.pathExtension.lowercased() == "kslog"
     }
 
+    private var isUploaded: Bool {
+        sessionManager.isStoredLogUploaded(url)
+    }
+
     // MARK: Body
 
     var body: some View {
@@ -398,6 +404,12 @@ struct LogFileRow: View {
                                 .foregroundColor(.gray)
                         }
                     }
+                    HStack(spacing: 3) {
+                        Image(systemName: isUploaded ? "checkmark.icloud.fill" : "icloud.and.arrow.up")
+                        Text(L(isUploaded ? "logs.uploaded" : "logs.pending_upload"))
+                    }
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundColor(isUploaded ? .green : .orange)
                 }
                 Spacer()
             }
@@ -446,7 +458,7 @@ struct LogFileRow: View {
                             Image(systemName: "icloud.and.arrow.up")
                                 .font(.system(size: 12))
                         }
-                        Text(L("logs.upload_this"))
+                        Text(L(isUploaded ? "logs.upload_again" : "logs.upload_this"))
                             .font(.system(size: 12, weight: .semibold))
                     }
                     .frame(maxWidth: .infinity)
@@ -509,7 +521,7 @@ struct LogFileRow: View {
 
         Task {
             do {
-                _ = try await CloudSyncService.shared.uploadLog(url)
+                _ = try await sessionManager.uploadStoredLogs([url])
                 await MainActor.run {
                     isUploading = false
                     uploadResult = L("logs.upload_this_success")
@@ -526,4 +538,5 @@ struct LogFileRow: View {
 
 #Preview {
     SessionLogsView()
+        .environmentObject(SessionManager())
 }

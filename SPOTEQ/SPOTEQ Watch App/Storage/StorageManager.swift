@@ -12,6 +12,9 @@ class StorageManager {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private let pendingCloudUploadKey = "pendingCloudUploadSessionIds"
+    private let uploadedCloudLogNamesKey = "uploadedCloudLogFileNames"
+    private let cloudLogFileBySessionKey = "cloudLogFileBySessionId"
+    private let cloudServerSessionIdKey = "cloudServerSessionIdByLocalSessionId"
     
     // Storage paths
     private var documentsDirectory: URL {
@@ -38,21 +41,29 @@ class StorageManager {
     
     // MARK: - Session Storage
     
-    func saveSession(_ session: Session) {
+    /// Persists the complete session before any cloud work begins.
+    ///
+    /// Returning the result lets the caller surface a storage failure instead
+    /// of silently resetting the UI and losing the only in-memory copy. Atomic
+    /// replacement also protects an existing session from a partial rewrite.
+    @discardableResult
+    func saveSession(_ session: Session) -> Bool {
         let filename = "\(session.id).json"
         let fileURL = sessionsDirectory.appendingPathComponent(filename)
         
         do {
             encoder.dateEncodingStrategy = .iso8601
             let data = try encoder.encode(session)
-            try data.write(to: fileURL)
+            try data.write(to: fileURL, options: .atomic)
             print("💾 Session saved: \(filename)")
             
             // Trigger sync to phone
             syncSessionToPhone(session)
+            return true
             
         } catch {
             print("❌ Failed to save session: \(error.localizedDescription)")
+            return false
         }
     }
     
@@ -108,6 +119,12 @@ class StorageManager {
         do {
             try fileManager.removeItem(at: fileURL)
             clearPendingCloudUpload(sessionId: id)
+            var associations = cloudLogFileAssociations()
+            associations.removeValue(forKey: id)
+            UserDefaults.standard.set(associations, forKey: cloudLogFileBySessionKey)
+            var serverIds = cloudServerSessionIds()
+            serverIds.removeValue(forKey: id)
+            UserDefaults.standard.set(serverIds, forKey: cloudServerSessionIdKey)
             print("🗑️ Session deleted: \(filename)")
         } catch {
             print("❌ Failed to delete session: \(error.localizedDescription)")
@@ -131,6 +148,74 @@ class StorageManager {
         let pendingIds = Set(pendingCloudUploadSessionIds())
         guard !pendingIds.isEmpty else { return nil }
         return loadAllSessions().first { pendingIds.contains($0.id) }
+    }
+
+    // MARK: - Diagnostic Log Upload Ledger
+
+    /// A missing filename means the local log has never completed an upload.
+    /// Keeping this separately from session-summary state prevents one
+    /// successful half of the upload from incorrectly clearing the other.
+    func markCloudLogUploaded(_ fileURL: URL) {
+        var names = uploadedCloudLogNames()
+        names.insert(fileURL.lastPathComponent)
+        UserDefaults.standard.set(Array(names).sorted(), forKey: uploadedCloudLogNamesKey)
+    }
+
+    func isCloudLogUploaded(_ fileURL: URL) -> Bool {
+        uploadedCloudLogNames().contains(fileURL.lastPathComponent)
+    }
+
+    func associateCloudLog(_ fileURL: URL, withSessionId sessionId: String) {
+        var associations = cloudLogFileAssociations()
+        associations[sessionId] = fileURL.lastPathComponent
+        UserDefaults.standard.set(associations, forKey: cloudLogFileBySessionKey)
+    }
+
+    func cloudLogFileName(forSessionId sessionId: String) -> String? {
+        cloudLogFileAssociations()[sessionId]
+    }
+
+    /// Persist the server-side id as soon as Start succeeds. A later callback or
+    /// relaunch can then finish this exact remote session instead of borrowing a
+    /// newer recording's id or creating another row.
+    func saveCloudServerSessionId(_ serverSessionId: Int, forLocalSessionId sessionId: String) {
+        var serverIds = cloudServerSessionIds()
+        serverIds[sessionId] = serverSessionId
+        UserDefaults.standard.set(serverIds, forKey: cloudServerSessionIdKey)
+    }
+
+    func cloudServerSessionId(forLocalSessionId sessionId: String) -> Int? {
+        cloudServerSessionIds()[sessionId]
+    }
+
+    /// Log filenames contain the first eight characters of their session UUID.
+    /// Resolve that durable association when rebuilding pending state at launch.
+    func loadSession(matchingLogURL fileURL: URL) -> Session? {
+        let filename = fileURL.lastPathComponent
+        if let sessionId = cloudLogFileAssociations().first(where: { $0.value == filename })?.key,
+           let session = loadSession(id: sessionId) {
+            return session
+        }
+        return loadAllSessions().first { session in
+            filename.contains(String(session.id.prefix(8)))
+        }
+    }
+
+    private func uploadedCloudLogNames() -> Set<String> {
+        Set(UserDefaults.standard.stringArray(forKey: uploadedCloudLogNamesKey) ?? [])
+    }
+
+    private func cloudLogFileAssociations() -> [String: String] {
+        UserDefaults.standard.dictionary(forKey: cloudLogFileBySessionKey) as? [String: String] ?? [:]
+    }
+
+    private func cloudServerSessionIds() -> [String: Int] {
+        let raw = UserDefaults.standard.dictionary(forKey: cloudServerSessionIdKey) ?? [:]
+        return raw.reduce(into: [String: Int]()) { result, item in
+            if let value = item.value as? NSNumber {
+                result[item.key] = value.intValue
+            }
+        }
     }
     
     // MARK: - Sync to Phone
@@ -181,6 +266,8 @@ class StorageManager {
             
             print("🗑️ All sessions cleared")
             UserDefaults.standard.removeObject(forKey: pendingCloudUploadKey)
+            UserDefaults.standard.removeObject(forKey: cloudLogFileBySessionKey)
+            UserDefaults.standard.removeObject(forKey: cloudServerSessionIdKey)
         } catch {
             print("❌ Failed to clear sessions: \(error.localizedDescription)")
         }

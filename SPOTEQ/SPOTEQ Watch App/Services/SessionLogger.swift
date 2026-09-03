@@ -164,6 +164,10 @@ final class SessionLogger {
         stop() // close any previous log
 
         ioQueue.sync {
+            // Never let a failed new capture inherit the previous session's
+            // URL; endSession would otherwise associate and upload the wrong
+            // diagnostic file under the new session id.
+            fileURL = nil
             let fm = FileManager.default
             let dir = logsDirectory
             if !fm.fileExists(atPath: dir.path) {

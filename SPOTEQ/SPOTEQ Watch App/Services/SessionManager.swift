@@ -71,6 +71,12 @@ struct SessionUserNotice: Identifiable {
     let messageKey: String
 }
 
+enum StoredSessionUploadStatus: Equatable {
+    case pending
+    case uploading
+    case uploaded
+}
+
 class SessionManager: ObservableObject {
     // Services
     private let locationManager = LocationManager()
@@ -102,6 +108,8 @@ class SessionManager: ObservableObject {
     @Published var pendingCloudUpload: PendingSessionCloudUpload?
     @Published var sessionNotice: SessionUserNotice?
     @Published var canUploadPendingSession = false
+    /// Bumped whenever durable upload state changes so Settings rows refresh.
+    @Published private(set) var cloudUploadRevision = 0
     @Published var newBestJumpPresentation: Jump?
     
     // GPS tracking state
@@ -163,10 +171,13 @@ class SessionManager: ObservableObject {
     /// session id → diagnostic .kslog URL for sessions queued for cloud upload,
     /// so an offline upload can still attach the log when it flushes on reconnect.
     private var pendingUploadLogURLs: [String: URL] = [:]
-    /// session ids whose log upload is in-flight or already succeeded — dedups the
-    /// log upload across the live-finalize handler, the workout callback and the
-    /// reconnect flush (all of which may fire for the same session).
-    private var logUploadInFlightOrDone = Set<String>()
+    /// Session ids whose log upload is currently in flight. Completed uploads
+    /// are deduplicated by the durable filename ledger in StorageManager.
+    private var logUploadsInFlight = Set<String>()
+    /// "Not now" suppresses a reminder only for the current foreground/network
+    /// cycle. The durable pending marker remains intact for the next entry or
+    /// reconnect, as promised by the UI.
+    private var deferredPendingUploadIds = Set<String>()
     private var activeDetectionEngine: DetectionEngine = .v16BigAir
     private var recordingPipelineStarted = false
     private var motionPipelineStarted = false
@@ -193,7 +204,6 @@ class SessionManager: ObservableObject {
         setupCallbacks()
         observeManagers()
         startNetworkMonitoring()
-        flushPendingCloudUploads()
     }
     
     // MARK: - Launch Permissions
@@ -678,6 +688,9 @@ class SessionManager: ObservableObject {
         // calories/maxHr belong to this exact session and survive retry.
         session.endTime = Date()
         session.status = .completed
+        let immediateHealthMetrics = workoutManager.healthMetricsSnapshot()
+        session.activeCalories = immediateHealthMetrics.caloriesForUpload
+        session.maxHeartRate = immediateHealthMetrics.maxHrForUpload
         currentSession = session
 
         // Stop all services
@@ -695,7 +708,8 @@ class SessionManager: ObservableObject {
             )
         }
         
-        // Stop session logger only if the one-minute recording gate opened.
+        // Close the logger before committing the session so every queued sample
+        // is durable when the UI returns to Home.
         let completedLogURL = recordingPipelineStarted ? sessionLogger.mostRecentLogURL() : nil
         if recordingPipelineStarted {
             sessionLogger.stop()
@@ -703,18 +717,42 @@ class SessionManager: ObservableObject {
         V13CalculationLogService.shared.detachSink()
         // Remember the log location synchronously (before the async live-finalize
         // completes) so the finalize handler can upload the .kslog too.
-        if let logURL = completedLogURL { pendingUploadLogURLs[session.id] = logURL }
+        if let logURL = completedLogURL {
+            pendingUploadLogURLs[session.id] = logURL
+            storageManager.associateCloudLog(logURL, withSessionId: session.id)
+        }
         
         // Stop timer
         timer?.invalidate()
         timer = nil
 
-        // The visible recording state should not wait for HealthKit's end
-        // callback. The completed Session value is captured below for save/upload.
+        // Local persistence is the first completion step and must never depend
+        // on HealthKit or the network. HealthKit may take up to five seconds and
+        // watchOS may suspend the app as soon as the recording UI disappears.
+        let savedInitialSnapshot = storageManager.saveSession(session)
+        if savedInitialSnapshot {
+            storageManager.markPendingCloudUpload(sessionId: session.id)
+            cloudUploadRevision += 1
+            pendingCloudUpload = PendingSessionCloudUpload(
+                session: session,
+                logURL: completedLogURL
+            )
+            print("✅ Session saved locally before upload: \(session.id)")
+        }
+
+        // The visible recording state should not wait for HealthKit's bounded
+        // aggregate callback. The completed value remains captured below.
         resetFinishedSessionState()
+
+        if !savedInitialSnapshot {
+            sessionNotice = SessionUserNotice(
+                titleKey: "session.save_failed_title",
+                messageKey: "session.save_failed_message"
+            )
+        }
         
-        // End workout, attach the bounded aggregate, then close watch-ingest.
-        // WorkoutManager delivers within five seconds even if HealthKit stalls.
+        // Enrich the already-durable snapshot with the bounded HealthKit
+        // aggregate. A second atomic save replaces the same session file.
         workoutManager.endWorkout { [weak self] healthMetrics in
             guard let self = self else { return }
             var completedSession = session
@@ -727,60 +765,68 @@ class SessionManager: ObservableObject {
                 "⌚️ Session health end localSessionId=\(completedSession.id) "
                     + "calories=\(caloriesText) maxHr=\(maxHrText)"
             )
-            self.finishLiveSessionOnServer(
-                session: completedSession,
-                showPendingPrompt: false
-            )
 
-            if completedSession.duration < 60 {
-                self.deleteLogFile(completedLogURL)
-                print("⌚️ Session discarded — shorter than 60 seconds")
-                DispatchQueue.main.async {
-                    self.pendingCloudUpload = nil
-                    self.sessionNotice = SessionUserNotice(
-                        titleKey: "session.too_short_title",
-                        messageKey: "session.too_short_message"
+            let savedEnrichedSnapshot = self.storageManager.saveSession(completedSession)
+            if savedEnrichedSnapshot {
+                // The initial commit already registered pending summary state.
+                // Re-adding it here could race a fast successful upload and
+                // resurrect an item that has just been acknowledged.
+                if !savedInitialSnapshot {
+                    self.storageManager.markPendingCloudUpload(sessionId: completedSession.id)
+                }
+                self.cloudUploadRevision += 1
+
+                // A first disk attempt can fail transiently. If the HealthKit
+                // rewrite recovered it, restore the same upload prompt here.
+                if !savedInitialSnapshot, self.pendingCloudUpload == nil {
+                    self.sessionNotice = nil
+                    self.pendingCloudUpload = PendingSessionCloudUpload(
+                        session: completedSession,
+                        logURL: completedLogURL
+                    )
+                } else if self.pendingCloudUpload?.session.id == completedSession.id {
+                    self.pendingCloudUpload = PendingSessionCloudUpload(
+                        session: completedSession,
+                        logURL: completedLogURL
                     )
                 }
-                return
-            }
-            
-            // Save session locally
-            self.storageManager.saveSession(completedSession)
-            print("✅ Session saved: \(completedSession.jumps.count) jumps, \(String(format: "%.2f", completedSession.distance/1000))km")
-            
-            // Always present the end-of-session prompt. Do not add the session to
-            // the reconnect queue until the user explicitly chooses Upload;
-            // otherwise a network callback could race this main-thread assignment
-            // and upload the diagnostic log without consent.
-            DispatchQueue.main.async {
-                self.pendingCloudUpload = PendingSessionCloudUpload(session: completedSession, logURL: completedLogURL)
+
+                print("✅ Session updated with HealthKit metrics: \(completedSession.id)")
+                self.finishLiveSessionOnServer(
+                    session: completedSession,
+                    showPendingPrompt: false
+                )
             }
         }
     }
 
+    /// "Not now" only dismisses this presentation. The session and its upload
+    /// marker stay on disk so launch/reconnect can offer the action again.
     func keepPendingSessionLocal() {
         guard let pending = pendingCloudUpload else { return }
+        deferredPendingUploadIds.insert(pending.session.id)
         pendingCloudUpload = nil
-        // Local-only: drop it from the cloud queue so it is not auto-uploaded later.
-        storageManager.clearPendingCloudUpload(sessionId: pending.session.id)
-        print("⌚️ Session kept local only: \(pending.session.id)")
+        print("⌚️ Session kept local for now: \(pending.session.id)")
     }
 
-    /// User chose to upload. Works offline: the session stays queued and is
-    /// auto-uploaded on the next reconnect (see `flushPendingCloudUploads`).
-    /// Sign-in is enforced at the call site (ContentView) before this runs.
+    /// Upload is always an explicit user action. A reconnect only restores the
+    /// prompt; it never silently sends a locally stored diagnostic log.
     func uploadPendingSessionToCloud() {
-        guard let pending = pendingCloudUpload else { return }
+        guard canUploadPendingSession, let pending = pendingCloudUpload else { return }
         pendingCloudUpload = nil
-        // Keep it in the cloud queue so a failed/offline upload is retried later.
-        storageManager.markPendingCloudUpload(sessionId: pending.session.id)
+        deferredPendingUploadIds.insert(pending.session.id)
         if let logURL = pending.logURL {
             pendingUploadLogURLs[pending.session.id] = logURL
         }
 
-        finishLiveSessionOnServer(session: pending.session, showPendingPrompt: false)
-        uploadSessionLog(sessionId: pending.session.id, logURL: pending.logURL)
+        // Summary and raw log have separate durable completion states. Only
+        // retry summary finalization when its pending marker still exists.
+        if storageManager.pendingCloudUploadSessionIds().contains(pending.session.id) {
+            finishLiveSessionOnServer(session: pending.session, showPendingPrompt: false)
+        }
+        if let logURL = pending.logURL, !storageManager.isCloudLogUploaded(logURL) {
+            uploadSessionLog(sessionId: pending.session.id, logURL: logURL)
+        }
     }
 
     /// Called from the prompt when the user taps Upload but is not signed in.
@@ -789,7 +835,7 @@ class SessionManager: ObservableObject {
     func notifySignInRequiredForUpload() {
         guard let pending = pendingCloudUpload else { return }
         pendingCloudUpload = nil
-        storageManager.markPendingCloudUpload(sessionId: pending.session.id)
+        deferredPendingUploadIds.insert(pending.session.id)
         if let logURL = pending.logURL {
             pendingUploadLogURLs[pending.session.id] = logURL
         }
@@ -799,54 +845,161 @@ class SessionManager: ObservableObject {
         )
     }
 
-    /// Retry uploads the user already approved as soon as authentication becomes
-    /// available. Without this, an already-online watch would wait for the next
-    /// network path change before flushing the consented queue.
+    /// Authentication becoming available is another chance to ask, not consent
+    /// to upload. This keeps the network behavior predictable for the rider.
     func retryPendingCloudUploadsAfterSignIn() {
-        flushPendingCloudUploads()
+        deferredPendingUploadIds.removeAll()
+        presentPendingCloudUploadIfNeeded()
     }
 
-    /// Discard the just-finished local copy. The live server session is still
-    /// finalized automatically by `endSession`; this only removes local storage
-    /// and the diagnostic log.
-    func discardPendingSession() {
-        guard let pending = pendingCloudUpload else { return }
+    /// Called when the app enters the foreground. A previous "Not now" choice
+    /// is intentionally scoped to the last foreground visit only.
+    func handleAppBecameActive() {
+        deferredPendingUploadIds.removeAll()
+        presentPendingCloudUploadIfNeeded()
+    }
+
+    func isStoredLogUploaded(_ fileURL: URL) -> Bool {
+        // Reading the revision makes this method participate in ObservableObject
+        // refreshes even though the durable source of truth is UserDefaults.
+        _ = cloudUploadRevision
+        return storageManager.isCloudLogUploaded(fileURL)
+    }
+
+    func uploadStatus(for session: Session) -> StoredSessionUploadStatus {
+        _ = cloudUploadRevision
+        let logURL = storedLogURL(for: session)
+        if liveEndInFlightSessionIds.contains(session.id)
+            || logUploadsInFlight.contains(session.id) {
+            return .uploading
+        }
+
+        let summaryIsPending = storageManager
+            .pendingCloudUploadSessionIds()
+            .contains(session.id)
+        let logIsPending = logURL.map { !storageManager.isCloudLogUploaded($0) } ?? false
+        return summaryIsPending || logIsPending ? .pending : .uploaded
+    }
+
+    func loadStoredSessions() -> [Session] {
+        storageManager.loadAllSessions()
+    }
+
+    func clearAllStoredSessions() {
+        storageManager.clearAllSessions()
         pendingCloudUpload = nil
-        storageManager.clearPendingCloudUpload(sessionId: pending.session.id)
-        storageManager.deleteSession(id: pending.session.id)
-        deleteLogFile(pending.logURL)
-        print("🗑️ Local session copy discarded: \(pending.session.id)")
+        pendingUploadLogURLs.removeAll()
+        deferredPendingUploadIds.removeAll()
+        cloudUploadRevision += 1
     }
 
-    /// Uploads the diagnostic .kslog for a session and clears it from the cloud
-    /// queue on success. Idempotent per session — safe to call from the live
-    /// finalize handler, the end-of-session callback, the manual prompt and the
-    /// reconnect flush. On failure it stays queued for the next reconnect.
+    /// Manual retry from Settings → Manage Sessions. Local JSON and log files
+    /// remain untouched regardless of upload outcome.
+    func uploadStoredSessionToCloud(_ session: Session) {
+        guard canUploadPendingSession else {
+            sessionNotice = SessionUserNotice(
+                titleKey: "session.upload_failed_title",
+                messageKey: "session.upload_offline_retry_message"
+            )
+            return
+        }
+
+        deferredPendingUploadIds.insert(session.id)
+        if pendingCloudUpload?.session.id == session.id {
+            pendingCloudUpload = nil
+        }
+
+        let summaryIsPending = storageManager
+            .pendingCloudUploadSessionIds()
+            .contains(session.id)
+        let logURL = storedLogURL(for: session)
+        if let logURL {
+            pendingUploadLogURLs[session.id] = logURL
+        }
+
+        if summaryIsPending {
+            finishLiveSessionOnServer(session: session, showPendingPrompt: false)
+        }
+        if let logURL, !storageManager.isCloudLogUploaded(logURL) {
+            uploadSessionLog(sessionId: session.id, logURL: logURL)
+        }
+        cloudUploadRevision += 1
+    }
+
+    /// Settings uses the same durable ledger as the end-of-session prompt.
+    /// Each successful file is recorded immediately, including partial success
+    /// when a later item in a batch fails.
+    func uploadStoredLogs(_ fileURLs: [URL]) async throws -> Int {
+        var uploadedCount = 0
+        for fileURL in fileURLs {
+            _ = try await CloudSyncService.shared.uploadLog(fileURL)
+            uploadedCount += 1
+            await MainActor.run {
+                self.recordSuccessfulLogUpload(fileURL)
+            }
+        }
+        return uploadedCount
+    }
+
+    /// Uploads a diagnostic log. Summary completion is tracked independently;
+    /// a successful raw-log upload must never hide a failed session summary.
     private func uploadSessionLog(sessionId: String, logURL: URL?) {
-        guard !logUploadInFlightOrDone.contains(sessionId) else { return }
+        guard !logUploadsInFlight.contains(sessionId) else { return }
         guard let logURL else {
-            // No log to upload — don't keep the session queued forever for a log.
             print("☁️ No session log available for cloud upload")
-            storageManager.clearPendingCloudUpload(sessionId: sessionId)
             pendingUploadLogURLs.removeValue(forKey: sessionId)
             return
         }
-        logUploadInFlightOrDone.insert(sessionId)
+        guard !storageManager.isCloudLogUploaded(logURL) else { return }
+        logUploadsInFlight.insert(sessionId)
         Task {
             do {
                 let response = try await CloudSyncService.shared.uploadLog(logURL)
                 let cloudPath = response.path ?? "(no path)"
                 print("☁️ Session log uploaded: \(logURL.lastPathComponent) → \(cloudPath)")
                 await MainActor.run {
-                    self.storageManager.clearPendingCloudUpload(sessionId: sessionId)
-                    self.pendingUploadLogURLs.removeValue(forKey: sessionId)
+                    self.recordSuccessfulLogUpload(logURL, sessionId: sessionId)
                 }
             } catch {
                 print("☁️ Session log upload failed: \(error.localizedDescription)")
                 await MainActor.run {
-                    self.logUploadInFlightOrDone.remove(sessionId)   // allow retry on reconnect
+                    self.logUploadsInFlight.remove(sessionId)
+                    self.cloudUploadRevision += 1
+                    self.sessionNotice = SessionUserNotice(
+                        titleKey: "session.upload_failed_title",
+                        messageKey: "session.upload_failed_message"
+                    )
                 }
             }
+        }
+    }
+
+    private func recordSuccessfulLogUpload(_ fileURL: URL, sessionId: String? = nil) {
+        storageManager.markCloudLogUploaded(fileURL)
+        let resolvedSession = storageManager.loadSession(matchingLogURL: fileURL)
+        let resolvedSessionId = sessionId ?? resolvedSession?.id
+        if let resolvedSessionId {
+            storageManager.associateCloudLog(fileURL, withSessionId: resolvedSessionId)
+            pendingUploadLogURLs.removeValue(forKey: resolvedSessionId)
+            logUploadsInFlight.remove(resolvedSessionId)
+            if pendingCloudUpload?.session.id == resolvedSessionId {
+                pendingCloudUpload = nil
+            }
+        }
+        cloudUploadRevision += 1
+    }
+
+    private func storedLogURL(for session: Session, among knownURLs: [URL]? = nil) -> URL? {
+        if let inMemoryURL = pendingUploadLogURLs[session.id] {
+            return inMemoryURL
+        }
+        let logURLs = knownURLs ?? sessionLogger.allLogURLs()
+        if let filename = storageManager.cloudLogFileName(forSessionId: session.id),
+           let exactURL = logURLs.first(where: { $0.lastPathComponent == filename }) {
+            return exactURL
+        }
+        return logURLs.first {
+            $0.lastPathComponent.contains(String(session.id.prefix(8)))
         }
     }
 
@@ -863,48 +1016,42 @@ class SessionManager: ObservableObject {
         motionPipelineStarted = false
     }
 
-    private func deleteLogFile(_ url: URL?) {
-        guard let url else { return }
-        do {
-            try FileManager.default.removeItem(at: url)
-            print("🗑️ Discarded short-session log: \(url.lastPathComponent)")
-        } catch {
-            print("⚠️ Failed to delete short-session log: \(error.localizedDescription)")
-        }
-    }
-
     private func startNetworkMonitoring() {
         networkMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                self.canUploadPendingSession = path.status == .satisfied
-                if self.canUploadPendingSession {
-                    self.flushPendingCloudUploads()
+                let wasAvailable = self.canUploadPendingSession
+                let isAvailable = path.status == .satisfied
+                self.canUploadPendingSession = isAvailable
+                if isAvailable && !wasAvailable {
+                    self.deferredPendingUploadIds.removeAll()
+                    self.presentPendingCloudUploadIfNeeded()
                 }
             }
         }
         networkMonitor.start(queue: networkMonitorQueue)
     }
 
-    /// Uploads every session the user queued for the cloud (the pending queue),
-    /// silently, when a connection is available. Sessions chosen "Keep Local" or
-    /// "Discard" were removed from the queue, so they are skipped. A successful
-    /// upload clears the session from the queue (see `finishLiveSessionOnServer`).
-    private func flushPendingCloudUploads() {
-        guard canUploadPendingSession, !isRecording else { return }
+    /// Rehydrates the newest local session whose summary or diagnostic log has
+    /// not completed upload. Unknown legacy logs are treated as pending, which
+    /// is the only safe conclusion when no earlier success ledger exists.
+    private func presentPendingCloudUploadIfNeeded() {
+        guard pendingCloudUpload == nil, !isRecording else { return }
         let pendingIds = Set(storageManager.pendingCloudUploadSessionIds())
-        guard !pendingIds.isEmpty else { return }
+        let sessions = storageManager.loadAllSessions()
+        let logURLs = sessionLogger.allLogURLs()
 
-        let sessions = storageManager.loadAllSessions().filter { pendingIds.contains($0.id) }
-        for session in sessions {
-            // Skip the session currently shown in the end-of-session prompt; the
-            // user hasn't chosen yet.
-            if pendingCloudUpload?.session.id == session.id { continue }
-            // Silent retry: don't pop the end-of-session prompt if this fails.
-            finishLiveSessionOnServer(session: session, showPendingPrompt: false)
-            let logURL = pendingUploadLogURLs[session.id]
-                ?? sessionLogger.allLogURLs().first { $0.lastPathComponent.contains(String(session.id.prefix(8))) }
-            uploadSessionLog(sessionId: session.id, logURL: logURL)
+        for session in sessions where !deferredPendingUploadIds.contains(session.id) {
+            let logURL = storedLogURL(for: session, among: logURLs)
+            let summaryIsPending = pendingIds.contains(session.id)
+            let logIsPending = logURL.map { !storageManager.isCloudLogUploaded($0) } ?? false
+            guard summaryIsPending || logIsPending else { continue }
+
+            if let logURL {
+                pendingUploadLogURLs[session.id] = logURL
+            }
+            pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: logURL)
+            return
         }
     }
     
@@ -1338,7 +1485,9 @@ class SessionManager: ObservableObject {
         if let firstPoint = session.gpsPoints.first {
             return (firstPoint.latitude, firstPoint.longitude)
         }
-        if let latestLiveGPSPoint {
+        // A delayed callback from session A must never borrow session B's live
+        // coordinate after the rider has already started another recording.
+        if currentSession?.id == session.id, let latestLiveGPSPoint {
             return (latestLiveGPSPoint.latitude, latestLiveGPSPoint.longitude)
         }
         return liveFallbackCoordinate
@@ -1370,7 +1519,14 @@ class SessionManager: ObservableObject {
                     startedAt: startedAt
                 )
                 let accepted = await MainActor.run { () -> Bool in
-                    self.uploadState.acceptStart(sessionId: localSessionId, sessId: resp.sessId)
+                    self.storageManager.saveCloudServerSessionId(
+                        resp.sessId,
+                        forLocalSessionId: localSessionId
+                    )
+                    return self.uploadState.acceptStart(
+                        sessionId: localSessionId,
+                        sessId: resp.sessId
+                    )
                 }
                 guard accepted else { return }
                 print("☁️ Session live on server — sessId=\(resp.sessId) spot=\(resp.spot) reason=\(reason)")
@@ -1607,19 +1763,32 @@ class SessionManager: ObservableObject {
                     if finished {
                         self.finalizedLiveSessionIds.insert(session.id)
                         self.liveEndRetryCounts.removeValue(forKey: session.id)
-                        // Metadata is on the cloud. Do NOT upload the log or dismiss
-                        // the end-of-session prompt here — the diagnostic log is the
-                        // user's choice via the prompt, which must stay open until
-                        // they tap upload / keep local / discard.
+                        // Summary and raw-log acknowledgements are deliberately
+                        // separate. Clearing this ID cannot mark the log uploaded;
+                        // its filename ledger is updated only by uploadLog success.
+                        self.storageManager.clearPendingCloudUpload(sessionId: session.id)
+                        self.cloudUploadRevision += 1
+                        if let pending = self.pendingCloudUpload,
+                           pending.session.id == session.id {
+                            let logStillPending = pending.logURL.map {
+                                !self.storageManager.isCloudLogUploaded($0)
+                            } ?? false
+                            if !logStillPending {
+                                self.pendingCloudUpload = nil
+                            }
+                        }
                         if self.uploadState.activeSessionId == session.id {
                             self.uploadState.reset(sessionId: nil)
                         }
                     } else {
-                        if showPendingPrompt {
-                            self.storageManager.markPendingCloudUpload(sessionId: session.id)
-                        }
+                        self.storageManager.markPendingCloudUpload(sessionId: session.id)
+                        self.cloudUploadRevision += 1
                         if showPendingPrompt, self.pendingCloudUpload == nil {
-                            self.pendingCloudUpload = PendingSessionCloudUpload(session: session, logURL: nil)
+                            let logURL = self.storedLogURL(for: session)
+                            self.pendingCloudUpload = PendingSessionCloudUpload(
+                                session: session,
+                                logURL: logURL
+                            )
                         }
                         let retryCount = (self.liveEndRetryCounts[session.id] ?? 0) + 1
                         self.liveEndRetryCounts[session.id] = retryCount
@@ -1629,6 +1798,11 @@ class SessionManager: ObservableObject {
                                 self?.finishLiveSessionOnServer(session: session, showPendingPrompt: showPendingPrompt)
                             }
                             print("☁️ Live session end retry scheduled — localSessionId=\(session.id) attempt=\(retryCount + 1)")
+                        } else if !showPendingPrompt {
+                            self.sessionNotice = SessionUserNotice(
+                                titleKey: "session.upload_failed_title",
+                                messageKey: "session.upload_failed_message"
+                            )
                         }
                     }
                 }
@@ -1650,7 +1824,15 @@ class SessionManager: ObservableObject {
         let startCoordinate = await MainActor.run { self.liveStartCoordinate(for: session) }
         let sessId: Int
 
-        if let current = await MainActor.run { self.uploadState.currentServerSessId } {
+        let persistedServerSessionId = await MainActor.run {
+            self.storageManager.cloudServerSessionId(forLocalSessionId: localSessionId)
+        }
+        let activeSnapshot = await MainActor.run {
+            self.uploadState.startSnapshot(sessionId: localSessionId)
+        }
+        if let persistedServerSessionId {
+            sessId = persistedServerSessionId
+        } else if activeSnapshot.isCurrent, let current = activeSnapshot.sessId {
             sessId = current
         } else if let current = await waitForServerSessionId(localSessionId: localSessionId) {
             sessId = current
@@ -1662,6 +1844,10 @@ class SessionManager: ObservableObject {
                     startedAt: session.startTime
                 )
                 await MainActor.run {
+                    self.storageManager.saveCloudServerSessionId(
+                        started.sessId,
+                        forLocalSessionId: localSessionId
+                    )
                     _ = self.uploadState.acceptStart(sessionId: localSessionId, sessId: started.sessId)
                 }
                 sessId = started.sessId

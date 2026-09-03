@@ -35,19 +35,19 @@
 "session.end_message" = "Are you sure you want to end this session?";
 "session.upload_prompt_title" = "Upload Session?";
 "session.upload_prompt_message" = "This session is saved on your watch. Upload it to SPOTEQ cloud too?";
-"session.upload_offline_message" = "No internet connection right now. Upload it to the cloud (it will send when you're back online), keep it on your watch, or discard it.";
+"session.upload_offline_message" = "This session is saved on your watch. Connect to the internet to upload it; SPOTEQ will remind you when the connection returns.";
 "session.upload_now" = "Upload";
-"session.keep_local" = "Keep Local";
-"session.discard" = "Discard";
+"session.keep_local" = "Not Now";
 "session.queued_title" = "Queued for Upload";
 "session.queued_message" = "This session will upload to SPOTEQ cloud automatically when a connection is available.";
 "session.signin_required_title" = "Sign In Required";
 "session.signin_required_message" = "Sign in to your SPOTEQ account (Settings → Account) to upload sessions to the cloud. It's saved on your watch for now.";
-"session.too_short_title" = "Session Not Saved";
-"session.too_short_message" = "Sessions shorter than 1 minute are discarded.";
+"session.save_failed_title" = "Could Not Save";
+"session.save_failed_message" = "SPOTEQ could not save this session to the watch. Check available storage before recording another session.";
 "session.upload_failed_title" = "Could Not Upload";
 "session.upload_no_gps_message" = "No GPS point was recorded, so SPOTEQ used a fallback start point for upload.";
 "session.upload_failed_message" = "The session stayed on your watch. Check sign-in and network connection, then try again later.";
+"session.upload_offline_retry_message" = "This session is safe on your watch. Connect to the internet, then upload it from Settings → Manage Sessions.";
 "session.upload_success_title" = "Session Uploaded";
 "session.upload_success_message" = "Your session was uploaded to SPOTEQ cloud successfully.";
 "session.v12_unavailable_title" = "V12 Not Ready";
@@ -239,6 +239,12 @@
 "data.delete_confirm" = "Delete All Sessions?";
 "data.delete_message" = "This action cannot be undone. All your session data will be permanently deleted.";
 "data.delete" = "Delete";
+"data.no_sessions" = "No saved sessions yet";
+"data.pending_upload" = "Saved locally · Not uploaded";
+"data.uploading" = "Uploading…";
+"data.uploaded" = "Uploaded · Local copy kept";
+"data.upload_session" = "Upload Session";
+"data.waiting_for_network" = "Waiting for Internet";
 
 // MARK: - Session Logs
 "settings.session_logs" = "Session Logs";
@@ -284,6 +290,9 @@
 "logs.fetch_cloud_response" = "Fetch Cloud Response";
 "logs.upload_cloud" = "Upload All to Cloud";
 "logs.upload_this" = "Upload to Cloud";
+"logs.upload_again" = "Upload Again";
+"logs.pending_upload" = "Not uploaded";
+"logs.uploaded" = "Uploaded";
 "logs.upload_this_success" = "✅ Uploaded to cloud";
 "logs.upload_selected" = "Upload Selected (%d)";
 "logs.select" = "Select Sessions";
