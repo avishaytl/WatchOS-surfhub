@@ -369,7 +369,7 @@ let base64 = log.base64EncodedString()
 let payload = CloudLogPayload(
     type: "session_log",
     filename: filename,
-    contentType: "application/x-kiters-session-log",
+    contentType: "application/x-spoteq-session-log",
     contentEncoding: "base64",
     appVersion: appVersion,
     build: build,

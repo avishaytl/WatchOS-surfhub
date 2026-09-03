@@ -206,7 +206,7 @@ Mode:    standard  mockSpeed=8.0 m/s
 Jumps:   1 (accepted=1)
   [✓] #0  t=193.60s  air=0.91s phys=0.91s  h=1.02m(ballistic)  dist=0.3m  apex=0.46s  conf=60  rot=1
 ════════════════════════════════════════════════
-→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/analysis_v14/log_20260727_143837_7B1C90F4.actual.json
+→ wrote <project-root>/cloud_logs_20260727/analysis_v14/log_20260727_143837_7B1C90F4.actual.json
 indow OPEN reason=takeoff t=104987.59
 🦘 v14 CANDIDATE takeoff=104987.59 baseline=-32.30 pop=true
   [v14  193.96s] CANDIDATE takeoff=104987.59 baseline=-32.30 pop=true

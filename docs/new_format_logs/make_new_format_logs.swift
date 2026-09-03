@@ -37,7 +37,7 @@ struct Generator {
         let diagnostic = BinaryLogEnvelope(fields: [
             .string("type", "session_log"),
             .string("filename", "log_20260615_143052_F4A2C0D1.kslog"),
-            .string("contentType", "application/x-kiters-session-log"),
+            .string("contentType", "application/x-spoteq-session-log"),
             .string("contentEncoding", "binary"),
             .string("appVersion", "1.0"),
             .string("build", "42"),

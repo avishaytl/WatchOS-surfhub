@@ -19,6 +19,28 @@ struct V16Readiness {
     let logDetails: String
 }
 
+enum V16Settings {
+    static let minimumJumpHeightM = "v16MinimumJumpHeightM"
+
+    /// Builds the live engine configuration from the persisted product
+    /// setting. Unexpected values from older/test builds are snapped to the
+    /// nearest supported option and repaired in UserDefaults.
+    static func configuration(defaults: UserDefaults = .standard) -> V16Config {
+        var configuration = V16Config()
+        guard defaults.object(forKey: minimumJumpHeightM) != nil else {
+            return configuration
+        }
+
+        let stored = defaults.double(forKey: minimumJumpHeightM)
+        let normalized = V16MinimumJumpHeight.normalized(stored)
+        configuration.minReportM = normalized
+        if stored != normalized {
+            defaults.set(normalized, forKey: minimumJumpHeightM)
+        }
+        return configuration
+    }
+}
+
 final class JumpDetectorV16: JumpDetecting {
     var sessionId: String = ""
     var synchronousAnalysis = false
@@ -26,7 +48,7 @@ final class JumpDetectorV16: JumpDetecting {
     var onStateChanged: ((JumpDetector.JumpState) -> Void)?
     var onDebugEvent: ((TimeInterval, String) -> Void)?
 
-    private var configuration = V16Config()
+    private var configuration: V16Config
     private var engine: JumpEngineV16
     private let engineQueue = DispatchQueue(label: "com.spoteq.jumpV16.engine", qos: .userInitiated)
     private let stateLock = NSLock()
@@ -42,7 +64,9 @@ final class JumpDetectorV16: JumpDetecting {
     private let bootWallClock = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
 
     init() {
-        engine = JumpEngineV16(configuration)
+        let initialConfiguration = V16Settings.configuration()
+        configuration = initialConfiguration
+        engine = JumpEngineV16(initialConfiguration)
         wireEngine()
     }
 
@@ -73,7 +97,7 @@ final class JumpDetectorV16: JumpDetecting {
     func reset(mode: DetectionMode) {
         _ = mode // V16 is calibrated as one fixed operating point.
         engineQueue.sync {
-            configuration = V16Config()
+            configuration = V16Settings.configuration()
             engine = JumpEngineV16(configuration)
             wireEngine()
             lastMotionT = 0

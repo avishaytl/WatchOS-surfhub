@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.kiters.wear"
+    namespace = "com.spoteq.wear"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kiters.wear"
+        applicationId = "com.spoteq.wear"
         minSdk = 30
         targetSdk = 34
         versionCode = 3

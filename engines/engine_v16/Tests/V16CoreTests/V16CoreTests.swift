@@ -88,6 +88,43 @@ final class V16CoreTests: XCTestCase {
         XCTAssertGreaterThan(cfg.historySec, cfg.apexPreSec + cfg.evalDelaySec)
     }
 
+    func testMinimumJumpHeightProductOptionsAndNormalization() {
+        XCTAssertEqual(V16MinimumJumpHeight.defaultMeters, 1.5, accuracy: 1e-9)
+        XCTAssertEqual(V16MinimumJumpHeight.optionsMeters, [1.5, 2.0, 3.0, 4.0])
+
+        for option in V16MinimumJumpHeight.optionsMeters {
+            XCTAssertEqual(V16MinimumJumpHeight.normalized(option), option, accuracy: 1e-9)
+        }
+
+        XCTAssertEqual(V16MinimumJumpHeight.normalized(0.5), 1.5, accuracy: 1e-9)
+        XCTAssertEqual(V16MinimumJumpHeight.normalized(2.4), 2.0, accuracy: 1e-9)
+        XCTAssertEqual(V16MinimumJumpHeight.normalized(2.6), 3.0, accuracy: 1e-9)
+        XCTAssertEqual(V16MinimumJumpHeight.normalized(9.0), 4.0, accuracy: 1e-9)
+        XCTAssertEqual(V16MinimumJumpHeight.normalized(.nan), 1.5, accuracy: 1e-9)
+    }
+
+    func testEveryProductMinimumHeightIsAppliedAsTheFinalJumpFloor() {
+        func jumpCount(minimumHeight: Double) -> Int {
+            var config = V16Config()
+            config.minReportM = minimumHeight
+            // Hold the resulting height at 2.5 m so this test isolates the
+            // selectable product floor from the independent height pipeline.
+            config.heightCalSlope = 0
+            config.heightCalOffsetM = 2.5
+
+            let delegate = CaptureDelegate()
+            let engine = JumpEngineV16(config)
+            engine.delegate = delegate
+            feedUnresolvedLanding(into: engine)
+            return delegate.jumps.count
+        }
+
+        XCTAssertEqual(jumpCount(minimumHeight: 1.5), 1)
+        XCTAssertEqual(jumpCount(minimumHeight: 2.0), 1)
+        XCTAssertEqual(jumpCount(minimumHeight: 3.0), 0)
+        XCTAssertEqual(jumpCount(minimumHeight: 4.0), 0)
+    }
+
     func testV16_8ReportFloorRejectsTheFormerLowBand() {
         let shippedDelegate = CaptureDelegate()
         let shipped = JumpEngineV16()

@@ -26,7 +26,7 @@
     <string name="session_end_confirm">End Session?</string>
     <string name="session_end_message">Are you sure you want to end this session?</string>
     <string name="session_upload_prompt_title">Upload Session?</string>
-    <string name="session_upload_prompt_message">This session is saved on your watch. Upload it to SurfHub cloud too?</string>
+    <string name="session_upload_prompt_message">This session is saved on your watch. Upload it to SPOTEQ cloud too?</string>
     <string name="session_upload_offline_message">No internet connection was detected. Keep this session on your watch and upload it when the connection is back, or discard it.</string>
     <string name="session_upload_now">Upload</string>
     <string name="session_keep_local">Keep Local</string>
@@ -37,7 +37,7 @@
     <string name="session_upload_no_gps_message">No GPS point was recorded, so this session could not be started on the server. It stayed on your watch.</string>
     <string name="session_upload_failed_message">The session stayed on your watch. Check GPS, sign-in, and network connection, then try again later.</string>
     <string name="session_upload_success_title">Session Uploaded</string>
-    <string name="session_upload_success_message">Your session was uploaded to SurfHub cloud successfully.</string>
+    <string name="session_upload_success_message">Your session was uploaded to SPOTEQ cloud successfully.</string>
     <string name="session_cancel">Cancel</string>
     <string name="session_screen_lock_active">Screen lock active</string>
     <string name="session_best_jump">🏆 Best Jump</string>
@@ -73,6 +73,8 @@
     <string name="settings_units_metric">Metric (km/h, m)</string>
     <string name="settings_units_imperial">Imperial (mph, ft)</string>
     <string name="settings_jump_detection">Jump Detection</string>
+    <string name="settings_min_jump_height">Minimum jump height</string>
+    <string name="settings_jump_height_option">%1$s m</string>
     <string name="settings_display_feedback">Display &amp; Feedback</string>
     <string name="settings_top_padding">Top Padding</string>
     <string name="settings_top_padding_auto">Auto</string>
@@ -170,11 +172,11 @@
     <string name="account_invalid_code">Invalid code — check your email and try again</string>
     <string name="account_invalid_credentials">Wrong email or password</string>
     <string name="account_password_placeholder">Password</string>
-    <string name="account_no_account_hint">No account? Sign up in the SurfHub phone app.</string>
+    <string name="account_no_account_hint">No account? Sign up in the SPOTEQ phone app.</string>
     <string name="account_try_again">Try Again</string>
     <string name="account_pair_preparing">Preparing code…</string>
     <string name="account_pair_scan_title">Scan with your phone</string>
-    <string name="account_pair_scan_hint">Open SurfHub on your phone, choose Connect Watch, then scan this QR code.</string>
+    <string name="account_pair_scan_hint">Open SPOTEQ on your phone, choose Connect Watch, then scan this QR code.</string>
     <string name="account_pair_waiting">Waiting for approval…</string>
     <string name="account_pair_expired">Code expired</string>
     <string name="account_pair_new_code">Show New Code</string>

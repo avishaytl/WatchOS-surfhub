@@ -1,6 +1,6 @@
 //
 //  WatchAuth.swift
-//  SurfHubWatch
+//  SPOTEQ Watch
 //
 //  The watch's OWN authentication — a LOGIN-ONLY flow (no sign-up; accounts are
 //  created in the phone app). The rider signs in here with the same Email or
@@ -28,7 +28,7 @@
 //      SUPABASE_ANON_KEY   the public anon key (safe to ship in the binary)
 //      GOOGLE_IOS_CLIENT_ID  for the Google Sign-In SDK on watchOS (if used)
 //
-//  See surfhub-watch/WATCH_AUTH.md for the complete spec + Google setup.
+//  See WATCH_AUTH.md for the complete spec + Google setup.
 //
 
 import Foundation
@@ -112,7 +112,7 @@ enum WatchAuth {
     /// The pairing code + QR payload the watch shows on screen.
     struct PairingRequest {
         let code: String
-        let qrPayload: String     // render this as a QR (e.g. surfhub://watch-pair?code=…)
+        let qrPayload: String     // render this as a QR (e.g. spoteq://watch-pair?code=…)
         let expiresAt: Date
     }
 

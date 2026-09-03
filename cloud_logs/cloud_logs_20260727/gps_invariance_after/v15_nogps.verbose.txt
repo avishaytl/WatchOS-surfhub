@@ -2140,7 +2140,7 @@ Jumps:   11 (accepted=11)
   [✓] #9  t=1968.76s  air=5.27s phys=5.27s  h=1.76m(ballistic)  dist=0.0m  apex=2.64s  conf=50  rot=1
   [✓] #10  t=1986.18s  air=2.62s phys=2.62s  h=1.69m(ballistic)  dist=0.0m  apex=1.31s  conf=50  rot=1
 ════════════════════════════════════════════════
-→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/gps_invariance_after/log_20260727_144243_F3386A6C.actual.json
+→ wrote <project-root>/cloud_logs_20260727/gps_invariance_after/log_20260727_144243_F3386A6C.actual.json
 36 air=6.37
   [v15 2010.88s] REJECT reason=rescueNeedsMeasuredHeight hBal=7.36 air=6.37
 🦘 v15 REJECT reason=rescueNeedsMeasuredHeight hBal=2.53 air=5.66

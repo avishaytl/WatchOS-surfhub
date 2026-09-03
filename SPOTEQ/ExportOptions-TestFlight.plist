@@ -8,8 +8,6 @@
 	<string>upload</string>
 	<key>signingStyle</key>
 	<string>automatic</string>
-	<key>teamID</key>
-	<string>2D7LFZS836</string>
 	<key>uploadSymbols</key>
 	<true/>
 	<key>manageAppVersionAndBuildNumber</key>

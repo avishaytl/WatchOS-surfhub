@@ -4,12 +4,14 @@ import Foundation
 
 enum GoogleSignInError: LocalizedError {
     case cancelled
+    case configuration
     case invalidResponse
     case exchangeFailed(String)
 
     var errorDescription: String? {
         switch self {
         case .cancelled:               return nil
+        case .configuration:           return L("account.error_configuration")
         case .invalidResponse:         return L("account.error_google_failed")
         case .exchangeFailed(let msg): return msg
         }
@@ -23,21 +25,49 @@ enum GoogleSignInError: LocalizedError {
 final class GoogleSignInService {
     static let shared = GoogleSignInService()
 
-    private let clientID = "504073436614-9qec94thlrslcbvqfnot83ovrg2uoctu.apps.googleusercontent.com"
-    private let scheme   = "com.googleusercontent.apps.504073436614-9qec94thlrslcbvqfnot83ovrg2uoctu"
+    private struct Configuration {
+        let clientID: String
+        let callbackScheme: String
+
+        static func load(from bundle: Bundle = .main) throws -> Configuration {
+            func requiredValue(_ key: String) throws -> String {
+                guard
+                    let rawValue = bundle.object(forInfoDictionaryKey: key) as? String,
+                    !rawValue.isEmpty,
+                    !rawValue.contains("$("),
+                    !rawValue.contains("YOUR_SPOTEQ_"),
+                    !rawValue.contains("unconfigured")
+                else {
+                    throw GoogleSignInError.configuration
+                }
+                return rawValue
+            }
+
+            let clientID = try requiredValue("SPOTEQ_GOOGLE_CLIENT_ID")
+            let callbackScheme = try requiredValue("SPOTEQ_GOOGLE_CALLBACK_SCHEME")
+            guard callbackScheme.range(
+                of: #"^[A-Za-z][A-Za-z0-9+.-]*$"#,
+                options: .regularExpression
+            ) != nil else {
+                throw GoogleSignInError.configuration
+            }
+            return Configuration(clientID: clientID, callbackScheme: callbackScheme)
+        }
+    }
 
     // Returns a Google id_token suitable for WatchAuth.signInWithGoogle(idToken:).
     func signIn() async throws -> String {
+        let configuration = try Configuration.load()
         let verifier  = randomBase64URL(32)
         let challenge = sha256Base64URL(verifier)
         let nonce     = randomBase64URL(16)
 
         var comps = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")!
         comps.queryItems = [
-            URLQueryItem(name: "client_id",             value: clientID),
+            URLQueryItem(name: "client_id",             value: configuration.clientID),
             URLQueryItem(name: "response_type",         value: "code"),
             URLQueryItem(name: "scope",                 value: "openid email profile"),
-            URLQueryItem(name: "redirect_uri",          value: "\(scheme):/oauth2redirect"),
+            URLQueryItem(name: "redirect_uri",          value: "\(configuration.callbackScheme):/oauth2redirect"),
             URLQueryItem(name: "code_challenge",        value: challenge),
             URLQueryItem(name: "code_challenge_method", value: "S256"),
             URLQueryItem(name: "nonce",                 value: nonce),
@@ -45,7 +75,10 @@ final class GoogleSignInService {
         guard let authURL = comps.url else { throw GoogleSignInError.invalidResponse }
 
         let code = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<String, Error>) in
-            let session = ASWebAuthenticationSession(url: authURL, callbackURLScheme: scheme) { url, error in
+            let session = ASWebAuthenticationSession(
+                url: authURL,
+                callbackURLScheme: configuration.callbackScheme
+            ) { url, error in
                 if let e = error as? ASWebAuthenticationSessionError, e.code == .canceledLogin {
                     cont.resume(throwing: GoogleSignInError.cancelled)
                     return
@@ -64,12 +97,16 @@ final class GoogleSignInService {
             session.start()
         }
 
-        return try await exchangeCode(code, verifier: verifier)
+        return try await exchangeCode(code, verifier: verifier, configuration: configuration)
     }
 
     // MARK: - Token exchange
 
-    private func exchangeCode(_ code: String, verifier: String) async throws -> String {
+    private func exchangeCode(
+        _ code: String,
+        verifier: String,
+        configuration: Configuration
+    ) async throws -> String {
         guard let url = URL(string: "https://oauth2.googleapis.com/token") else {
             throw GoogleSignInError.invalidResponse
         }
@@ -78,8 +115,8 @@ final class GoogleSignInService {
         req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         req.httpBody = [
             "code=\(code.percentEncoded)",
-            "client_id=\(clientID)",
-            "redirect_uri=\(scheme):/oauth2redirect",
+            "client_id=\(configuration.clientID)",
+            "redirect_uri=\(configuration.callbackScheme):/oauth2redirect",
             "grant_type=authorization_code",
             "code_verifier=\(verifier)",
         ].joined(separator: "&").data(using: .utf8)

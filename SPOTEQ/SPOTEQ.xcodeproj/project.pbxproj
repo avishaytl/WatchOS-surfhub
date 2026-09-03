@@ -272,7 +272,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2D7LFZS836;
+				DEVELOPMENT_TEAM = "$(SPOTEQ_TEAM_ID)";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "SPOTEQ iOS App/Info.plist";
@@ -281,7 +281,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.avishayportal.kiters;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spoteq.watch;
 				PRODUCT_NAME = SPOTEQ;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
@@ -298,7 +298,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2D7LFZS836;
+				DEVELOPMENT_TEAM = "$(SPOTEQ_TEAM_ID)";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "SPOTEQ iOS App/Info.plist";
@@ -307,7 +307,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.avishayportal.kiters;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spoteq.watch;
 				PRODUCT_NAME = SPOTEQ;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
@@ -354,7 +354,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 2D7LFZS836;
+				DEVELOPMENT_TEAM = "$(SPOTEQ_TEAM_ID)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -417,7 +417,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 2D7LFZS836;
+				DEVELOPMENT_TEAM = "$(SPOTEQ_TEAM_ID)";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -444,7 +444,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "SPOTEQ Watch App/SPOTEQ_Watch_App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2D7LFZS836;
+				DEVELOPMENT_TEAM = "$(SPOTEQ_TEAM_ID)";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "SPOTEQ Watch App/Info.plist";
@@ -452,7 +452,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.avishayportal.kiters.watchapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spoteq.watch.watchapp;
 				PRODUCT_NAME = SPOTEQ;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -471,7 +471,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "SPOTEQ Watch App/SPOTEQ_Watch_App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2D7LFZS836;
+				DEVELOPMENT_TEAM = "$(SPOTEQ_TEAM_ID)";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "SPOTEQ Watch App/Info.plist";
@@ -479,7 +479,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.avishayportal.kiters.watchapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spoteq.watch.watchapp;
 				PRODUCT_NAME = SPOTEQ;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;

@@ -11,7 +11,7 @@ The Wear OS app provides the same functionality as the watchOS app but for Andro
 1. Open Android Studio → New Project
 2. Select **Wear OS** → **Empty Activity**
 3. Name: `spoteq-wearos`
-4. Package: `com.spoteq.wearos`
+4. Package: `com.spoteq.wear`
 5. Language: **Kotlin**
 6. Minimum SDK: **API 30 (Wear OS 3.0)**
 
@@ -26,11 +26,11 @@ plugins {
 }
 
 android {
-    namespace = "com.spoteq.wearos"
+    namespace = "com.spoteq.wear"
     compileSdk = 34
     
     defaultConfig {
-        applicationId = "com.spoteq.wearos"
+        applicationId = "com.spoteq.wear"
         minSdk = 30
         targetSdk = 34
         versionCode = 1
@@ -165,7 +165,7 @@ dependencies {
 
 ```kotlin
 // WearApp.kt
-package com.spoteq.wearos
+package com.spoteq.wear
 
 import android.app.Application
 import kotlinx.coroutines.CoroutineScope
@@ -191,7 +191,7 @@ class WearApp : Application() {
 
 ```kotlin
 // MainActivity.kt
-package com.spoteq.wearos
+package com.spoteq.wear
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -206,11 +206,11 @@ import androidx.navigation.NavHostController
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
-import com.spoteq.wearos.ui.screens.SessionScreen
-import com.spoteq.wearos.ui.screens.StartScreen
-import com.spoteq.wearos.ui.screens.SummaryScreen
-import com.spoteq.wearos.ui.theme.SPOTEQTheme
-import com.spoteq.wearos.viewmodels.SessionViewModel
+import com.spoteq.wear.ui.screens.SessionScreen
+import com.spoteq.wear.ui.screens.StartScreen
+import com.spoteq.wear.ui.screens.SummaryScreen
+import com.spoteq.wear.ui.theme.SPOTEQTheme
+import com.spoteq.wear.viewmodels.SessionViewModel
 
 class MainActivity : ComponentActivity() {
     
@@ -301,14 +301,14 @@ fun WearApp() {
 
 ```kotlin
 // services/LocationService.kt
-package com.spoteq.wearos.services
+package com.spoteq.wear.services
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.os.Looper
 import com.google.android.gms.location.*
-import com.spoteq.wearos.models.GPSPoint
+import com.spoteq.wear.models.GPSPoint
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -369,14 +369,14 @@ class LocationService(private val context: Context) {
 
 ```kotlin
 // services/SensorService.kt
-package com.spoteq.wearos.services
+package com.spoteq.wear.services
 
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import com.spoteq.wearos.models.IMUSample
+import com.spoteq.wear.models.IMUSample
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -476,18 +476,18 @@ class SensorService(context: Context) {
 
 ```kotlin
 // services/SessionService.kt
-package com.spoteq.wearos.services
+package com.spoteq.wear.services
 
 import android.app.*
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.spoteq.wearos.MainActivity
-import com.spoteq.wearos.R
-import com.spoteq.wearos.data.SessionRepository
-import com.spoteq.wearos.models.Session
-import com.spoteq.wearos.models.Sport
+import com.spoteq.wear.MainActivity
+import com.spoteq.wear.R
+import com.spoteq.wear.data.SessionRepository
+import com.spoteq.wear.models.Session
+import com.spoteq.wear.models.Sport
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.*
@@ -614,7 +614,7 @@ class SessionService : Service() {
         return session
     }
     
-    private fun calculateIncrement(gpsPoint: com.spoteq.wearos.models.GPSPoint): Double {
+    private fun calculateIncrement(gpsPoint: com.spoteq.wear.models.GPSPoint): Double {
         // Calculate distance increment from previous point
         // Simplified - should use Haversine formula
         return 0.0 // TODO: Implement
@@ -686,11 +686,11 @@ sealed class SessionState {
 
 ```kotlin
 // services/DataLayerService.kt
-package com.spoteq.wearos.services
+package com.spoteq.wear.services
 
 import android.content.Context
 import com.google.android.gms.wearable.*
-import com.spoteq.wearos.models.Session
+import com.spoteq.wear.models.Session
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -771,7 +771,7 @@ class DataLayerListenerService : WearableListenerService() {
 
 ```kotlin
 // ui/screens/SessionScreen.kt
-package com.spoteq.wearos.ui.screens
+package com.spoteq.wear.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -782,7 +782,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.*
-import com.spoteq.wearos.viewmodels.SessionViewModel
+import com.spoteq.wear.viewmodels.SessionViewModel
 
 @Composable
 fun SessionScreen(

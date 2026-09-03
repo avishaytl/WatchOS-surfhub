@@ -18,7 +18,7 @@ side only has to: pair, then call one HTTP endpoint at four lifecycle moments.
  ┌──────────────────── AUTH (login on the watch, see WATCH_AUTH.md) ───────┐
  │  Registration happens in the PHONE app (sign-up → user + UID).          │
  │                                                                         │
- │  Watch (SurfHubWatch):  login screen (Email / Google, NO sign-up)       │
+ │  Watch (SPOTEQ):        login screen (Email / Google, NO sign-up)       │
  │    WatchAuth.signInWithEmail / signInWithGoogle                         │
  │      └─POST {base}/auth/v1/token (GoTrue) ─► access+refresh+uid         │
  │      └─► WatchPairingStore.apply(session)  (Keychain, same UID as phone)│
@@ -168,7 +168,7 @@ to its own login screen (see `WATCH_AUTH.md`).
 
 ## 5. Compact data formats (must match exactly)
 
-These mirror `surfhub-watch/core/types.ts` and `surfhub-app/src/data/types.ts`.
+These mirror the watch core types and `surfhub-app/src/data/types.ts`.
 `Models.swift` already defines `JumpEvent`; `TrackPoint` is `[Int]` = `[lat*1e4, lng*1e4]`.
 
 ```

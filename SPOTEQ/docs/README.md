@@ -39,7 +39,7 @@ SPOTEQ/
 
 1. **Open in Xcode**:
    ```bash
-   cd /Users/avishay/Desktop/spoteq/apps/watchos
+   cd /path/to/WatchOS-surfhub
    open SPOTEQ.xcodeproj  # You'll need to create this
    ```
 
@@ -47,7 +47,7 @@ SPOTEQ/
    - File → New → Project
    - Choose "watchOS → App"
    - Product Name: `SPOTEQ`
-   - Bundle ID: `com.avishayportal.kiters.watchapp` (legacy App Store identity; do not rename)
+   - Bundle ID: `com.spoteq.watch.watchapp`
    - Interface: SwiftUI
    - Language: Swift
 

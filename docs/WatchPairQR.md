@@ -1,12 +1,12 @@
 //
 //  WatchPairQR.swift
-//  SurfHubWatch
+//  SPOTEQ Watch
 //
 //  QR-pairing UI (WATCH_AUTH.md §2.6). The watch HAS NO CAMERA, so it DISPLAYS a
 //  QR and the PHONE scans it (device-authorization, like Apple TV sign-in):
 //
 //    1. requestPairing → show the returned `qrPayload` as a QR on the watch.
-//    2. The rider opens the SurfHub PHONE app → Settings → Connect watch → "Scan
+//    2. The rider opens the SPOTEQ PHONE app → Settings → Connect watch → "Scan
 //       watch QR code", points the phone camera at this QR, and taps Connect.
 //    3. We poll every ~2 s; on `.approved` the session is stored → go to recording.
 //    4. On `.expired` (5-min TTL) offer to generate a fresh QR.
@@ -54,7 +54,7 @@ struct WatchPairQRView: View {
                             .background(Color.white)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-                    Text("In the SurfHub app on your phone: Settings → Connect watch → Scan watch QR code.")
+                    Text("In the SPOTEQ app on your phone: Settings → Connect watch → Scan watch QR code.")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)

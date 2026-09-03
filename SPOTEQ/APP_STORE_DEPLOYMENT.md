@@ -1,17 +1,16 @@
 # SPOTEQ iOS + watchOS App — App Store Deployment Guide
 
-## Branding and permanent identifiers
+## Branding and distribution identifiers
 
 The project, targets, schemes, products, source entry points, and public app
-name are **SPOTEQ**. The following legacy strings are intentionally retained as
-compatibility identifiers and must not be treated as public branding:
+name are **SPOTEQ**. The standalone project now uses brand-based identifiers:
 
-- `com.avishayportal.kiters` — existing App Store iOS bundle identifier
-- `com.avishayportal.kiters.watchapp` — existing embedded watchOS bundle identifier
-- `application/x-kiters-session-log` — legacy log MIME type accepted by deployed tools
+- `com.spoteq.watch` — iOS companion bundle identifier
+- `com.spoteq.watch.watchapp` — embedded watchOS bundle identifier
+- `application/x-spoteq-session-log` — SPOTEQ session-log MIME type
 
-Renaming either Apple bundle identifier would create a different app instead of
-updating the existing SPOTEQ App Store Connect record.
+This migration creates a new Apple distribution identity. The previous App Store
+Connect record cannot accept an archive built with the new identifiers.
 
 ## Pre-Submission Checklist
 
@@ -20,7 +19,7 @@ updating the existing SPOTEQ App Store Connect record.
 - [x] Background modes configured (workout-processing, location)
 - [x] HealthKit entitlements enabled
 - [x] English + Hebrew localization
-- [x] Automatic code signing with Development Team
+- [x] Automatic code signing wired to the local `SPOTEQ_TEAM_ID` setting
 - [x] Privacy Manifest (`PrivacyInfo.xcprivacy`) created
 - [x] `ITSAppUsesNonExemptEncryption = NO` added (no custom encryption)
 - [x] Version source aligned through `Config.xcconfig` (`1.3` / Build `168`)
@@ -37,19 +36,29 @@ updating the existing SPOTEQ App Store Connect record.
 
 ### 1. Apple Developer Account Setup
 - [ ] Ensure your **Apple Developer Program** membership ($99/year) is active at [developer.apple.com](https://developer.apple.com)
-- [ ] Your Team ID `2D7LFZS836` is already configured in the project
+- [ ] Copy `Config.local.xcconfig.example` to `Config.local.xcconfig` and set
+  `SPOTEQ_TEAM_ID` to the SPOTEQ organization's Apple Developer Team ID
+- [ ] Create SPOTEQ-owned Google OAuth credentials and set
+  `SPOTEQ_GOOGLE_CLIENT_ID` plus its matching
+  `SPOTEQ_GOOGLE_CALLBACK_SCHEME` in the same local config file
+- [ ] Register explicit App IDs for `com.spoteq.watch` and
+  `com.spoteq.watch.watchapp`
+- [ ] Enable HealthKit, background delivery, and the shallow-depth/pressure
+  capability on the watch App ID; keep automatic signing enabled so Xcode can
+  create matching provisioning profiles
 
-### 2. App Store Connect — Open the Existing App Record
-1. Open the existing [SPOTEQ record (Apple ID 6760948988)](https://appstoreconnect.apple.com/apps/6760948988).
-2. Verify that its bundle ID is `com.avishayportal.kiters`. This legacy identifier
-   is the permanent App Store identity and must not be renamed. Do not create a
-   separate record for the watch app and do not use **Add Platform**.
-3. Under **General → App Information**, set the localized app name to **SPOTEQ**
-   if the existing record still displays its former name.
-4. Under **TestFlight → iOS**, open version `1.3` and select the newest build.
+### 2. App Store Connect — Create the New Standalone Record
+1. Create a new iOS app record and select the explicit App ID
+   `com.spoteq.watch`.
+2. Assign a new unique SKU and record the generated numeric Apple ID in the
+   release documentation.
+3. Do not create a separate App Store Connect record for the embedded watch app
+   and do not use **Add Platform**.
+4. Under **General → App Information**, set the localized app name to **SPOTEQ**.
+5. Under **TestFlight → iOS**, select the build uploaded from this project.
 
 The uploaded iOS bundle contains the companion app and embeds the independent
-watchOS bundle `com.avishayportal.kiters.watchapp`; Apple associates both with
+watchOS bundle `com.spoteq.watch.watchapp`; Apple associates both with
 the same App Store Connect record.
 
 ### 3. App Icon

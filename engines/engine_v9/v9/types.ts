@@ -1,5 +1,5 @@
 /**
- * surfhub-watch — shared data contracts.
+ * SPOTEQ watch — shared data contracts.
  *
  * Two distinct data shapes flow off the watch:
  *
@@ -80,7 +80,7 @@ export interface DeviceMeta {
   /** Hardware model string, e.g. "Watch7,1" / "GW5". */
   model?: string;
   osVersion?: string;
-  /** surfhub-watch build that produced the log. */
+  /** SPOTEQ watch build that produced the log. */
   appVersion: string;
   /** Nominal IMU sample rate Hz the firmware was configured to. */
   sampleRateHz?: number;
@@ -92,7 +92,7 @@ export interface DeviceMeta {
  * algorithm is tuned against, not a space-optimised wire format.
  */
 export interface RawSessionLog {
-  schema: 'surfhub.calib.v1';
+  schema: 'spoteq.calib.v1';
   device: DeviceMeta;
   /** ISO start time of the session. */
   startedAt: string;

@@ -26,7 +26,7 @@
     <string name="session_end_confirm">לסיים אימון?</string>
     <string name="session_end_message">האם אתה בטוח שברצונך לסיים את האימון?</string>
     <string name="session_upload_prompt_title">להעלות לענן?</string>
-    <string name="session_upload_prompt_message">האימון נשמר בשעון. להעלות אותו גם לענן SurfHub?</string>
+    <string name="session_upload_prompt_message">האימון נשמר בשעון. להעלות אותו גם לענן SPOTEQ?</string>
     <string name="session_upload_offline_message">לא זוהה חיבור לאינטרנט. אפשר לשמור את האימון בשעון ולהעלות אותו כשהחיבור יחזור, או למחוק אותו.</string>
     <string name="session_upload_now">העלה לענן</string>
     <string name="session_keep_local">השאר מקומי</string>
@@ -37,7 +37,7 @@
     <string name="session_upload_no_gps_message">לא נרשמה נקודת GPS, לכן אי אפשר להתחיל את האימון בשרת. האימון נשאר בשעון.</string>
     <string name="session_upload_failed_message">האימון נשאר בשעון. בדוק GPS, התחברות ורשת, ונסה שוב מאוחר יותר.</string>
     <string name="session_upload_success_title">האימון הועלה</string>
-    <string name="session_upload_success_message">האימון הועלה בהצלחה לענן SurfHub.</string>
+    <string name="session_upload_success_message">האימון הועלה בהצלחה לענן SPOTEQ.</string>
     <string name="session_cancel">ביטול</string>
     <string name="session_screen_lock_active">נעילת מסך פעילה</string>
     <string name="session_best_jump">🏆 הקפיצה הטובה ביותר</string>
@@ -73,6 +73,8 @@
     <string name="settings_units_metric">מטרי (קמ״ש, מ׳)</string>
     <string name="settings_units_imperial">אימפריאלי (mph, ft)</string>
     <string name="settings_jump_detection">זיהוי קפיצות</string>
+    <string name="settings_min_jump_height">גובה קפיצה מינימלי</string>
+    <string name="settings_jump_height_option">%1$s מ׳</string>
     <string name="settings_display_feedback">תצוגה ומשוב</string>
     <string name="settings_top_padding">ריווח עליון</string>
     <string name="settings_top_padding_auto">אוטומטי</string>
@@ -170,11 +172,11 @@
     <string name="account_invalid_code">קוד שגוי — בדוק את האימייל ונסה שוב</string>
     <string name="account_invalid_credentials">אימייל או סיסמה שגויים</string>
     <string name="account_password_placeholder">סיסמה</string>
-    <string name="account_no_account_hint">אין חשבון? הירשם באפליקציית SurfHub לטלפון.</string>
+    <string name="account_no_account_hint">אין חשבון? הירשם באפליקציית SPOTEQ לטלפון.</string>
     <string name="account_try_again">נסה שוב</string>
     <string name="account_pair_preparing">מכין קוד…</string>
     <string name="account_pair_scan_title">סרוק עם הטלפון</string>
-    <string name="account_pair_scan_hint">פתח את SurfHub בטלפון, בחר חיבור שעון, ואז סרוק את קוד ה-QR.</string>
+    <string name="account_pair_scan_hint">פתח את SPOTEQ בטלפון, בחר חיבור שעון, ואז סרוק את קוד ה-QR.</string>
     <string name="account_pair_waiting">ממתין לאישור…</string>
     <string name="account_pair_expired">הקוד פג תוקף</string>
     <string name="account_pair_new_code">הצג קוד חדש</string>

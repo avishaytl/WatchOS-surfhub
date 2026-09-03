@@ -198,6 +198,21 @@ import Foundation
 
 // MARK: - Configuration
 
+/// Product-supported minimum heights for counting and displaying jumps.
+/// Detection still collects the complete candidate so the measured height is
+/// accurate; this value is the final acceptance floor applied to that result.
+public enum V16MinimumJumpHeight {
+    public static let defaultMeters = 1.5
+    public static let optionsMeters = [1.5, 2.0, 3.0, 4.0]
+
+    public static func normalized(_ value: Double) -> Double {
+        guard value.isFinite else { return defaultMeters }
+        return optionsMeters.min { lhs, rhs in
+            abs(lhs - value) < abs(rhs - value)
+        } ?? defaultMeters
+    }
+}
+
 public struct V16Config {
     /// Takeoff pop floor (g). Goldens measured 1.4–4.7 g.
     public var popMinG = 1.4
@@ -303,17 +318,10 @@ public struct V16Config {
     public var heightScale = 1.91
     public var heightOffsetM = 1.43
 
-    /// Jumps below this are not reported (m).
-    /// 1.4, not 1.5: with heightOffsetM = 1.43 the engine's floor output is
-    /// 1.43 m, so a 1.5 m report floor censored the entire saturated
-    /// small-jump band. Over the 23 goldens, 1.5 -> 1.4 recalls one more real
-    /// jump (18/23 -> 19/23), lowers MAE 0.44 -> 0.43 m and still emits
-    /// NOTHING on the pops-and-waves control. Lower does nothing: 1.43 m is
-    /// the smallest height the calibration can produce.
-    ///
-    /// V16.8 product floor. Lower measured events remain available in raw logs
-    /// and replay diagnostics, but are not reported as user-facing jumps.
-    public var minReportM = 1.5
+    /// User-selected final acceptance floor (m). The engine continues to
+    /// measure lower candidates for diagnostics, but it counts and displays
+    /// only results at or above this height. The product default is 1.5 m.
+    public var minReportM = V16MinimumJumpHeight.defaultMeters
     /// Emissions closer than this are the same jump; the higher wins.
     /// Window in which a later, stronger candidate may still supersede an
     /// earlier one.

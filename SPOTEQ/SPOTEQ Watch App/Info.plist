@@ -58,9 +58,13 @@
 		<string>location</string>
 	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
-	<string>com.avishayportal.kiters</string>
+	<string>com.spoteq.watch</string>
 	<key>WKRunsIndependentlyOfCompanionApp</key>
 	<true/>
+	<key>SPOTEQ_GOOGLE_CLIENT_ID</key>
+	<string>$(SPOTEQ_GOOGLE_CLIENT_ID)</string>
+	<key>SPOTEQ_GOOGLE_CALLBACK_SCHEME</key>
+	<string>$(SPOTEQ_GOOGLE_CALLBACK_SCHEME)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -68,7 +72,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.504073436614-9qec94thlrslcbvqfnot83ovrg2uoctu</string>
+				<string>$(SPOTEQ_GOOGLE_CALLBACK_SCHEME)</string>
 			</array>
 		</dict>
 	</array>

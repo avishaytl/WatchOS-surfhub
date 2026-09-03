@@ -4,6 +4,7 @@ build/
 local.properties
 .idea/
 *.iml
+*.aab
 .DS_Store
 captures/
 .externalNativeBuild/

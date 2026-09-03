@@ -51,7 +51,7 @@ final class JumpDetectorV16: JumpDetecting {
 
     private var cfg = JumpDetectorV16.makeConfigFromSettings()
     private var engine: JumpEngineV16
-    private let engineQueue = DispatchQueue(label: "com.kiters.jumpV16.engine", qos: .userInitiated)
+    private let engineQueue = DispatchQueue(label: "com.spoteq.jumpV16.engine", qos: .userInitiated)
     private let stateLock = NSLock()
     private let speedLock = NSLock()
 

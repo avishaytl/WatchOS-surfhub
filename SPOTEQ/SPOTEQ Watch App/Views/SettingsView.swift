@@ -18,6 +18,7 @@ struct SettingsView: View {
     @AppStorage("hapticFeedback") private var hapticFeedback: Bool = true
     @AppStorage("metricsTopPadding") private var metricsTopPadding: Double = -1  // -1 = auto
     @AppStorage("sessionTimerSide") private var sessionTimerSideRaw: String = ""
+    @AppStorage(V16Settings.minimumJumpHeightM) private var minimumJumpHeightM = V16MinimumJumpHeight.defaultMeters
 
     private var themeColor: Color {
         switch appTheme {
@@ -456,6 +457,33 @@ struct SettingsView: View {
                         .foregroundColor(.gray)
                         .textCase(.uppercase)
 
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Image(systemName: "arrow.up.to.line")
+                                .foregroundColor(.yellow)
+                                .frame(width: 20)
+                            Text(L("settings.v16_min_height"))
+                                .font(.caption)
+                        }
+
+                        Picker(L("settings.v16_min_height"), selection: $minimumJumpHeightM) {
+                            ForEach(V16MinimumJumpHeight.optionsMeters, id: \.self) { height in
+                                Text(verbatim: minimumHeightLabel(height)).tag(height)
+                            }
+                        }
+                        .pickerStyle(.navigationLink)
+                        .labelsHidden()
+                        .buttonStyle(.plain)
+
+                        Text(L("settings.v16_min_height_hint"))
+                            .font(.system(size: 8))
+                            .foregroundColor(.gray)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(8)
+                    .background(Color.white.opacity(0.05))
+                    .cornerRadius(8)
+
                     ZStack {
                         Color.clear
                         NavigationLink(destination: V16SettingsView()) {
@@ -528,7 +556,14 @@ struct SettingsView: View {
             // Migrate any engine selected by an older build. Live sessions are
             // also hard-pinned in SessionManager so this does not depend on Settings opening.
             detectionEngineRaw = DetectionEngine.v16BigAir.rawValue
+            minimumJumpHeightM = V16MinimumJumpHeight.normalized(minimumJumpHeightM)
         }
+    }
+
+    private func minimumHeightLabel(_ height: Double) -> String {
+        height.rounded() == height
+            ? String(format: "%.0f m", height)
+            : String(format: "%.1f m", height)
     }
 
     private func sessionTimerSideButton(

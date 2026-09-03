@@ -96,7 +96,7 @@ So the current pipeline is: **`content` → CSV parser → samples → jumps**.
 Future/legacy logs may use a base64 binary `.kslog` envelope:
 
 ```json
-{ "type":"session_log", "filename":"...", "contentType":"application/x-kiters-session-log",
+{ "type":"session_log", "filename":"...", "contentType":"application/x-spoteq-session-log",
   "contentEncoding":"base64", "appVersion":"...", "build":"...", "uploadedAt":"...",
   "content":"<BASE64 of the binary .kslog file>" }
 ```

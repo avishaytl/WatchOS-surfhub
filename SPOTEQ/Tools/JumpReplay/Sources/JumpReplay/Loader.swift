@@ -101,7 +101,9 @@ enum Loader {
                 let (rows, hint) = try parseCSV(csvData)
                 return (rows, hint, [], [])
             }
-            if encoding == "base64" || contentType.contains("kiters-session-log") || contentType.contains("kslog") {
+            // Match the format rather than a historical vendor prefix so both
+            // old exports and the SPOTEQ MIME type remain readable.
+            if encoding == "base64" || contentType.contains("session-log") || contentType.contains("kslog") {
                 guard let blob = Data(base64Encoded: content, options: [.ignoreUnknownCharacters]) else {
                     throw LoaderError.encoding
                 }

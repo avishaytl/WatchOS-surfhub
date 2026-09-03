@@ -1,4 +1,4 @@
-# SurfHub Jump Detection — V7 Algorithm & Calibration
+# SPOTEQ Jump Detection — V7 Algorithm & Calibration
 
 How the watch turns raw wrist IMU + barometer into a jump's **height**, **airtime**,
 and **distance**, and how those numbers were calibrated against a professional
@@ -6,7 +6,7 @@ reference app (Surfr). This is the single source of truth for the V7 engine that
 runs both on the watch and in the admin WATCH CALIB dashboard.
 
 - Source engine: [`SPOTEQ/SPOTEQ Watch App/Services/KitesurfJumpEngine.swift`](SPOTEQ/SPOTEQ%20Watch%20App/Services/KitesurfJumpEngine.swift)
-- Android parity: [`android/wear/src/main/java/com/kiters/wear/engine/KitesurfJumpEngineV7.kt`](android/wear/src/main/java/com/kiters/wear/engine/KitesurfJumpEngineV7.kt)
+- Android parity: [`android/wear/src/main/java/com/spoteq/wear/engine/KitesurfJumpEngineV7.kt`](../android/wear/src/main/java/com/spoteq/wear/engine/KitesurfJumpEngineV7.kt)
 - Session metrics wrapper: [`core/sessionAnalysis.ts`](core/sessionAnalysis.ts)
 - Dashboard: `surfhub-admin/src/app/(admin)/calib/CalibWorkbench.tsx` (imports this
   core via a `file:` symlink, so edits here are live on the dashboard with no build)

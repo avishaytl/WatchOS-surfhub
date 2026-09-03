@@ -53,7 +53,7 @@
 //                                      ▼
 //                         JumpResultV10 ──► Watch UI (~0.6 s after landing)
 //
-//  UNITS (watch-native — see surfhub-watch/core/types.ts):
+//  UNITS (watch-native — see the shared watch core types):
 //       accel  : g, gravity REMOVED (userAcceleration)
 //       gyro   : rad/s
 //       gravity: g (unit-ish vector)

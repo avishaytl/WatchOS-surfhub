@@ -692,7 +692,7 @@ Jumps:   5 (accepted=5)
   [✓] #3  t=1131.05s  air=1.49s phys=1.49s  h=1.28m(imuIntegrated)  dist=8.6m  apex=0.00s  conf=63  rot=0
   [✓] #4  t=1705.49s  air=0.93s phys=0.93s  h=1.05m(ballistic)  dist=5.1m  apex=0.00s  conf=60  rot=1
 ════════════════════════════════════════════════
-→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/analysis_v14/log_20260727_144243_F3386A6C.actual.json
+→ wrote <project-root>/cloud_logs_20260727/analysis_v14/log_20260727_144243_F3386A6C.actual.json
 teWindow OPEN reason=takeoff t=8266.51
 🦘 v14 CANDIDATE takeoff=8266.51 baseline=n/a pop=true
   [v14 1999.67s] CANDIDATE takeoff=8266.51 baseline=n/a pop=true

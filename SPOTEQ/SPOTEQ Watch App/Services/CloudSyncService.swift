@@ -192,7 +192,7 @@ final class CloudSyncService {
         // bytes are embedded as-is — no base64, no CSV/text branch — while the
         // surrounding metadata keeps the exact same schema/fields as before.
         let logContentType = fileURL.pathExtension.lowercased() == "kslog"
-            ? "application/x-kiters-session-log"
+            ? "application/x-spoteq-session-log"
             : "application/octet-stream"
 
         let envelope = BinaryLogEnvelope(fields: [

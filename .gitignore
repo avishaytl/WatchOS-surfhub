@@ -53,6 +53,7 @@ build/
 *.key
 Secrets.swift
 Config.swift
+SPOTEQ/Config.local.xcconfig
 
 # Logs
 *.log

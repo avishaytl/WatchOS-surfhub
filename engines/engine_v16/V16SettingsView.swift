@@ -10,6 +10,7 @@ import SwiftUI
 
 struct V16SettingsView: View {
     private let config = V16Config()
+    @AppStorage(V16Settings.minimumJumpHeightM) private var minimumJumpHeightM = V16MinimumJumpHeight.defaultMeters
 
     var body: some View {
         ScrollView {
@@ -49,7 +50,10 @@ struct V16SettingsView: View {
                     L("settings.v16_calibration"),
                     String(format: "%.1f×h %+.1f m", config.heightCalSlope, config.heightCalOffsetM)
                 )
-                metric(L("settings.v16_min_height"), String(format: "%.1f m", config.minReportM))
+                metric(
+                    L("settings.v16_min_height"),
+                    String(format: "%.1f m", V16MinimumJumpHeight.normalized(minimumJumpHeightM))
+                )
 
                 Divider()
 

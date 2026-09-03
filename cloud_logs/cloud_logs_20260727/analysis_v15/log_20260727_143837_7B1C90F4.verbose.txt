@@ -135,7 +135,7 @@ Mode:    standard  mockSpeed=8.0 m/s
 Jumps:   0 (accepted=0)
   (no jumps detected)
 ════════════════════════════════════════════════
-→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260727/analysis_v15/log_20260727_143837_7B1C90F4.actual.json
+→ wrote <project-root>/cloud_logs_20260727/analysis_v15/log_20260727_143837_7B1C90F4.actual.json
 68s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.41
 🦘 v15 REJECT(open) reason=gpsSpeedBelowRiding spd=0.03
   [v15  211.68s] REJECT(open) reason=gpsSpeedBelowRiding spd=0.03

@@ -174,14 +174,14 @@ apps/watchos/
 
 ### 1. Create Xcode Project (5 minutes)
 ```bash
-cd /Users/avishay/Desktop/spoteq/apps/watchos
+cd /path/to/WatchOS-surfhub
 ./setup-xcode-project.sh  # Read instructions
 ```
 
 Then in Xcode:
 - File → New → Project → watchOS App
 - Product Name: `SPOTEQ`
-- Bundle ID: `com.avishayportal.kiters.watchapp` (legacy App Store identity; do not rename)
+- Bundle ID: `com.spoteq.watch.watchapp`
 - Interface: SwiftUI
 - Language: Swift
 
@@ -343,7 +343,7 @@ After you get this running:
 **Ready to build?** 🚀
 
 ```bash
-cd /Users/avishay/Desktop/spoteq/apps/watchos
+cd /path/to/WatchOS-surfhub
 ./setup-xcode-project.sh
 # Follow instructions, then open Xcode!
 ```

@@ -1,5 +1,5 @@
 /**
- * surfhub-watch core — shared TypeScript surface consumed by the native
+ * SPOTEQ watch core — shared TypeScript surface consumed by the native
  * watchOS (SwiftUI) and Wear OS (Compose) shells via a JS runtime bridge.
  */
 

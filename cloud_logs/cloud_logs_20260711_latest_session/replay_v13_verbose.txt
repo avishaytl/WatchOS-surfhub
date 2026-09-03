@@ -38,4 +38,4 @@ Jumps:   34 (accepted=34)
   [✓] #32  t=615.07s  air=3.10s phys=3.10s  h=6.38m(absoluteAltitude)  dist=3.0m  apex=1.10s  conf=60  rot=0
   [✓] #33  t=612.17s  air=8.00s phys=8.00s  h=2.68m(absoluteAltitude)  dist=7.7m  apex=1.00s  conf=85  rot=0
 ════════════════════════════════════════════════
-→ wrote /Users/avishaytal/Documents/Projects/WatchOS-surfhub/cloud_logs_20260711_latest_session/replay_v13/log_20260711_125607_91F05F7A.actual.json
+→ wrote <project-root>/cloud_logs_20260711_latest_session/replay_v13/log_20260711_125607_91F05F7A.actual.json

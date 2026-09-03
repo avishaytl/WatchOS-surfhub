@@ -22,7 +22,7 @@ You can test the **UI and logic** on the watchOS Simulator, but **GPS and IMU se
 #### 1. Create Xcode Project (First Time Only)
 
 ```bash
-cd /Users/avishay/Desktop/spoteq/apps/watchos
+cd /path/to/WatchOS-surfhub
 
 # Read the setup instructions
 ./setup-xcode-project.sh
@@ -36,11 +36,11 @@ Follow the printed instructions to create the Xcode project manually:
 4. Configure:
    - Product Name: `SPOTEQ`
    - Team: Your Apple Developer Team
-   - Organization Identifier: `com.avishayportal`
-   - Bundle Identifier: `com.avishayportal.kiters.watchapp` (legacy App Store identity; do not rename)
+   - Organization Identifier: `com.spoteq`
+   - Bundle Identifier: `com.spoteq.watch.watchapp`
    - Interface: **SwiftUI**
    - Language: **Swift**
-5. Save to: `/Users/avishay/Desktop/spoteq/apps/watchos/`
+5. Save to your local SPOTEQ watch workspace.
 
 #### 2. Add Source Files to Xcode
 
@@ -264,7 +264,7 @@ If you just want to verify the code compiles without creating a full Xcode proje
 ### Using `swiftc` (Swift Compiler)
 
 ```bash
-cd /Users/avishay/Desktop/spoteq/apps/watchos/SPOTEQ
+cd /path/to/WatchOS-surfhub/SPOTEQ
 
 # Try to compile (will show errors if any)
 swiftc -parse Models/Session.swift
@@ -307,7 +307,7 @@ swiftc -parse Services/MotionManager.swift
 
 ```bash
 # 1. Navigate to project
-cd /Users/avishay/Desktop/spoteq/apps/watchos
+cd /path/to/WatchOS-surfhub
 
 # 2. Verify all files present
 ./verify-project.sh

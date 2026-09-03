@@ -1,8 +1,8 @@
 # Watch Authentication & Upload — complete REST contract for a 3rd-party watch app
 
 This is everything a **separately-built** watch app needs to (1) log a rider in
-and (2) upload riding sessions to SurfHub's backend. It is a **pure REST/HTTP
-contract** — no dependency on SurfHub's app code. Implement it in Swift, Kotlin,
+and (2) upload riding sessions to SPOTEQ's backend. It is a **pure REST/HTTP
+contract** — no dependency on SPOTEQ's app code. Implement it in Swift, Kotlin,
 or anything that can make HTTPS calls + store a token securely.
 
 > 📄 **This file is the authoritative, self-contained REST contract — start
@@ -11,7 +11,7 @@ or anything that can make HTTPS calls + store a token securely.
 > reading. If the two ever disagree on a request/response shape, **this file
 > wins.**
 
-> Model: **registration happens in the SurfHub phone app**. The watch then gets a
+> Model: **registration happens in the SPOTEQ phone app**. The watch then gets a
 > session for that **same UID** in one of **two ways** — pick whichever you build
 > first, you can support both:
 >
@@ -40,9 +40,9 @@ type it by hand; copy the whole block).
 | **Project ref** | `vvowvcdylztsqpzifdqc` |
 | **watch-ingest URL** | `https://vvowvcdylztsqpzifdqc.supabase.co/functions/v1/watch-ingest` |
 | **watch-link URL** (QR pairing, §2.6) | `https://vvowvcdylztsqpzifdqc.supabase.co/functions/v1/watch-link` |
-| **QR payload the WATCH displays** | `surfhub://watch-pair?code=<code>` (code = 10 chars `[A-Z2-9]`) |
-| **Google Web client ID** | `504073436614-k185g5tlbg7asjhag6l97rdnf43nian8.apps.googleusercontent.com` |
-| **Google iOS client ID** | `504073436614-9qec94thlrslcbvqfnot83ovrg2uoctu.apps.googleusercontent.com` |
+| **QR payload the WATCH displays** | `spoteq://watch-pair?code=<code>` (code = 10 chars `[A-Z2-9]`) |
+| **Google Web client ID** | Create a new OAuth client owned by SPOTEQ; do not reuse a personal client |
+| **Google iOS client ID** | Set `SPOTEQ_GOOGLE_CLIENT_ID` and its matching callback scheme in `Config.local.xcconfig` |
 
 ### The anon key (the `apikey` header value)
 
@@ -57,7 +57,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2b3d2Y2R
 
 **What this key is and why it's safe:**
 - It is the project's **public "anon" key** — the same one already shipped inside
-  the SurfHub phone app. It is *designed* to be embedded in client apps.
+  the SPOTEQ phone app. It is *designed* to be embedded in client apps.
 - A JWT has three dot-separated parts (`header.payload.signature`). Decoding its
   payload shows `"role": "anon"` and `"ref": "vvowvcdylztsqpzifdqc"` — i.e. it
   only identifies the project and the anonymous role. It grants **no data access
@@ -83,7 +83,7 @@ Phone app:  Sign UP  ─► Supabase Auth creates the user + UID
               │ get a session for that UID — EITHER:      │
               │                                           │
   (A) QR PAIR │ WATCH: watch-link {request} ─► code       │  (B) DIRECT LOGIN
-   (watch     │  → DISPLAY QR  surfhub://watch-pair?code=  │   Watch: Email/Google
+   (watch     │  → DISPLAY QR  spoteq://watch-pair?code=  │   Watch: Email/Google
     shows QR, │  → poll {poll,code} … pending …           │    POST /auth/v1/token
     phone     │ PHONE (camera): scan → {peek} → confirm    │    ─► { access_token,
     scans)    │  → {approve,code,refreshToken}            │       refresh_token,
@@ -229,7 +229,7 @@ sign-in). No email/password is typed on the watch.
 **The watch's job (you implement TWO calls): `request` then loop `poll`.**
 
 ```
-                WATCH                                  PHONE (SurfHub app)
+                WATCH                                  PHONE (SPOTEQ app)
    1. request ──────────────────────────►
         ◄── { code, qrPayload, expiresAt }
    2. DISPLAY qrPayload as a QR on screen
@@ -256,7 +256,7 @@ session). Body:
 ```json
 { "action": "request", "deviceName": "Dani’s Apple Watch", "deviceModel": "Apple Watch Series 10" }
 ```
-→ `200 { "code": "WWR89D5SUS", "qrPayload": "surfhub://watch-pair?code=WWR89D5SUS", "expiresAt": "<iso>" }`
+→ `200 { "code": "WWR89D5SUS", "qrPayload": "spoteq://watch-pair?code=WWR89D5SUS", "expiresAt": "<iso>" }`
 - `deviceName`/`deviceModel` are **optional** display text shown to the rider in
   the phone's "Connect <model>?" prompt — send them so the rider recognises the
   watch. Render `qrPayload` verbatim as a QR (don't rebuild the string yourself).
@@ -294,7 +294,7 @@ via §2.3, upload via §3 — identical to direct login from here.
 
 > The watch-link endpoint takes **no** `Authorization` header for `request`/`poll`
 > (deployed `--no-verify-jwt`); they are gated by the one-time code. The phone's
-> `peek`/`approve` (which you do NOT implement on the watch — the SurfHub app does)
+> `peek`/`approve` (which you do NOT implement on the watch — the SPOTEQ app does)
 > DO carry the rider's JWT. Always send the `apikey` header on every call.
 >
 > **Polling etiquette:** poll about every **2 seconds**, and stop after
@@ -438,7 +438,7 @@ analysis knows, still counts), and clears the live ping.
 
 ## 5. Quick connectivity test (run this from any terminal)
 
-Replace `EMAIL`/`PASSWORD` with a real SurfHub account (created in the phone app):
+Replace `EMAIL`/`PASSWORD` with a real SPOTEQ account (created in the phone app):
 ```bash
 BASE="https://vvowvcdylztsqpzifdqc.supabase.co"
 ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2b3d2Y2R5bHp0c3FwemlmZHFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MTc1NDcsImV4cCI6MjA5MDk5MzU0N30.jPBYr6f9fTABLHAD1rY_b1HP8xI0cDEQPJczxjCKsSY"
@@ -463,7 +463,7 @@ This exact sequence has been verified end-to-end against the live backend
 ## 6. Reference Swift implementation (optional)
 
 If you build the watch app in Swift you may copy these files from
-`surfhub-watch/watchos/SurfHubWatch Watch App/` as a starting point (they
+`SPOTEQ/SPOTEQ Watch App/` as a starting point (they
 implement §2–§4 already):
 - `WatchAuth.swift` — login + Google + **QR pairing request/poll (§2.6)** + refresh + logout (§2)
 - `WatchPairQR.swift` — the QR-pairing screen (shows the QR + polls) (§2.6)

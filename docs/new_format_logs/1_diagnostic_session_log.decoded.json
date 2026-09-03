@@ -8,7 +8,7 @@
     "note" : "raw file embedded as-is on the wire (not base64)"
   },
   "contentEncoding" : "binary",
-  "contentType" : "application\/x-kiters-session-log",
+  "contentType" : "application\/x-spoteq-session-log",
   "filename" : "log_20260615_143052_F4A2C0D1.kslog",
   "type" : "session_log",
   "uploadedAt" : "2026-06-15T14:35:10Z"

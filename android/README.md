@@ -38,7 +38,7 @@ ultra-realistic → 0 jumps).
 
 # install + run on a Wear OS emulator/device
 adb install -r -g wear/build/outputs/apk/debug/wear-debug.apk
-adb shell am start -n com.kiters.wear/.MainActivity
+adb shell am start -n com.spoteq.wear/.MainActivity
 ```
 
 ## Not in v1 (vs watchOS)

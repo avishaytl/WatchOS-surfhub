@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────
-#  SurfHub Watch – End-to-End integration test
+#  SPOTEQ Watch – End-to-End integration test
 #  Tests the full flow: login → start → ping → record → end
 #  Works for any platform (watchOS / Android / curl).
 # ─────────────────────────────────────────────────────────────
@@ -8,8 +8,8 @@ set -euo pipefail
 
 BASE="https://vvowvcdylztsqpzifdqc.supabase.co"
 ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2b3d2Y2R5bHp0c3FwemlmZHFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MTc1NDcsImV4cCI6MjA5MDk5MzU0N30.jPBYr6f9fTABLHAD1rY_b1HP8xI0cDEQPJczxjCKsSY"
-EMAIL="${1:-sanbata.tv@gmail.com}"
-PASSWORD="${2:-123456}"
+EMAIL="${1:-${SPOTEQ_E2E_EMAIL:-}}"
+PASSWORD="${2:-${SPOTEQ_E2E_PASSWORD:-}}"
 
 GREEN='\033[0;32m'; RED='\033[0;31m'; CYAN='\033[0;36m'; NC='\033[0m'
 pass() { echo -e "${GREEN}✅ $1${NC}"; }
@@ -18,6 +18,8 @@ step() { echo -e "\n${CYAN}▶ $1${NC}"; }
 
 need() { command -v "$1" &>/dev/null || { echo "Missing: $1"; exit 1; }; }
 need curl; need jq
+[[ -n "$EMAIL" && -n "$PASSWORD" ]] || fail \
+  "Pass email/password as arguments or set SPOTEQ_E2E_EMAIL and SPOTEQ_E2E_PASSWORD"
 
 # ── 1. LOGIN ─────────────────────────────────────────────────
 step "1. Sign in  ($EMAIL)"
